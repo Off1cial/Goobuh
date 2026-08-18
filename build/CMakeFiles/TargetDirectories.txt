@@ -1,0 +1,3 @@
+/home/redw0od0/Goobuh/build/CMakeFiles/engine.dir
+/home/redw0od0/Goobuh/build/CMakeFiles/edit_cache.dir
+/home/redw0od0/Goobuh/build/CMakeFiles/rebuild_cache.dir

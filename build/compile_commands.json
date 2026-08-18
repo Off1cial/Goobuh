@@ -1,0 +1,8 @@
+[
+{
+  "directory": "/home/redw0od0/Goobuh/build",
+  "command": "clang -DASSET_DIR=\\\"/home/redw0od0/Goobuh/Assets\\\" -D_POSIX_C_SOURCE=200112L -I/home/redw0od0/Goobuh/include -I/home/redw0od0/Goobuh/src -I/usr/include/harfbuzz -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include -I/usr/include/sysprof-6 -I/usr/include/freetype2 -I/usr/include/libpng16 -g -std=c11 -fsanitize=address -fno-omit-frame-pointer -g -o CMakeFiles/engine.dir/src/main.c.o -c /home/redw0od0/Goobuh/src/main.c",
+  "file": "/home/redw0od0/Goobuh/src/main.c",
+  "output": "/home/redw0od0/Goobuh/build/CMakeFiles/engine.dir/src/main.c.o"
+}
+]
