@@ -1,9 +1,20 @@
 #include "core/common.h"
+#include "core/logsys.hpp"
 #include "vk_renderer.hpp"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_vulkan.h>
 #include <vector>
 
+
+VkResult RESULT;
+#define VK_FAIL(result) ( (result) != VK_SUCCESS )
+
+static inline void RESULTCHECK(const char* failmsg)
+{
+  if (VK_FAIL(RESULT)){
+    LOG_FATAL(failmsg);
+  }
+}
 
 using namespace VK;
 
@@ -20,7 +31,7 @@ Renderer::~Renderer()
 bool Renderer::Init(Plat::Window& window)
 {
   u32 extension_count = 0; 
-  const char* const* extension_names = 0; // dont ask
+  const char* const* extension_names = 0; // A pointer which is const, to a pointer of const char*??
   
   extension_names = SDL_Vulkan_GetInstanceExtensions(&extension_count);
   const VkInstanceCreateInfo vkinfo = 
@@ -35,7 +46,8 @@ bool Renderer::Init(Plat::Window& window)
     .ppEnabledExtensionNames = extension_names,
   };
 
-  vkCreateInstance(&vkinfo, nullptr, &m_instance);
+  RESULT = vkCreateInstance(&vkinfo, nullptr, &m_instance);
+  RESULTCHECK("Failed to create vulkan instance");
 
   // Set up physical device
   u32 physdevice_count = 0;
@@ -50,19 +62,20 @@ bool Renderer::Init(Plat::Window& window)
   std::vector<VkQueueFamilyProperties> queue_families(q_familycount);
   vkGetPhysicalDeviceQueueFamilyProperties(m_physdevice, &q_familycount, queue_families.data());
   // Create Vulkan surface
-  SDL_Vulkan_CreateSurface(window.GetSDLWindow(), m_instance,  nullptr, &m_surface);
+  bool res = SDL_Vulkan_CreateSurface(window.GetSDLWindow(), m_instance,  nullptr, &m_surface);
+  if (!res){
+    LOG_FATAL("Failed to create vulkan surface");
+  }
 
-  u32 graphqueue_index = UINT32_MAX;
-  u32 presentqueue_index = UINT32_MAX;
   VkBool32 support;
   u32 i = 0;
   for (VkQueueFamilyProperties q_family : queue_families){
-    if (graphqueue_index == UINT32_MAX && q_family.queueCount > 0 && q_family.queueFlags & VK_QUEUE_GRAPHICS_BIT){
-      graphqueue_index = i;
+    if (m_graphqueue_index == UINT32_MAX && q_family.queueCount > 0 && q_family.queueFlags & VK_QUEUE_GRAPHICS_BIT){
+      m_graphqueue_index = i;
     }
-    if (presentqueue_index == UINT32_MAX){
+    if (m_presentqueue_index == UINT32_MAX){
       vkGetPhysicalDeviceSurfaceSupportKHR(m_physdevice, i, m_surface, &support);
-      if (support) presentqueue_index = i;
+      if (support) m_presentqueue_index = i;
     }
     ++i;
   }
@@ -72,7 +85,7 @@ bool Renderer::Init(Plat::Window& window)
     .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
     .pNext = nullptr,
     .flags = 0,
-    .queueFamilyIndex = graphqueue_index,
+    .queueFamilyIndex = m_graphqueue_index,
     .queueCount = 1,
     .pQueuePriorities = &q_priority
   };
@@ -93,9 +106,10 @@ bool Renderer::Init(Plat::Window& window)
     .pEnabledFeatures = &device_features
   };
   
-  vkCreateDevice(m_physdevice, &create_info, nullptr, &m_device);
-  vkGetDeviceQueue(m_device, graphqueue_index, 0, &m_graphqueue);
-  vkGetDeviceQueue(m_device, presentqueue_index, 0, &m_presentqueue);
+  RESULT = vkCreateDevice(m_physdevice, &create_info, nullptr, &m_device);
+  RESULTCHECK("Failed to create vulkan device");
+  vkGetDeviceQueue(m_device, m_graphqueue_index, 0, &m_graphqueue);
+  vkGetDeviceQueue(m_device, m_presentqueue_index, 0, &m_presentqueue);
   
   return true;
 }
@@ -103,7 +117,29 @@ bool Renderer::Init(Plat::Window& window)
 
 void Renderer::Shutdown()
 {
-  vkDestroyDevice(m_device, nullptr);
-  vkDestroyInstance(m_instance, nullptr);
+  if (m_device){
+    vkDeviceWaitIdle(m_device);
+    vkDestroyDevice(m_device, nullptr);
+    m_device = VK_NULL_HANDLE;
+  }
+  if (m_surface){
+    vkDestroySurfaceKHR(
+        m_instance, m_surface, nullptr
+        );
+    m_surface = VK_NULL_HANDLE;
+  }
+  if (m_instance){
+    vkDestroyInstance(
+        m_instance,
+        nullptr
+        );
+    m_instance = VK_NULL_HANDLE;
+  }
+
+  m_physdevice = VK_NULL_HANDLE;
+  m_graphqueue = VK_NULL_HANDLE;
+  
+  m_graphqueue_index = UINT32_MAX;
+  m_presentqueue_index = UINT32_MAX;
 }
 
