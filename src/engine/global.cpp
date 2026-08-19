@@ -5,7 +5,7 @@
 Global::Global()
 {
   // Testing
-  m_window = std::make_unique<Plat::Window>("Engine", 1280, 720);
+  m_window = std::make_unique<Plat::Window>("Engine",640, 480);
   m_input = std::make_unique<Plat::Input>(m_window->GetSDLWindow());
 }
 
@@ -24,8 +24,8 @@ void Global::Run()
 {
   while (!m_window->ShouldClose())
   {
-    m_input->FrameStart();
     m_window->PollEvents(*m_input);
+    m_input->FrameStart();
 
     SDL_RenderPresent(m_window->GetSDLRenderer());
   }

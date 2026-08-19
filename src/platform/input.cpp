@@ -21,46 +21,21 @@ void Input::FrameStart()
 {
   mMousePrev = mMouseCurrent;
   mKeysPrev = mKeysCurrent;
+  const bool* keys = SDL_GetKeyboardState(NULL);
+  std::copy(keys, keys + SDL_SCANCODE_COUNT, mKeysCurrent.begin());
+  mMouseCurrent = (mMouseLocked) ?
+    SDL_GetRelativeMouseState(&mMouseDx, &mMouseDy) :
+    SDL_GetMouseState(&mMouseX, &mMouseY);
+
+  if (keys[SDL_SCANCODE_W]){
+    printf("W\n");
+  }else{
+    printf("Not W\n");
+  }
 };
 
 
 void Input::ProcessEvent(SDL_Event& event)
 {
 
-  switch(event.type)
-  {
-    case SDL_EVENT_KEY_DOWN:
-    {
-      if (event.key.key < 0 || event.key.key >= SDL_SCANCODE_COUNT) break;
-      mKeysCurrent[event.key.key] = 1;
-      break;
-    }
-
-    case SDL_EVENT_KEY_UP:
-    {
-      if (event.key.key < 0 || event.key.key >= SDL_SCANCODE_COUNT) break;
-      mKeysCurrent[event.key.key] = 0;
-      break;
-    }
-
-    case SDL_EVENT_MOUSE_MOTION:
-    {
-      mMouseX = (float)event.motion.x;
-      mMouseY = (float)event.motion.y;
-      mMouseDx = (float)event.motion.xrel;
-      mMouseDy = (float)event.motion.yrel;
-      break;
-    }
-
-    case SDL_EVENT_MOUSE_BUTTON_DOWN:
-    {
-      mMouseCurrent |= event.button.button;
-      break;
-    }
-    case SDL_EVENT_MOUSE_BUTTON_UP:
-    {
-      mMouseCurrent &= ~event.button.button;
-      break;
-    }
-  }
 }
