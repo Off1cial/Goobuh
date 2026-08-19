@@ -39,82 +39,16 @@ public:
             y > -tolerance && y < tolerance &&
             z > -tolerance && z < tolerance);
   }
-
-private:
-  static float NormaliseInternal(Vector &v);
 };
 
-/*
-#ifdef __SSE__
-#include <xmmintrin.h>
-#include <pmmintrin.h>
 
-// Fast reciprocal square root using SSE
-// Could implement in ASM, it would probably be easier to read unironically
-
-
-FORCEINLINE float _FastRSqrtSSE(float a)
-{
-  __m128 x = _mm_load_ss(&a);
-  __m128 xr = _mm_rsqrt_ss(x);
-
-  // Newton-Raphson refinement
-  __m128 xt = _mm_mul_ss(xr, xr);
-  xt = _mm_mul_ss(xt, x);
-  xt = _mm_sub_ss(_mm_set_ss(3.0f), xt);
-  xt = _mm_mul_ss(xt, _mm_set_ss(0.5f));
-  xr = _mm_mul_ss(xr, xt);
-
-  float result;
-  _mm_store_ss(&result, xr);
-  return result;
-}
-#endif
-*/
-FORCEINLINE float _FastRSqrtSSE(float a);
-
-float Vector::NormaliseInternal(Vector &vec)
-{
-  const float EPSILON = 1e-10f;
-  float lenSq = vec.Length2() + EPSILON;
-
-#if defined(__SSE__)
-  // SSE path - fastest
-  float invLen = _FastRSqrtSSE(lenSq);
-  vec.x *= invLen;
-  vec.y *= invLen;
-  vec.z *= invLen;
-  return lenSq * invLen;
-
-#elif defined(__ARM_NEON)
-  // ARM NEON path (mobile)
-  float32x4_t v = vld1q_f32(&vec.x);
-  float32x4_t len = vdupq_n_f32(lenSq);
-  float32x4_t inv = vrsqrteq_f32(len);
-  // Newton-Raphson refinement for NEON
-  inv = vmulq_f32(inv, vrsqrtsq_f32(vmulq_f32(inv, len), inv));
-
-  vec.x = vgetq_lane_f32(inv, 0) * vec.x;
-  vec.y = vgetq_lane_f32(inv, 1) * vec.y;
-  vec.z = vgetq_lane_f32(inv, 2) * vec.z;
-  return lenSq * vgetq_lane_f32(inv, 0);
-
-#else
-  // Fallback - scalar path
-  float invLen = 1.0f / sqrtf(lenSq);
-  vec.x *= invLen;
-  vec.y *= invLen;
-  vec.z *= invLen;
-  return lenSq * invLen;
-#endif
-}
 
 // Attempting to be mindful of creating copies on the stack via operator
 FORCEINLINE void VectorAdd(const Vector &a, const Vector &b, Vector &out)
 {
-  out.x = a.x;
-  out.y = a.y;
-  out.z = a.z;
+  out.x = a.x + b.x;
+  out.y = a.y + b.y;
+  out.z = a.z + b.z;
 }
 
 // out = a - b
@@ -134,9 +68,15 @@ FORCEINLINE void VectorScale(const Vector& a, const float scale, Vector& out)
 
 FORCEINLINE void VectorCross(const Vector& a, const Vector& b, Vector& out)
 {
-  out.x = a.y * b.z + a.z * b.y;
-  out.y = a.x * b.z + a.z * b.x;
-  out.z = a.x * b.y + a.y * b.x;
+    out.x = a.y * b.z - a.z * b.y;
+    out.y = a.z * b.x - a.x * b.z;
+    out.z = a.x * b.y - a.y * b.x;
+}
+
+FORCEINLINE float VectorCrossNorm(const Vector& a, const Vector& b, Vector& out)
+{
+  VectorCross(a, b, out);
+  return out.NormaliseInPlace();
 }
 
 FORCEINLINE float DotProduct(const Vector& a, const Vector& b)
@@ -150,6 +90,21 @@ FORCEINLINE void VectorMA(const Vector &a, const float t, const Vector &b, Vecto
   out.x = a.x + (t * b.x);
   out.y = b.x + (t * b.y);
   out.z = b.y + (t * b.z);
+}
+
+// Fills 'out' with the minimum x,y,z of A and B
+FORCEINLINE void VectorMin(const Vector& a, const Vector& b, Vector& out)
+{
+  out.x = Min(a.x, b.x);
+  out.y = Min(a.y, b.y);
+  out.z = Min(a.z, b.z);
+}
+
+FORCEINLINE void VectorMax(const Vector& a, const Vector& b, Vector& out)
+{
+  out.x = Max(a.x, b.x);
+  out.y = Max(a.y, b.y);
+  out.z = Max(a.z, b.z);
 }
 
 inline Vector::Vector(void)
@@ -167,15 +122,26 @@ FORCEINLINE float Vector::Length(void) const
   return sqrtf(x * x + y * y + z * z);
 }
 
+
+FORCEINLINE float VectorNormalise(Vector& v)
+{
+  float lensq = v.Length2();
+  float invlen =  1.0f / sqrtf(lensq);
+  v.x *= invlen;
+  v.y *= invlen;
+  v.z *= invlen;
+  return lensq * invlen;
+}
+
 FORCEINLINE float Vector::NormaliseInPlace(void)
 {
-  return NormaliseInternal(*this);
+  return VectorNormalise(*this);
 }
 
 FORCEINLINE Vector Vector::Normalised(void) const
 {
   Vector v = *this;
-  NormaliseInternal(v);
+  VectorNormalise(v);
   return v;
 }
 

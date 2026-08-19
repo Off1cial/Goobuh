@@ -18,13 +18,25 @@ find_package(Vulkan REQUIRED)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# Check for CPU architecture support
+include(CheckCXXCompilerFlag)
+
 # -------------------------
 # Source files
 # -------------------------
 
+file(GLOB_RECURSE SOURCE_MATH
+    src/math/*.asm
+    src/math/*.c
+    src/math/*.cpp
+)
+
+
+
 file(GLOB_RECURSE SOURCE_ENGINE
   src/*.c
   src/*.cpp
+  tests/*.cpp
 )
 
 # -------------------------
@@ -33,6 +45,7 @@ file(GLOB_RECURSE SOURCE_ENGINE
 
 add_executable(engine
     ${SOURCE_ENGINE}
+    ${SOURCE_MATH}
 )
 
 target_compile_definitions(engine PRIVATE
@@ -96,10 +109,143 @@ set_target_properties(engine PROPERTIES
 )
 
 # -------------------------
-# Address sanitizer (Debug only)
+# Compiler optimization flags
 # -------------------------
 
-if(CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT WIN32)
+# Set optimization level based on build type
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    target_compile_options(engine PRIVATE
+        -g
+        -O0
+        -fno-inline
+        -fno-omit-frame-pointer
+    )
+elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
+    target_compile_options(engine PRIVATE
+        -O3
+        -march=native
+        -mtune=native
+        -ffast-math
+        -funroll-loops
+        -finline-functions
+        -fomit-frame-pointer
+        -fno-stack-protector
+        -flto=auto
+        -fvisibility=hidden
+        -fno-rtti
+        -fno-exceptions
+        -fno-math-errno
+        -fno-trapping-math
+        -fno-signaling-nans
+    )
+    
+    target_link_options(engine PRIVATE
+        -flto=auto
+        -Wl,-O3
+        -Wl,--as-needed
+        -Wl,--strip-all
+    )
+    
+    target_compile_definitions(engine PRIVATE
+        NDEBUG
+        GOOBUH_RELEASE
+    )
+elseif(CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+    target_compile_options(engine PRIVATE
+        -O2
+        -g
+        -march=native
+        -mtune=native
+        -ffast-math
+    )
+endif()
+
+# -------------------------
+# SSE/AVX flags (if supported)
+# -------------------------
+
+if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+    check_cxx_compiler_flag("-msse" COMPILER_SUPPORTS_SSE)
+    check_cxx_compiler_flag("-msse2" COMPILER_SUPPORTS_SSE2)
+    check_cxx_compiler_flag("-msse3" COMPILER_SUPPORTS_SSE3)
+    check_cxx_compiler_flag("-mssse3" COMPILER_SUPPORTS_SSSE3)
+    check_cxx_compiler_flag("-msse4.1" COMPILER_SUPPORTS_SSE4_1)
+    check_cxx_compiler_flag("-msse4.2" COMPILER_SUPPORTS_SSE4_2)
+    check_cxx_compiler_flag("-mavx" COMPILER_SUPPORTS_AVX)
+    check_cxx_compiler_flag("-mavx2" COMPILER_SUPPORTS_AVX2)
+    check_cxx_compiler_flag("-mfma" COMPILER_SUPPORTS_FMA)
+
+    if(COMPILER_SUPPORTS_SSE)
+        target_compile_options(engine PRIVATE -msse)
+        target_compile_definitions(engine PRIVATE __SSE__)
+    endif()
+    if(COMPILER_SUPPORTS_SSE2)
+        target_compile_options(engine PRIVATE -msse2)
+        target_compile_definitions(engine PRIVATE __SSE2__)
+    endif()
+    if(COMPILER_SUPPORTS_SSE3)
+        target_compile_options(engine PRIVATE -msse3)
+        target_compile_definitions(engine PRIVATE __SSE3__)
+    endif()
+    if(COMPILER_SUPPORTS_SSSE3)
+        target_compile_options(engine PRIVATE -mssse3)
+        target_compile_definitions(engine PRIVATE __SSSE3__)
+    endif()
+    if(COMPILER_SUPPORTS_SSE4_1)
+        target_compile_options(engine PRIVATE -msse4.1)
+        target_compile_definitions(engine PRIVATE __SSE4_1__)
+    endif()
+    if(COMPILER_SUPPORTS_SSE4_2)
+        target_compile_options(engine PRIVATE -msse4.2)
+        target_compile_definitions(engine PRIVATE __SSE4_2__)
+    endif()
+    if(COMPILER_SUPPORTS_AVX)
+        target_compile_options(engine PRIVATE -mavx)
+        target_compile_definitions(engine PRIVATE __AVX__)
+    endif()
+    if(COMPILER_SUPPORTS_AVX2)
+        target_compile_options(engine PRIVATE -mavx2)
+        target_compile_definitions(engine PRIVATE __AVX2__)
+    endif()
+    if(COMPILER_SUPPORTS_FMA)
+        target_compile_options(engine PRIVATE -mfma)
+        target_compile_definitions(engine PRIVATE __FMA__)
+    endif()
+endif()
+
+# -------------------------
+# Debug build flags
+# -------------------------
+
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    target_compile_options(engine PRIVATE
+        -fno-omit-frame-pointer
+        -fno-inline
+        -fno-optimize-sibling-calls
+        -fno-elide-constructors
+        -fstack-protector-strong
+        -Werror
+        -Wall
+        -Wextra
+        -Wpedantic
+        -Wshadow
+        -Wunused
+        -Wcast-align
+        -Wconversion
+        -Wsign-conversion
+        -Wdouble-promotion
+        -Wformat=2
+        -Wmissing-include-dirs
+        -Wundef
+    )
+    
+    target_compile_definitions(engine PRIVATE
+        DEBUG
+        _DEBUG
+        GOOBUH_DEBUG
+    )
+
+    # Address sanitizer
     target_compile_options(engine PRIVATE
         -fsanitize=address
         -fno-omit-frame-pointer
