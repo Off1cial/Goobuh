@@ -6,6 +6,7 @@ Global::Global()
 {
   // Testing
   m_window = std::make_unique<Plat::Window>("Engine",640, 480);
+  m_vkrenderer = std::make_unique<VK::Renderer>(*m_window);
   m_input = std::make_unique<Plat::Input>(m_window->GetSDLWindow());
 }
 
@@ -26,7 +27,5 @@ void Global::Run()
   {
     m_window->PollEvents(*m_input);
     m_input->FrameStart();
-
-    SDL_RenderPresent(m_window->GetSDLRenderer());
   }
 }

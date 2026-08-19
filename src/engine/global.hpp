@@ -2,6 +2,7 @@
 
 #include "platform/input.hpp"
 #include "platform/window.hpp"
+#include "renderer/vulkan/vk_renderer.hpp"
 #include <memory>
 
 class Global
@@ -16,5 +17,6 @@ class Global
 
   private:
     std::unique_ptr<Plat::Window> m_window = nullptr;
+    std::unique_ptr<VK::Renderer> m_vkrenderer = nullptr;
     std::unique_ptr<Plat::Input>  m_input = nullptr;
 };

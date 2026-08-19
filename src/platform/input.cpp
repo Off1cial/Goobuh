@@ -27,11 +27,6 @@ void Input::FrameStart()
     SDL_GetRelativeMouseState(&mMouseDx, &mMouseDy) :
     SDL_GetMouseState(&mMouseX, &mMouseY);
 
-  if (keys[SDL_SCANCODE_W]){
-    printf("W\n");
-  }else{
-    printf("Not W\n");
-  }
 };
 
 

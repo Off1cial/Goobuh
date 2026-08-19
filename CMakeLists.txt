@@ -41,6 +41,10 @@ file(GLOB_RECURSE SOURCE_PLATFORM
   src/platform/*.cpp
 )
 
+file(GLOB_RECURSE SOURCE_RENDERER
+  src/renderer/*.c
+  src/renderer/*.cpp
+)
 
 file(GLOB_RECURSE SOURCE_ENGINE
     src/engine/*.c
@@ -55,6 +59,7 @@ file(GLOB_RECURSE SOURCE_ENGINE
 add_executable(engine
     ${SOURCE_ENGINE}
     ${SOURCE_PLATFORM}
+    ${SOURCE_RENDERER}
     ${SOURCE_CORE}
     ${SOURCE_MATH}
 )
@@ -114,7 +119,7 @@ set_target_properties(engine PROPERTIES
     C_STANDARD 11
     C_STANDARD_REQUIRED YES
     C_EXTENSIONS NO
-    CXX_STANDARD 17
+    CXX_STANDARD 20
     CXX_STANDARD_REQUIRED YES
     CXX_EXTENSIONS NO
 )
