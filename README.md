@@ -1,7 +1,8 @@
 hi hows it going
 
-
-
+cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug
+ninja -C build
+( I use ninja)
 Vulkan:
 
 
