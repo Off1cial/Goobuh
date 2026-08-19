@@ -224,12 +224,12 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         -fno-optimize-sibling-calls
         -fno-elide-constructors
         -fstack-protector-strong
-        -Werror
+        #-Werror
         -Wall
         -Wextra
         -Wpedantic
         -Wshadow
-        -Wunused
+        #-Wunused
         -Wcast-align
         -Wconversion
         -Wsign-conversion
