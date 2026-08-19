@@ -1,21 +1,23 @@
 #include "platform/input.hpp"
 #include "core/logsys.h"
 
-CInput::CInput(SDL_Window* window) : mSDLwindow(window)
+using namespace Plat;
+
+Input::Input(SDL_Window* window) : mSDLwindow(window)
 {
   mKeysCurrent.fill(0);
   mKeysPrev.fill(0);
   SetMouseLock(mMouseLocked);
 }
 
-void CInput::SetMouseLock(bool lock)
+void Input::SetMouseLock(bool lock)
 {
   mMouseLocked = lock;
   SDL_SetWindowRelativeMouseMode(mSDLwindow, mMouseLocked);
   SDL_SetWindowMouseGrab(mSDLwindow, mMouseLocked);
 }
 
-bool CInput::PollEvent(event_t& event){
+bool Input::PollEvent(event_t& event){
 
   mKeysPrev = mKeysCurrent;
   mMousePrev = mMouseCurrent;
