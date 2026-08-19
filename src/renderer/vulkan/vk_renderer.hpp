@@ -4,6 +4,13 @@
 
 namespace VK
 {
+  enum class PresentMode
+  {
+    Immediate,
+    Mailbox,
+    VSyncFifo
+  };
+
   class Renderer
   {
     public:
@@ -17,6 +24,18 @@ namespace VK
     private:
       bool Init(Plat::Window& window);
       bool CreateSwapChain(Plat::Window& window);
+      bool CreateCommandPool();
+      bool CreateCommandBuffers();
+      bool CreateSyncObjects();
+
+
+      void TransitionImage(VkCommandBuffer cmdbuffer, VkImage image, VkImageLayout oldlayout, VkImageLayout newlayout);
+
+
+      // IMMEDIATE -> MAILBOX -> FIFO
+      VkPresentModeKHR DeterminePresentMode(const std::vector<VkPresentModeKHR>& available, PresentMode preferred);
+
+      VkPresentModeKHR GetVkPresentMode(PresentMode mode);
 
       VkInstance m_instance = VK_NULL_HANDLE;
       VkSurfaceKHR m_surface =  VK_NULL_HANDLE;
@@ -35,8 +54,17 @@ namespace VK
       std::vector<VkImage> m_swapchain_images;
       std::vector<VkImageView> m_swapchain_imageviews;
 
-      VkFormat m_swapchain_format;
-      VkExtent2D m_swapchain_extent;
+      VkFormat m_swapchain_format = VK_FORMAT_UNDEFINED;
+      VkExtent2D m_swapchain_extent{};
+
+      VkCommandPool m_cmdpool = VK_NULL_HANDLE;
+      std::vector<VkCommandBuffer> m_cmdbuffers{};
+
+      uint32_t m_current_image = 0;
+      VkSemaphore m_image_available = VK_NULL_HANDLE;
+      std::vector<VkSemaphore> m_render_finished{};
+      VkFence m_in_flight = VK_NULL_HANDLE;
+
   };
 };
 

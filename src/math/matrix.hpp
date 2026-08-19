@@ -1,54 +1,8 @@
 #ifndef MATH_MATRIX_H
 #define MATH_MATRIX_H
 
+#include <string.h>
 #include "math/vector.hpp"
-
-class Mat4
-{
-public:
-  static Mat4 Identity();
-  static Mat4 Translation(const Vector &position);
-  static Mat4 Scale(const Vector &scale);
-  static Mat4 RotationX(float radians);
-  static Mat4 RotationY(float radians);
-  static Mat4 RotationZ(float radians);
-
-  static Mat4 LookAt(const Vector &eye, const Vector &centre, const Vector &up);
-
-  static Mat4 Perspective(
-      float fov,
-      float aspect,
-      float znear,
-      float zfar);
-
-  static Mat4 Orthographic(
-      float left,
-      float right,
-      float bottom,
-      float top,
-      float znear,
-      float zfar);
-
-  Mat4 operator*(const Mat4 &b) const;
-
-  Vector operator*(const Vector &v) const;
-
-  Mat4 Transposed() const;
-  Mat4 Inverse() const;
-
-  float m[16];
-};
-
-#ifndef MATH_MATRIX_HPP
-#define MATH_MATRIX_HPP
-
-#include <cmath>
-#include <cstring>
-#include "math/vector.hpp"
-
-// ============================================================================
-// Mat4 (4x4 Matrix)
-// ============================================================================
 
 class Mat4
 {
@@ -73,10 +27,6 @@ public:
   Mat4 Transposed() const;
   Mat4 Inverse() const;
 };
-
-// ============================================================================
-// Mat4 Implementation
-// ============================================================================
 
 FORCEINLINE Mat4 Mat4::Identity()
 {
@@ -282,4 +232,3 @@ FORCEINLINE Mat4 Mat4::Inverse() const
 
 #endif // MATH_MATRIX_HPP
 
-#endif
