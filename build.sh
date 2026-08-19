@@ -5,6 +5,7 @@
 BUILD_TYPE="Debug"
 RUN_ENGINE=false
 CLEAN=false
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -53,21 +54,32 @@ if [ "$CLEAN" = true ]; then
 fi
 
 # Configure and build
-cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=$BUILD_TYPE
-ninja -C build
+cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=$BUILD_TYPE || exit 1
+ninja -C build || exit 1
 
 # Check if build succeeded
-if [ $? -ne 0 ]; then
-    echo "Build failed!"
-    exit 1
-fi
+#if [ $? -ne 0 ]; then
+#    echo "Build failed!"
+#    exit 1
+#fi
 
 # Run the engine if requested
+#if [ "$RUN_ENGINE" = true ]; then
+#    echo ""
+#    echo "========================================"
+#    echo "Running engine..."
+#    echo "========================================"
+#    echo ""
+#    LSAN_OPTIONS="suppressions=$PWD/lsan.supp" ./build/engine
+#fi
+
 if [ "$RUN_ENGINE" = true ]; then
     echo ""
     echo "========================================"
     echo "Running engine..."
     echo "========================================"
     echo ""
-    ./build/engine
+
+    LSAN_OPTIONS="print_suppressions=1:suppressions=$SCRIPT_DIR/lsan.supp" \
+        "$SCRIPT_DIR/build/engine"
 fi

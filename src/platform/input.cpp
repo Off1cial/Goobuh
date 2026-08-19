@@ -1,5 +1,5 @@
 #include "platform/input.hpp"
-#include "core/logsys.h"
+#include "core/logsys.hpp"
 
 using namespace Plat;
 
@@ -17,44 +17,50 @@ void Input::SetMouseLock(bool lock)
   SDL_SetWindowMouseGrab(mSDLwindow, mMouseLocked);
 }
 
-bool Input::PollEvent(event_t& event){
-
-  mKeysPrev = mKeysCurrent;
+void Input::FrameStart()
+{
   mMousePrev = mMouseCurrent;
+  mKeysPrev = mKeysCurrent;
+};
 
-  SDL_Event sdl_event;
-  while (SDL_PollEvent(&sdl_event)){
-    switch(sdl_event.type){
-      case SDL_EVENT_QUIT:{
-        event.type = EVENT_QUIT;
-        return true;
-      }
-      case SDL_EVENT_WINDOW_RESIZED:{
-        event.type = EVENT_WIN_RESIZE;
-        event.win_resize.width = sdl_event.window.data1;
-        event.win_resize.height = sdl_event.window.data2;
-        return true;
-      }
-      case SDL_EVENT_KEY_DOWN:{
-        if (sdl_event.key.key < 0 || sdl_event.key.key >= SDL_SCANCODE_COUNT) break;
-        mKeysCurrent[sdl_event.key.key] = 1;
-        break;
-      }
-      case SDL_EVENT_KEY_UP:
-        if (sdl_event.key.key < 0 || sdl_event.key.key >= SDL_SCANCODE_COUNT) break;
-        mKeysCurrent[sdl_event.key.key] = 0;
-        break;
-      default:
-        break;
+
+void Input::ProcessEvent(SDL_Event& event)
+{
+
+  switch(event.type)
+  {
+    case SDL_EVENT_KEY_DOWN:
+    {
+      if (event.key.key < 0 || event.key.key >= SDL_SCANCODE_COUNT) break;
+      mKeysCurrent[event.key.key] = 1;
+      break;
+    }
+
+    case SDL_EVENT_KEY_UP:
+    {
+      if (event.key.key < 0 || event.key.key >= SDL_SCANCODE_COUNT) break;
+      mKeysCurrent[event.key.key] = 0;
+      break;
+    }
+
+    case SDL_EVENT_MOUSE_MOTION:
+    {
+      mMouseX = (float)event.motion.x;
+      mMouseY = (float)event.motion.y;
+      mMouseDx = (float)event.motion.xrel;
+      mMouseDy = (float)event.motion.yrel;
+      break;
+    }
+
+    case SDL_EVENT_MOUSE_BUTTON_DOWN:
+    {
+      mMouseCurrent |= event.button.button;
+      break;
+    }
+    case SDL_EVENT_MOUSE_BUTTON_UP:
+    {
+      mMouseCurrent &= ~event.button.button;
+      break;
     }
   }
-  
-  if (mMouseLocked){
-    mMouseCurrent = SDL_GetRelativeMouseState(&mMouseDx, &mMouseDy);
-  }else{
-    mMouseCurrent = SDL_GetGlobalMouseState(&mMouseX, &mMouseY);
-  }
-  
-
-  return false;
 }

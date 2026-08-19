@@ -1,7 +1,6 @@
 #ifndef INPUT_H
 #define INPUT_H
 
-#include "platform/event.h"
 #include "core/common.h"
 
 #include <SDL3/SDL.h>
@@ -37,7 +36,9 @@ namespace Plat
       y = mMouseDy;
     }
     void SetMousePos(float x, float y);
-    bool PollEvent(event_t &event);
+
+    void FrameStart();
+    void ProcessEvent(SDL_Event& event);
 
     bool KeyDown(SDL_Scancode key) const { return mKeysCurrent[key]; }
     bool KeyPress(SDL_Scancode key) const { return mKeysCurrent[key] && !mKeysPrev[key]; }

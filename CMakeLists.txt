@@ -25,18 +25,27 @@ include(CheckCXXCompilerFlag)
 # Source files
 # -------------------------
 
+file(GLOB_RECURSE SOURCE_CORE
+    src/core/*.c
+    src/core/*.cpp
+)
+
 file(GLOB_RECURSE SOURCE_MATH
     src/math/*.asm
     src/math/*.c
     src/math/*.cpp
 )
 
+file(GLOB_RECURSE SOURCE_PLATFORM
+  src/platform/*.c
+  src/platform/*.cpp
+)
 
 
 file(GLOB_RECURSE SOURCE_ENGINE
-  src/*.c
-  src/*.cpp
-  tests/*.cpp
+    src/engine/*.c
+    src/engine/*.cpp
+    src/game/*.cpp
 )
 
 # -------------------------
@@ -45,6 +54,8 @@ file(GLOB_RECURSE SOURCE_ENGINE
 
 add_executable(engine
     ${SOURCE_ENGINE}
+    ${SOURCE_PLATFORM}
+    ${SOURCE_CORE}
     ${SOURCE_MATH}
 )
 

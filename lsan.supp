@@ -1,0 +1,5 @@
+leak:libdecor
+leak:libdecor-gtk
+leak:libgtk
+leak:libpango
+leak:libfontconfig
