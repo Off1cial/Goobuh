@@ -31,6 +31,14 @@ Renderer::~Renderer()
 bool Renderer::Init(Plat::Window &window)
 {
 
+  VkApplicationInfo app_info{};
+  app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+  app_info.pApplicationName = "Goobuh";
+  app_info.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
+  app_info.pEngineName = "Goobuh Engine";
+  app_info.engineVersion = VK_MAKE_VERSION(1, 0, 0);
+  app_info.apiVersion = VK_API_VERSION_1_4;
+
   u32 extension_count = 0;
   const char *const *extension_names = 0; // A pointer which is const, to a pointer of const char*??
   extension_names = SDL_Vulkan_GetInstanceExtensions(&extension_count);
@@ -41,7 +49,7 @@ bool Renderer::Init(Plat::Window &window)
           .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
           .pNext = nullptr,
           .flags = 0,
-          .pApplicationInfo = nullptr,
+          .pApplicationInfo = &app_info,
           .enabledLayerCount = 1,
           .ppEnabledLayerNames = &validation_layer,
           .enabledExtensionCount = extension_count,
@@ -57,6 +65,16 @@ bool Renderer::Init(Plat::Window &window)
   std::vector<VkPhysicalDevice> physical_devices(physdevice_count);
   vkEnumeratePhysicalDevices(m_instance, &physdevice_count, physical_devices.data());
   m_physdevice = physical_devices[0];
+
+  // Physical device properties
+  VkPhysicalDeviceProperties physdevice_properties{};
+  vkGetPhysicalDeviceProperties(m_physdevice, &physdevice_properties);
+  // Log the api version
+  LOG_DEFAULT(
+    "Vulkan API: %u.%u.%u",
+    VK_API_VERSION_MAJOR(physdevice_properties.apiVersion),
+    VK_API_VERSION_MINOR(physdevice_properties.apiVersion),
+    VK_API_VERSION_PATCH(physdevice_properties.apiVersion));
 
   uint32_t q_familycount = 0;
   vkGetPhysicalDeviceQueueFamilyProperties(m_physdevice, &q_familycount, nullptr);
@@ -97,10 +115,15 @@ bool Renderer::Init(Plat::Window &window)
 
   VkPhysicalDeviceFeatures device_features = {};
   const char *device_extensions[] = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+
+  VkPhysicalDeviceDynamicRenderingFeatures dynamic_rendering{};
+  dynamic_rendering.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES;
+  dynamic_rendering.dynamicRendering = VK_TRUE;
+
   VkDeviceCreateInfo create_info =
       {
           .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
-          .pNext = nullptr,
+          .pNext = &dynamic_rendering,
           .flags = 0,
           .queueCreateInfoCount = 1,
           .pQueueCreateInfos = &q_info,
@@ -112,6 +135,18 @@ bool Renderer::Init(Plat::Window &window)
 
   RESULT = vkCreateDevice(m_physdevice, &create_info, nullptr, &m_device);
   RESULTCHECK("Failed to create vulkan device");
+  /*
+  auto pfnBeginRendering =
+    reinterpret_cast<PFN_vkCmdBeginRendering>(
+        vkGetDeviceProcAddr(m_device, "vkCmdBeginRendering"));
+  auto pfnEndRendering =
+    reinterpret_cast<PFN_vkCmdEndRendering>(
+        vkGetDeviceProcAddr(m_device, "vkCmdEndRendering"));
+
+
+  LOG_DEFAULT("vkCmdBeginRendering: %p", (void*)pfnBeginRendering);
+  LOG_DEFAULT("vkCmdEndRendering:   %p", (void*)pfnEndRendering);
+  */
   vkGetDeviceQueue(m_device, m_graphqueue_index, 0, &m_graphqueue);
   vkGetDeviceQueue(m_device, m_presentqueue_index, 0, &m_presentqueue);
 
@@ -312,7 +347,9 @@ void Renderer::FrameStart()
       command_buffer,
       m_swapchain_images[m_current_image],
       VK_IMAGE_LAYOUT_UNDEFINED,
-      VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+      VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+
+  /*  NOT DYNAMIC
 
   // CLEAR
   VkClearColorValue clear_color{};
@@ -333,16 +370,61 @@ void Renderer::FrameStart()
   vkCmdClearColorImage(
       command_buffer,
       m_swapchain_images[m_current_image],
-      VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+      VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
       &clear_color,
       1,
       &range);
+
+  */
+
+  VkRenderingAttachmentInfo color_attachment{};
+  color_attachment.sType =
+      VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+
+  color_attachment.imageView =
+      m_swapchain_imageviews[m_current_image];
+
+  color_attachment.imageLayout =
+      VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+  color_attachment.loadOp =
+      VK_ATTACHMENT_LOAD_OP_CLEAR;
+
+  color_attachment.storeOp =
+      VK_ATTACHMENT_STORE_OP_STORE;
+
+  VkClearValue clear_value{};
+  clear_value.color.float32[0] = 0.02f;
+  clear_value.color.float32[1] = 0.04f;
+  clear_value.color.float32[2] = 0.04f;
+  clear_value.color.float32[3] = 1.0f;
+
+  color_attachment.clearValue = clear_value;
+
+  VkRenderingInfo rendering{};
+  rendering.sType =
+      VK_STRUCTURE_TYPE_RENDERING_INFO;
+
+  rendering.renderArea.offset = {0, 0};
+  rendering.renderArea.extent = m_swapchain_extent;
+
+  rendering.layerCount = 1;
+
+  rendering.colorAttachmentCount = 1;
+  rendering.pColorAttachments = &color_attachment;
+
+  vkCmdBeginRendering(
+      m_cmdbuffers[m_current_image],
+      &rendering);
+
+  vkCmdEndRendering(
+      m_cmdbuffers[m_current_image]);
 
   // TRANSFER → PRESENT
   TransitionImage(
       command_buffer,
       m_swapchain_images[m_current_image],
-      VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+      VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
       VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 }
 
@@ -409,6 +491,32 @@ void Renderer::TransitionImage(
     dst_stage =
         VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
   }
+  else if (
+      old_layout == VK_IMAGE_LAYOUT_UNDEFINED &&
+      new_layout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+  {
+
+    barrier.srcAccessMask = 0;
+    barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    src_stage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+    dst_stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+  }
+  else if (
+      old_layout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL &&
+      new_layout == VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
+  {
+    barrier.srcAccessMask =
+        VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+    barrier.dstAccessMask = 0;
+
+    src_stage =
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+
+    dst_stage =
+        VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+  }
+
   else
   {
     LOG_FATAL("Unsupported image layout transition");
@@ -442,7 +550,7 @@ void Renderer::FrameEnd()
   submit.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
   VkSemaphore render_finished =
-    m_render_finished[m_current_image];
+      m_render_finished[m_current_image];
 
   submit.waitSemaphoreCount = 1;
   submit.pWaitSemaphores = &m_image_available;
