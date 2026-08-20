@@ -1,6 +1,7 @@
 #include <vulkan/vulkan.h>
 #include "platform/window.hpp"
 #include <vector>
+#include <vulkan/vulkan_core.h>
 
 namespace VK
 {
@@ -31,7 +32,7 @@ namespace VK
 
       void TransitionImage(VkCommandBuffer cmdbuffer, VkImage image, VkImageLayout oldlayout, VkImageLayout newlayout);
 
-
+      VkShaderModule CreateShaderModule(const std::vector<uint8_t>& source);
       // IMMEDIATE -> MAILBOX -> FIFO
       VkPresentModeKHR DeterminePresentMode(const std::vector<VkPresentModeKHR>& available, PresentMode preferred);
 
@@ -65,6 +66,9 @@ namespace VK
       std::vector<VkSemaphore> m_render_finished{};
       VkFence m_in_flight = VK_NULL_HANDLE;
 
+      // Currently bound shaders, make a shader wrapper to be handled by an asset manager?
+      VkShaderModule m_shader_vertex = VK_NULL_HANDLE;
+      VkShaderModule m_shader_fragment = VK_NULL_HANDLE;
   };
 };
 
