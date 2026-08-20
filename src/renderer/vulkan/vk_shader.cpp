@@ -67,3 +67,10 @@ Shader::Shader(VkDevice vkdevice, std::string& vertsrc, std::string& fragsrc) : 
   m_vertmodule = CreateShaderFromSource(vkdevice, vertsrc);
   m_fragmodule = CreateShaderFromSource(vkdevice, fragsrc);
 }
+
+
+Shader::~Shader()
+{
+  vkDestroyShaderModule(m_device, m_fragmodule, nullptr);
+  vkDestroyShaderModule(m_device, m_vertmodule, nullptr);
+}
