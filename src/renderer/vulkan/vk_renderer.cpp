@@ -171,11 +171,11 @@ bool Renderer::Init(Plat::Window &window)
     return false;
   }
 
-  std::string vertsrc = "verts";
-  std::string fragsrc = "frags";
+  std::string vertsrc = "resource/shaders/triangle.vert.spv";
+  std::string fragsrc = "resource/shaders/triangle.frag.spv";
   m_shader = std::make_unique<Shader>(m_device, vertsrc, fragsrc);
 
-  m_pipelines[0] = std::make_unique<Pipeline>(m_device, *m_shader, m_swapchain_format);
+  m_pipelines.push_back(std::make_unique<Pipeline>(m_device, *m_shader, m_swapchain_format));
   return true;
 }
 

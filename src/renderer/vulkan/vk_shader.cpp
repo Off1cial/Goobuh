@@ -2,15 +2,15 @@
 #include <vulkan/vulkan_core.h>
 #include "renderer/vulkan/vk_renderer.hpp"
 #include "core/logsys.hpp"
-
-
+#include <filesystem>
 
 
 using namespace VK;
 
 std::vector<char> PullShaderSource(const std::string& filename)
 {
-  std::fstream file(filename, std::ios::ate | std::ios::binary);
+  LOG_DEFAULT("Working dir: %s", std::filesystem::current_path().c_str());
+  std::ifstream file(filename, std::ios::ate | std::ios::binary);
   if (!file.is_open()){
     LOG_ERROR("Failed to open shader source: %s", filename.data());
     return {};
@@ -31,7 +31,7 @@ VkShaderModule CreateShaderModule(VkDevice device, const std::vector<char>& cont
     LOG_ERROR("Unable to create shader (null device)");
   }
   VkShaderModuleCreateInfo create_info{};
-  create_info.sType    = VK_STRUCTURE_TYPE_SHADER_CREATE_INFO_EXT;
+  create_info.sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
   create_info.codeSize = contents.size();
   create_info.pCode    = reinterpret_cast<const uint32_t*>(contents.data());
 
