@@ -32,7 +32,9 @@ namespace VK
 
       void TransitionImage(VkCommandBuffer cmdbuffer, VkImage image, VkImageLayout oldlayout, VkImageLayout newlayout);
 
-      VkShaderModule CreateShaderModule(const std::vector<uint8_t>& source);
+      std::vector<char> PullShaderSource(const std::string& filename);
+      VkShaderModule CreateShaderModule(const std::vector<uint8_t>& spv);
+      VkShaderModule CreateShaderFromSource(const std::string& sourcefile);
       // IMMEDIATE -> MAILBOX -> FIFO
       VkPresentModeKHR DeterminePresentMode(const std::vector<VkPresentModeKHR>& available, PresentMode preferred);
 
@@ -69,6 +71,25 @@ namespace VK
       // Currently bound shaders, make a shader wrapper to be handled by an asset manager?
       VkShaderModule m_shader_vertex = VK_NULL_HANDLE;
       VkShaderModule m_shader_fragment = VK_NULL_HANDLE;
+      // HELLO RENDERER BRANCH
+  };
+
+  enum class ShaderType
+  {
+    Vertex, Fragment, Geometry
+  };
+
+  class Shader
+  {
+    public:
+      Shader(std::string& vertsrc, std::string& fragsrc);
+      ~Shader();
+
+      VkShaderModule GetModule(const ShaderType type);
+
+    private:
+      VkShaderModule m_vertmodule;
+      VkShaderModule m_fragmodule;
   };
 };
 
