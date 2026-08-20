@@ -69,6 +69,7 @@ namespace VK
       // Currently bound shaders, make a shader wrapper to be handled by an asset manager?
       VkShaderModule m_shader_vertex = VK_NULL_HANDLE;
       VkShaderModule m_shader_fragment = VK_NULL_HANDLE;
+      // HELLO RENDERER BRANCH
   };
 };
 
