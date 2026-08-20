@@ -57,13 +57,14 @@ VkShaderModule CreateShaderFromSource(VkDevice device, const std::string& source
 
 
 
-Shader::Shader(VkDevice vkdevice, std::string& vertsrc, std::string& fragsrc) : m_device(vkdevice)
+Shader::Shader(const VkDevice vkdevice, const std::string& vertsrc, const std::string& fragsrc) : m_device(vkdevice)
 {
   if (vkdevice == VK_NULL_HANDLE){
     LOG_ERROR("Failed to create shader, (null device)");
     return;
   }
-  //m_device = vkdevice;
+  //m_device = vkdevice;  class Pipeline;
+  class Shader;
   m_vertmodule = CreateShaderFromSource(vkdevice, vertsrc);
   m_fragmodule = CreateShaderFromSource(vkdevice, fragsrc);
 }

@@ -171,6 +171,11 @@ bool Renderer::Init(Plat::Window &window)
     return false;
   }
 
+  std::string vertsrc = "verts";
+  std::string fragsrc = "frags";
+  m_shader = std::make_unique<Shader>(m_device, vertsrc, fragsrc);
+
+  m_pipelines[0] = std::make_unique<Pipeline>(m_device, *m_shader, m_swapchain_format);
   return true;
 }
 
@@ -182,8 +187,8 @@ void Renderer::Shutdown()
     vkDeviceWaitIdle(m_device);
 
     // Destroy pipeline
-    vkDestroyShaderModule(m_device, m_shader_vertex, nullptr);
-    vkDestroyShaderModule(m_device, m_shader_fragment, nullptr);
+    vkDestroyShaderModule(m_device, m_shader->GetModule_Fragment(), nullptr);
+    vkDestroyShaderModule(m_device, m_shader->GetModule_Vertex(), nullptr);
 
     // Destroy swapchain image views.
     for (VkImageView image_view : m_swapchain_imageviews)
@@ -421,6 +426,29 @@ void Renderer::FrameStart()
   vkCmdBeginRendering(
       m_cmdbuffers[m_current_image],
       &rendering);
+
+  vkCmdBindPipeline(
+      m_cmdbuffers[m_current_image],
+      VK_PIPELINE_BIND_POINT_GRAPHICS,
+      m_pipelines[0]->GetPipeline());
+
+  VkViewport viewport{};
+  viewport.x = viewport.y = 0.0f;
+  viewport.width = (float)m_swapchain_extent.width;
+  viewport.height = (float)m_swapchain_extent.height;
+  viewport.minDepth = 0.0f;
+  viewport.maxDepth = 1.0f;
+  vkCmdSetViewport(m_cmdbuffers[m_current_image], 0, 1, &viewport);
+
+  VkRect2D scissor{};
+  scissor.offset = {0, 0};
+  scissor.extent = m_swapchain_extent;
+
+  vkCmdSetScissor(m_cmdbuffers[m_current_image], 0, 1, &scissor);
+
+  vkCmdDraw(m_cmdbuffers[m_current_image], 3, 1, 0, 0);
+
+
 
   vkCmdEndRendering(
       m_cmdbuffers[m_current_image]);
