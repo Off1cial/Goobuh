@@ -7,6 +7,24 @@
 
 namespace VK
 {
+
+  struct Vertex
+  {
+    float pos[3];
+    float normal[3];
+    float col[4];
+  };
+
+  struct Mesh
+  {
+    // Where we start in the global vertex buffer
+    VkDeviceSize vertex_offset;
+    VkDeviceSize index_offset;
+    // How we go in the buffer
+    uint32_t vertex_count;
+    uint32_t index_count;
+  };
+
   enum class ShaderType
   {
     Vertex,
@@ -69,10 +87,13 @@ namespace VK
     bool CreateCommandPool();
     bool CreateCommandBuffers();
     bool CreateSyncObjects();
+    bool CreateVertexBuffer();
 
     // Create shaders -> create pipeline
 
     void TransitionImage(VkCommandBuffer cmdbuffer, VkImage image, VkImageLayout oldlayout, VkImageLayout newlayout);
+
+    uint32_t FindMemoryType(uint32_t type_filter, VkMemoryPropertyFlags properties);
 
     /*
     std::vector<char> PullShaderSource(const std::string& filename);
@@ -105,6 +126,10 @@ namespace VK
 
     VkCommandPool m_cmdpool = VK_NULL_HANDLE;
     std::vector<VkCommandBuffer> m_cmdbuffers{};
+
+    VkBuffer m_vertexbuffer = VK_NULL_HANDLE;
+    VkDeviceMemory m_vertexmemory = VK_NULL_HANDLE;
+    VkDeviceSize m_vertexbuffer_size = 1024 * 1024; // 1 MiB
 
     uint32_t m_current_image = 0;
     VkSemaphore m_image_available = VK_NULL_HANDLE;

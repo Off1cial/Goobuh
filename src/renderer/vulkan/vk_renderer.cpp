@@ -3,6 +3,7 @@
 #include "vk_renderer.hpp"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_vulkan.h>
+#include <ranges>
 #include <vector>
 #include <vulkan/vulkan_core.h>
 
@@ -168,6 +169,11 @@ bool Renderer::Init(Plat::Window &window)
   if (!CreateSyncObjects())
   {
     LOG_FATAL("Failed to create vulkan sync objects");
+    return false;
+  }
+  if (!CreateVertexBuffer())
+  {
+    LOG_FATAL("Failed to create vertex buffer");
     return false;
   }
 
@@ -638,4 +644,67 @@ void Renderer::FrameEnd()
   {
     LOG_FATAL("Failed to present swapchain image");
   }
+}
+
+
+uint32_t Renderer::FindMemoryType(
+    uint32_t type_filter,
+    VkMemoryPropertyFlags properties)
+{
+  VkPhysicalDeviceMemoryProperties memory_properties{};
+
+  vkGetPhysicalDeviceMemoryProperties(m_physdevice,
+        &memory_properties);
+
+  for (uint32_t i = 0; i < memory_properties.memoryTypeCount; ++i)
+  {
+    if ((type_filter & (1 << i)) &&
+            (memory_properties.memoryTypes[i].propertyFlags & properties) == properties)
+      {
+        return i;
+      }
+    }
+
+    LOG_FATAL("Failed to find suitable Vulkan memory type");
+    return UINT32_MAX;
+}
+
+bool Renderer::CreateVertexBuffer()
+{
+  VkBufferCreateInfo buffer_info{};
+  buffer_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+  buffer_info.size = m_vertexbuffer_size;
+  buffer_info.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+  buffer_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+  VkResult result = vkCreateBuffer(m_device, &buffer_info, nullptr, &m_vertexbuffer);
+
+  if (result != VK_SUCCESS){
+    LOG_ERROR("Failed to create vertex buffer");
+    return false;
+  }
+
+  VkMemoryRequirements mem_requirements{};
+  vkGetBufferMemoryRequirements(m_device, m_vertexbuffer, &mem_requirements);
+
+  uint32_t memory_type = FindMemoryType(mem_requirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+  VkMemoryAllocateInfo allocate_info{};
+  allocate_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+  allocate_info.allocationSize = mem_requirements.size;
+  allocate_info.memoryTypeIndex = memory_type;
+
+  result =  vkAllocateMemory(m_device, &allocate_info, nullptr, &m_vertexmemory);
+  if (result != VK_SUCCESS){
+    LOG_ERROR("Failed to allocate memory to the vertex buffer");
+    return false;
+  }
+
+  vkBindBufferMemory(
+    m_device,
+    m_vertexbuffer,
+    m_vertexmemory,
+    0);
+
+  return true;
 }
