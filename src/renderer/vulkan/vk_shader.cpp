@@ -8,7 +8,7 @@
 
 using namespace VK;
 
-std::vector<char> Renderer::PullShaderSource(const std::string& filename)
+std::vector<char> PullShaderSource(const std::string& filename)
 {
   std::fstream file(filename, std::ios::ate | std::ios::binary);
   if (!file.is_open()){
@@ -25,15 +25,18 @@ std::vector<char> Renderer::PullShaderSource(const std::string& filename)
   return buff;
 }
 
-VkShaderModule Renderer::CreateShaderModule(const std::vector<char>& spv)
+VkShaderModule CreateShaderModule(VkDevice device, const std::vector<char>& contents)
 {
+  if (device == VK_NULL_HANDLE){
+    LOG_ERROR("Unable to create shader (null device)");
+  }
   VkShaderModuleCreateInfo create_info{};
   create_info.sType    = VK_STRUCTURE_TYPE_SHADER_CREATE_INFO_EXT;
-  create_info.codeSize = spv.size();
-  create_info.pCode    = reinterpret_cast<const uint32_t*>(spv.data());
+  create_info.codeSize = contents.size();
+  create_info.pCode    = reinterpret_cast<const uint32_t*>(contents.data());
 
   VkShaderModule shadermodule{};
-  VkResult res = vkCreateShaderModule(m_device, &create_info, nullptr, &shadermodule);
+  VkResult res = vkCreateShaderModule(device, &create_info, nullptr, &shadermodule);
   if (res != VK_SUCCESS){
     LOG_FATAL("Failed to create vulkan shader");
     return {};
@@ -41,12 +44,26 @@ VkShaderModule Renderer::CreateShaderModule(const std::vector<char>& spv)
   return shadermodule;
 }
 
-VkShaderModule Renderer::CreateShaderFromSource(const std::string& sourcefile)
+VkShaderModule CreateShaderFromSource(VkDevice device, const std::string& sourcefile)
 {
   std::vector<char> fcontents = PullShaderSource(sourcefile);
   if (fcontents.size() <= 0){
     LOG_ERROR("Failed to read shader source: %s", sourcefile.data());
     return {};
   }
-  return CreateShaderModule(fcontents);
+  return CreateShaderModule(device, fcontents);
+}
+
+
+
+
+Shader::Shader(VkDevice vkdevice, std::string& vertsrc, std::string& fragsrc) : m_device(vkdevice)
+{
+  if (vkdevice == VK_NULL_HANDLE){
+    LOG_ERROR("Failed to create shader, (null device)");
+    return;
+  }
+  //m_device = vkdevice;
+  m_vertmodule = CreateShaderFromSource(vkdevice, vertsrc);
+  m_fragmodule = CreateShaderFromSource(vkdevice, fragsrc);
 }
