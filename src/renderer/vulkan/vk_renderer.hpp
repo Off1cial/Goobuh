@@ -1,10 +1,17 @@
 #include <vulkan/vulkan.h>
 #include "platform/window.hpp"
 #include <vector>
+#include <memory>
 #include <vulkan/vulkan_core.h>
+#include "core/common.h"
+
 
 namespace VK
 {
+  class Pipeline;
+  class Shader;
+
+
   enum class PresentMode
   {
     Immediate,
@@ -28,17 +35,20 @@ namespace VK
       bool CreateCommandPool();
       bool CreateCommandBuffers();
       bool CreateSyncObjects();
-
+      
+      // Create shaders -> create pipeline
 
       void TransitionImage(VkCommandBuffer cmdbuffer, VkImage image, VkImageLayout oldlayout, VkImageLayout newlayout);
 
+      /*
       std::vector<char> PullShaderSource(const std::string& filename);
-      VkShaderModule CreateShaderModule(const std::vector<uint8_t>& spv);
+      VkShaderModule CreateShaderModule(const std::vector<char>& spv);
       VkShaderModule CreateShaderFromSource(const std::string& sourcefile);
+      */
       // IMMEDIATE -> MAILBOX -> FIFO
       VkPresentModeKHR DeterminePresentMode(const std::vector<VkPresentModeKHR>& available, PresentMode preferred);
 
-      VkPresentModeKHR GetVkPresentMode(PresentMode mode);
+      VkPresentModeKHR GetVkPresentMode(PresentMode mode) const;
 
       VkInstance m_instance = VK_NULL_HANDLE;
       VkSurfaceKHR m_surface =  VK_NULL_HANDLE;
@@ -72,6 +82,8 @@ namespace VK
       VkShaderModule m_shader_vertex = VK_NULL_HANDLE;
       VkShaderModule m_shader_fragment = VK_NULL_HANDLE;
       // HELLO RENDERER BRANCH
+      
+      std::vector<std::unique_ptr<Pipeline>> m_pipelines;
   };
 
   enum class ShaderType
@@ -82,14 +94,37 @@ namespace VK
   class Shader
   {
     public:
-      Shader(std::string& vertsrc, std::string& fragsrc);
+      Shader(VkDevice vkdevice, std::string& vertsrc, std::string& fragsrc);
       ~Shader();
 
-      VkShaderModule GetModule(const ShaderType type);
+      FORCEINLINE VkShaderModule GetModule(const ShaderType type) const;
+      FORCEINLINE VkShaderModule GetModule_Vertex() const {return m_vertmodule;}
+      FORCEINLINE VkShaderModule GetModule_Fragment() const {return m_fragmodule;}
 
     private:
-      VkShaderModule m_vertmodule;
-      VkShaderModule m_fragmodule;
+      VkDevice m_device = VK_NULL_HANDLE;
+      VkShaderModule m_vertmodule = VK_NULL_HANDLE;
+      VkShaderModule m_fragmodule = VK_NULL_HANDLE;
+  };
+
+
+  class Pipeline
+  {
+    public:
+      Pipeline(VkDevice device, const Shader& shader, VkFormat format);
+      ~Pipeline();
+  
+
+      VkPipeline GetPipeline() const { return m_pipeline; }
+      VkPipelineLayout GetPipelineLayout() const { return m_layout; }
+
+    private:
+      VkDevice m_device;
+
+      VkPipeline m_pipeline = VK_NULL_HANDLE;
+      VkPipelineLayout m_layout = VK_NULL_HANDLE;
+
+
   };
 };
 

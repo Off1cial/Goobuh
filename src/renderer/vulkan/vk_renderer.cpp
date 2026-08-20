@@ -181,6 +181,10 @@ void Renderer::Shutdown()
     // Make sure the GPU is finished before destroying resources.
     vkDeviceWaitIdle(m_device);
 
+    // Destroy pipeline
+    vkDestroyShaderModule(m_device, m_shader_vertex, nullptr);
+    vkDestroyShaderModule(m_device, m_shader_fragment, nullptr);
+
     // Destroy swapchain image views.
     for (VkImageView image_view : m_swapchain_imageviews)
     {
@@ -192,6 +196,7 @@ void Renderer::Shutdown()
             nullptr);
       }
     }
+
 
     m_swapchain_imageviews.clear();
 
@@ -272,7 +277,7 @@ VkPresentModeKHR Renderer::DeterminePresentMode(
 }
 
 VkPresentModeKHR Renderer::GetVkPresentMode(
-    PresentMode mode)
+    PresentMode mode) const
 {
   switch (mode)
   {
