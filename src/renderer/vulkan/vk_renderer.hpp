@@ -2,6 +2,8 @@
 #include "platform/window.hpp"
 #include <vector>
 #include <vulkan/vulkan_core.h>
+#include "core/common.h"
+
 
 namespace VK
 {
@@ -33,12 +35,12 @@ namespace VK
       void TransitionImage(VkCommandBuffer cmdbuffer, VkImage image, VkImageLayout oldlayout, VkImageLayout newlayout);
 
       std::vector<char> PullShaderSource(const std::string& filename);
-      VkShaderModule CreateShaderModule(const std::vector<uint8_t>& spv);
+      VkShaderModule CreateShaderModule(const std::vector<char>& spv);
       VkShaderModule CreateShaderFromSource(const std::string& sourcefile);
       // IMMEDIATE -> MAILBOX -> FIFO
       VkPresentModeKHR DeterminePresentMode(const std::vector<VkPresentModeKHR>& available, PresentMode preferred);
 
-      VkPresentModeKHR GetVkPresentMode(PresentMode mode);
+      VkPresentModeKHR GetVkPresentMode(PresentMode mode) const;
 
       VkInstance m_instance = VK_NULL_HANDLE;
       VkSurfaceKHR m_surface =  VK_NULL_HANDLE;
@@ -85,11 +87,18 @@ namespace VK
       Shader(std::string& vertsrc, std::string& fragsrc);
       ~Shader();
 
-      VkShaderModule GetModule(const ShaderType type);
+      FORCEINLINE VkShaderModule GetModule(const ShaderType type) const;
+      FORCEINLINE VkShaderModule GetModule_Vertex() const {return m_vertmodule;}
+      FORCEINLINE VkShaderModule GetModule_Fragment() const {return m_fragmodule;}
 
     private:
       VkShaderModule m_vertmodule;
       VkShaderModule m_fragmodule;
+
+
+      VkShaderModule CreateShaderModule(const std::vector<char>& spv);
+      VkShaderModule CreateShaderFromSource(const std::string& sourcefile);
+
   };
 };
 

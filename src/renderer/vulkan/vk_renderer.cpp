@@ -272,7 +272,7 @@ VkPresentModeKHR Renderer::DeterminePresentMode(
 }
 
 VkPresentModeKHR Renderer::GetVkPresentMode(
-    PresentMode mode)
+    PresentMode mode) const
 {
   switch (mode)
   {
