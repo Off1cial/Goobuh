@@ -44,6 +44,8 @@ file(GLOB_RECURSE SOURCE_PLATFORM
 file(GLOB_RECURSE SOURCE_RENDERER
   src/renderer/*.c
   src/renderer/*.cpp
+  src/renderer/vulkan/*.cpp
+  src/renderer/vulkan/*.c
 )
 
 file(GLOB_RECURSE SOURCE_ENGINE

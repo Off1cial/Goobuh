@@ -1,7 +1,4 @@
 #include <algorithm>
-#define VMA_IMPLEMENTATION
-#include "vulkan/vk_mem_alloc.h"
-
 #include "core/common.h"
 #include "core/logsys.hpp"
 #include "vk_renderer.hpp"
@@ -11,6 +8,8 @@
 #include <vector>
 #include <vulkan/vulkan_core.h>
 #include <iostream>
+#include "renderer/vulkan/vk_vma.h"
+
 
 VkResult RESULT;
 
@@ -22,12 +21,7 @@ static inline void RESULTCHECK(const char *failmsg)
   }
 }
 
-static inline void VK_CHECK(VkResult result){
-  if (result != VK_SUCCESS){
-    std::cout << "Vulkan error: " << result << std::endl;
-    exit(1);
-  }
-}
+
 
 using namespace VK;
 
@@ -183,6 +177,7 @@ bool Renderer::Init(Plat::Window &window)
     LOG_FATAL("Failed to create vulkan sync objects");
     return false;
   }
+  CreateVmaAllocator();  // Add error checking
   if (!CreateVertexBuffer())
   {
     LOG_FATAL("Failed to create vertex buffer");
@@ -193,7 +188,19 @@ bool Renderer::Init(Plat::Window &window)
   std::string fragsrc = "resource/shaders/triangle.frag.spv";
   m_shader = std::make_unique<Shader>(m_device, vertsrc, fragsrc);
 
-  m_pipelines.push_back(std::make_unique<Pipeline>(m_device, *m_shader, m_swapchain_format));
+  m_pipelinebuilder = std::make_unique<PipelineBuilder>(m_device);
+  m_pipelines.push_back(
+      std::make_unique<Pipeline>(CreatePipeline(
+          *m_shader,
+          VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
+          VK_POLYGON_MODE_FILL,
+          VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE,
+          MSAASampleCount::MSAA1,
+          m_swapchain_format,
+          VK_FORMAT_UNDEFINED
+          )
+  ));
+  //m_pipelines.push_back(std::make_unique<Pipeline>(m_device, *m_shader, m_swapchain_format));
   return true;
 }
 
@@ -452,7 +459,7 @@ void Renderer::FrameStart()
   vkCmdBindPipeline(
       m_cmdbuffers[m_current_image],
       VK_PIPELINE_BIND_POINT_GRAPHICS,
-      m_pipelines[0]->GetPipeline());
+      m_pipelines[0]->pipeline);
 
   VkViewport viewport{};
   viewport.x = viewport.y = 0.0f;
@@ -725,7 +732,7 @@ bool Renderer::CreateVertexBuffer()
   return true;
 }
 
-AllocatedBuffer Renderer::AllocateBuffer(const VmaMemoryUsage mem_usage, const VkBufferUsageFlags buff_usage, const size_t size)
+AllocatedBuffer Renderer::CreateBuffer(const VmaMemoryUsage mem_usage, const VkBufferUsageFlags buff_usage, const size_t size)
 {
   VkBufferCreateInfo buff_info{};
   VmaAllocationCreateInfo alloc_info{};
@@ -747,4 +754,82 @@ AllocatedBuffer Renderer::AllocateBuffer(const VmaMemoryUsage mem_usage, const V
 void Renderer::DestroyBuffer(const AllocatedBuffer& buff)
 {
   vmaDestroyBuffer(m_allocator, buff.buffer, buff.allocation);
+}
+
+
+/*
+MeshBuffers Renderer::MeshUpload(std::span<uint32_t> indices, std::span<Vertex> vertices)
+{
+  const size_t vertbuff_size = vertices.size() * sizeof(Vertex);
+  const size_t indbuff_size = indices.size() * sizeof(uint32_t);
+
+  MeshBuffers meshbuffs{};
+  VkBufferUsageFlags vertusage = 
+    VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | 
+    VK_BUFFER_USAGE_TRANSFER_DST_BIT | 
+    VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
+  VkBufferUsageFlags indusage = 
+    VK_BUFFER_USAGE_INDEX_BUFFER_BIT | 
+    VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+
+  meshbuffs.vertex_buffer = CreateBuffer(VMA_MEMORY_USAGE_GPU_ONLY, vertusage, vertbuff_size);
+  meshbuffs.index_buffer = CreateBuffer(VMA_MEMORY_USAGE_GPU_ONLY, indusage, indbuff_size); 
+
+  // Locate vertex buffer
+  VkBufferDeviceAddressInfo deviceAdressInfo
+  {
+    .sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO,
+    .pNext = nullptr,
+    .buffer = meshbuffs.vertex_buffer.buffer,
+  };
+	meshbuffs.vertex_address = vkGetBufferDeviceAddress(m_device, &deviceAdressInfo);
+
+
+
+  AllocatedBuffer staging = CreateBuffer(
+      VMA_MEMORY_USAGE_CPU_ONLY, 
+      VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 
+      vertbuff_size + indbuff_size);
+  
+  void* data = staging.allocation->GetMappedData();
+  
+  memcpy(data, vertices.data(), vertbuff_size);
+  memcpy((char*)data + vertbuff_size, indices.data(), indbuff_size);
+
+
+
+
+// UNFINISHED
+
+
+
+
+
+  return meshbuffs;
+}
+*/
+
+
+
+Pipeline Renderer::CreatePipeline(
+    const Shader& shader,
+    const VkPrimitiveTopology topology,
+    const VkPolygonMode polygonmode,
+    const VkCullModeFlags flags, 
+    const VkFrontFace front,
+    const MSAASampleCount msaa_samples,
+    const VkFormat color_attachment_format,
+    const VkFormat depth_format
+    )
+{
+  m_pipelinebuilder->Clear();
+  m_pipelinebuilder->SetShaderModules(shader.GetModule_Vertex(), shader.GetModule_Fragment());
+  m_pipelinebuilder->SetInputTopology(topology);
+  m_pipelinebuilder->SetPolygonMode(polygonmode);
+  m_pipelinebuilder->SetCullMode(flags, front);
+  m_pipelinebuilder->SetMSAA(m_physdevice, (VkSampleCountFlagBits)msaa_samples);
+  m_pipelinebuilder->SetColorAttachmentFormat(color_attachment_format);
+  m_pipelinebuilder->SetDepthFormat(depth_format);
+  m_pipelinebuilder->DisableBlending();
+  return m_pipelinebuilder->BuildPipeline(m_device);
 }

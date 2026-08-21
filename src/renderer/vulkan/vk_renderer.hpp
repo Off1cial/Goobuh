@@ -1,16 +1,24 @@
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_core.h>
 #include "renderer/vulkan/vk_vma.h"
-#include <vector>
-#include <memory>
 #include "platform/window.hpp"
 #include "core/common.h"
-
+#include <vector>
+#include <memory>
+#include <span>
+#include <iostream>
 
 
 
 namespace VK
 {
+  static inline void VK_CHECK(VkResult result){
+    if (result != VK_SUCCESS){
+      std::cout << "Vulkan error: " << result << std::endl;
+      exit(1);
+    }
+  }
+
 
   struct AllocatedBuffer
   {
@@ -18,6 +26,20 @@ namespace VK
     VmaAllocation allocation;
     VmaAllocationInfo info;
   };
+
+  struct MeshBuffers
+  {
+    AllocatedBuffer vertex_buffer;
+    AllocatedBuffer index_buffer;
+    VkDeviceAddress vertex_address;
+  };
+
+  struct MeshPushConstants
+  {
+    float model[16];
+    VkDeviceAddress vertex_address;
+  };
+
   struct Vertex
   {
     float pos[3];
@@ -25,21 +47,22 @@ namespace VK
     float col[4];
   };
 
-  struct Mesh
-  {
-    // Where we start in the global vertex buffer
-    VkDeviceSize vertex_offset;
-    VkDeviceSize index_offset;
-    // How we go in the buffer
-    uint32_t vertex_count;
-    uint32_t index_count;
-  };
-
   enum class ShaderType
   {
     Vertex,
     Fragment,
     Geometry
+  };
+
+  enum class MSAASampleCount
+  {
+    MSAA1  = 0x01,
+    MSAA2  = 0x02,
+    MSAA4  = 0x04,
+    MSAA8  = 0x08,
+    MSAA16 = 0x10,
+    MSAA32 = 0x20,
+    MSAA64 = 0x40
   };
 
   class Shader
@@ -58,6 +81,48 @@ namespace VK
     VkShaderModule m_fragmodule = VK_NULL_HANDLE;
   };
 
+
+  struct Pipeline
+  {
+    VkDevice vk_device;
+    VkPipeline pipeline = VK_NULL_HANDLE;
+    VkPipelineLayout layout = VK_NULL_HANDLE;
+  };
+
+  class PipelineBuilder
+  {
+    public:
+      std::vector<VkPipelineShaderStageCreateInfo> m_shaderstages;
+
+      VkPipelineInputAssemblyStateCreateInfo m_inputAssembly;
+      VkPipelineRasterizationStateCreateInfo m_rasterizer;
+      VkPipelineColorBlendAttachmentState m_colorBlendAttachment;
+      VkPipelineMultisampleStateCreateInfo m_multisampling;
+      VkPipelineLayout m_pipelineLayout;
+      VkPipelineDepthStencilStateCreateInfo m_depthStencil;
+      VkPipelineRenderingCreateInfo m_renderInfo;
+      VkFormat m_colorAttachmentformat;
+
+      void Clear();
+      PipelineBuilder(VkDevice device) : m_device(device) {Clear();}
+      Pipeline BuildPipeline(VkDevice device);
+
+      void SetShaderModules(const VkShaderModule vertex, const VkShaderModule fragment);
+      void SetInputTopology(const VkPrimitiveTopology topology);
+      void SetPolygonMode(const VkPolygonMode mode);
+      void SetCullMode(const VkCullModeFlags flags, const VkFrontFace front);
+      void SetMSAA(const VkPhysicalDevice physdevice, const VkSampleCountFlagBits samplecount); // Cap to hardware maximum
+      void SetColorAttachmentFormat(const VkFormat format);
+      void SetDepthFormat(const VkFormat format);
+      void DisableBlending();
+      void DisableDepthTest();
+    
+    private:
+      VkPipelineShaderStageCreateInfo ShaderStageCreateInfo(const VkShaderStageFlagBits stage, const VkShaderModule module);
+      VkDevice m_device;
+  };
+
+  /*
   class Pipeline
   {
   public:
@@ -73,6 +138,7 @@ namespace VK
     VkPipeline m_pipeline = VK_NULL_HANDLE;
     VkPipelineLayout m_layout = VK_NULL_HANDLE;
   };
+*/
 
   enum class PresentMode
   {
@@ -91,6 +157,8 @@ namespace VK
     void FrameStart();
     void FrameEnd();
 
+    
+
   private:
     bool Init(Plat::Window &window);
     bool CreateSwapChain(Plat::Window &window);
@@ -100,17 +168,25 @@ namespace VK
     void CreateVmaAllocator();
     bool CreateVertexBuffer();
 
+    MeshBuffers MeshUpload(std::span<uint32_t> indices, std::span<Vertex> verticess);
+    Pipeline CreatePipeline(
+      const Shader& shader,
+      const VkPrimitiveTopology topology,
+      const VkPolygonMode polygonmode,
+      const VkCullModeFlags flags, 
+      const VkFrontFace front,
+      const MSAASampleCount msaa_samples,
+      const VkFormat color_attachment_format,
+      const VkFormat depth_format
+    );
     // Create shaders -> create pipeline
-
     void TransitionImage(VkCommandBuffer cmdbuffer, VkImage image, VkImageLayout oldlayout, VkImageLayout newlayout);
     uint32_t FindMemoryType(uint32_t type_filter, VkMemoryPropertyFlags properties);
 
-    AllocatedBuffer AllocateBuffer(const VmaMemoryUsage mem_usage, const VkBufferUsageFlags buff_usage, const size_t size);
-
+    AllocatedBuffer CreateBuffer(const VmaMemoryUsage mem_usage, const VkBufferUsageFlags buff_usage, const size_t size);
     void DestroyBuffer(const AllocatedBuffer& buff);
     // IMMEDIATE -> MAILBOX -> FIFO
     VkPresentModeKHR DeterminePresentMode(const std::vector<VkPresentModeKHR> &available, PresentMode preferred);
-
     VkPresentModeKHR GetVkPresentMode(PresentMode mode) const;
 
     VkInstance m_instance = VK_NULL_HANDLE;
@@ -150,6 +226,7 @@ namespace VK
     // Currently bound shaders, make a shader wrapper to be handled by an asset manager?
     std::unique_ptr<Shader> m_shader;
     // HELLO RENDERER BRANCH
+    std::unique_ptr<PipelineBuilder> m_pipelinebuilder;
     std::vector<std::unique_ptr<Pipeline>> m_pipelines;
   };
 
