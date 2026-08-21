@@ -1,3 +1,7 @@
+#include <algorithm>
+#define VMA_IMPLEMENTATION
+#include "vulkan/vk_mem_alloc.h"
+
 #include "core/common.h"
 #include "core/logsys.hpp"
 #include "vk_renderer.hpp"
@@ -6,6 +10,7 @@
 #include <ranges>
 #include <vector>
 #include <vulkan/vulkan_core.h>
+#include <iostream>
 
 VkResult RESULT;
 
@@ -14,6 +19,13 @@ static inline void RESULTCHECK(const char *failmsg)
   if (RESULT != VK_SUCCESS)
   {
     LOG_FATAL(failmsg);
+  }
+}
+
+static inline void VK_CHECK(VkResult result){
+  if (result != VK_SUCCESS){
+    std::cout << "Vulkan error: " << result << std::endl;
+    exit(1);
   }
 }
 
@@ -220,6 +232,10 @@ void Renderer::Shutdown()
           nullptr);
 
       m_swapchain = VK_NULL_HANDLE;
+    }
+
+    if (m_allocator != VK_NULL_HANDLE){
+      vmaDestroyAllocator(m_allocator);
     }
 
     // Now the device has no remaining child objects.
@@ -707,4 +723,28 @@ bool Renderer::CreateVertexBuffer()
     0);
 
   return true;
+}
+
+AllocatedBuffer Renderer::AllocateBuffer(const VmaMemoryUsage mem_usage, const VkBufferUsageFlags buff_usage, const size_t size)
+{
+  VkBufferCreateInfo buff_info{};
+  VmaAllocationCreateInfo alloc_info{};
+  AllocatedBuffer new_buff{};
+
+  // Prepare buffer information
+  buff_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+  buff_info.pNext = nullptr;
+  buff_info.usage = buff_usage;
+  buff_info.size  = size;
+  // Prepare allocation information
+  alloc_info.usage = mem_usage; 
+  alloc_info.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
+
+  VK_CHECK(vmaCreateBuffer(m_allocator, &buff_info, &alloc_info, &new_buff.buffer, &new_buff.allocation, &new_buff.info));
+  return new_buff;
+}
+
+void Renderer::DestroyBuffer(const AllocatedBuffer& buff)
+{
+  vmaDestroyBuffer(m_allocator, buff.buffer, buff.allocation);
 }

@@ -73,7 +73,7 @@ Pipeline::Pipeline(VkDevice device, const Shader& shader, VkFormat format)
       VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
   raster_info.depthClampEnable = VK_FALSE;
   raster_info.rasterizerDiscardEnable = VK_FALSE;
-  raster_info.polygonMode = VK_POLYGON_MODE_FILL;
+  raster_info.polygonMode = VK_POLYGON_MODE_FILL; 
   raster_info.cullMode = VK_CULL_MODE_BACK_BIT;
   raster_info.frontFace = VK_FRONT_FACE_CLOCKWISE;
   raster_info.depthBiasEnable = VK_FALSE;

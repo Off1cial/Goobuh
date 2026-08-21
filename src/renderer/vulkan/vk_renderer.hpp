@@ -1,13 +1,23 @@
 #include <vulkan/vulkan.h>
-#include "platform/window.hpp"
+#include <vulkan/vulkan_core.h>
+#include "renderer/vulkan/vk_vma.h"
 #include <vector>
 #include <memory>
-#include <vulkan/vulkan_core.h>
+#include "platform/window.hpp"
 #include "core/common.h"
+
+
+
 
 namespace VK
 {
 
+  struct AllocatedBuffer
+  {
+    VkBuffer buffer;
+    VmaAllocation allocation;
+    VmaAllocationInfo info;
+  };
   struct Vertex
   {
     float pos[3];
@@ -87,19 +97,17 @@ namespace VK
     bool CreateCommandPool();
     bool CreateCommandBuffers();
     bool CreateSyncObjects();
+    void CreateVmaAllocator();
     bool CreateVertexBuffer();
 
     // Create shaders -> create pipeline
 
     void TransitionImage(VkCommandBuffer cmdbuffer, VkImage image, VkImageLayout oldlayout, VkImageLayout newlayout);
-
     uint32_t FindMemoryType(uint32_t type_filter, VkMemoryPropertyFlags properties);
 
-    /*
-    std::vector<char> PullShaderSource(const std::string& filename);
-    VkShaderModule CreateShaderModule(const std::vector<char>& spv);
-    VkShaderModule CreateShaderFromSource(const std::string& sourcefile);
-    */
+    AllocatedBuffer AllocateBuffer(const VmaMemoryUsage mem_usage, const VkBufferUsageFlags buff_usage, const size_t size);
+
+    void DestroyBuffer(const AllocatedBuffer& buff);
     // IMMEDIATE -> MAILBOX -> FIFO
     VkPresentModeKHR DeterminePresentMode(const std::vector<VkPresentModeKHR> &available, PresentMode preferred);
 
@@ -129,8 +137,11 @@ namespace VK
 
     VkBuffer m_vertexbuffer = VK_NULL_HANDLE;
     VkDeviceMemory m_vertexmemory = VK_NULL_HANDLE;
-    VkDeviceSize m_vertexbuffer_size = 1024 * 1024; // 1 MiB
+    VkDeviceSize m_vertexbuffer_size = 1024 * 1024; // 1 MiB will change this, adding vma allocator
 
+    
+    VmaAllocator m_allocator = VK_NULL_HANDLE;
+      
     uint32_t m_current_image = 0;
     VkSemaphore m_image_available = VK_NULL_HANDLE;
     std::vector<VkSemaphore> m_render_finished{};

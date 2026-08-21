@@ -72,6 +72,10 @@ target_compile_definitions(engine PRIVATE
 # Include paths
 # -------------------------
 
+target_include_directories(engine SYSTEM PRIVATE
+    ${CMAKE_SOURCE_DIR}/include/vulkan
+)
+
 target_include_directories(engine PRIVATE
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/src
@@ -79,6 +83,10 @@ target_include_directories(engine PRIVATE
     ${SDL3IMAGE_INCLUDE_DIRS}
     ${SDL3TTF_INCLUDE_DIRS}
     ${Vulkan_INCLUDE_DIRS}
+)
+
+target_include_directories(engine SYSTEM PRIVATE
+    ${CMAKE_SOURCE_DIR}/include/vulkan
 )
 
 # -------------------------
