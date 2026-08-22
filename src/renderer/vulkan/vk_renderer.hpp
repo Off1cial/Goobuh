@@ -1,6 +1,7 @@
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_core.h>
 #include "renderer/vulkan/vk_vma.h"
+#include "renderer/vulkan/vk_types.hpp"
 #include "platform/window.hpp"
 #include "core/common.h"
 #include <vector>
@@ -8,62 +9,16 @@
 #include <span>
 #include <iostream>
 
-
-
 namespace VK
 {
-  static inline void VK_CHECK(VkResult result){
-    if (result != VK_SUCCESS){
+  static inline void VK_CHECK(VkResult result)
+  {
+    if (result != VK_SUCCESS)
+    {
       std::cout << "Vulkan error: " << result << std::endl;
       exit(1);
     }
   }
-
-
-  struct AllocatedBuffer
-  {
-    VkBuffer buffer;
-    VmaAllocation allocation;
-    VmaAllocationInfo info;
-  };
-
-  struct MeshBuffers
-  {
-    AllocatedBuffer vertex_buffer;
-    AllocatedBuffer index_buffer;
-    VkDeviceAddress vertex_address;
-  };
-
-  struct MeshPushConstants
-  {
-    float model[16];
-    VkDeviceAddress vertex_address;
-  };
-
-  struct Vertex
-  {
-    float pos[3];
-    float normal[3];
-    float col[4];
-  };
-
-  enum class ShaderType
-  {
-    Vertex,
-    Fragment,
-    Geometry
-  };
-
-  enum class MSAASampleCount
-  {
-    MSAA1  = 0x01,
-    MSAA2  = 0x02,
-    MSAA4  = 0x04,
-    MSAA8  = 0x08,
-    MSAA16 = 0x10,
-    MSAA32 = 0x20,
-    MSAA64 = 0x40
-  };
 
   class Shader
   {
@@ -81,7 +36,6 @@ namespace VK
     VkShaderModule m_fragmodule = VK_NULL_HANDLE;
   };
 
-
   struct Pipeline
   {
     VkDevice vk_device;
@@ -91,35 +45,35 @@ namespace VK
 
   class PipelineBuilder
   {
-    public:
-      std::vector<VkPipelineShaderStageCreateInfo> m_shaderstages;
+  public:
+    std::vector<VkPipelineShaderStageCreateInfo> m_shaderstages;
 
-      VkPipelineInputAssemblyStateCreateInfo m_inputAssembly;
-      VkPipelineRasterizationStateCreateInfo m_rasterizer;
-      VkPipelineColorBlendAttachmentState m_colorBlendAttachment;
-      VkPipelineMultisampleStateCreateInfo m_multisampling;
-      VkPipelineLayout m_pipelineLayout;
-      VkPipelineDepthStencilStateCreateInfo m_depthStencil;
-      VkPipelineRenderingCreateInfo m_renderInfo;
-      VkFormat m_colorAttachmentformat;
+    VkPipelineInputAssemblyStateCreateInfo m_inputAssembly;
+    VkPipelineRasterizationStateCreateInfo m_rasterizer;
+    VkPipelineColorBlendAttachmentState m_colorBlendAttachment;
+    VkPipelineMultisampleStateCreateInfo m_multisampling;
+    VkPipelineLayout m_pipelineLayout;
+    VkPipelineDepthStencilStateCreateInfo m_depthStencil;
+    VkPipelineRenderingCreateInfo m_renderInfo;
+    VkFormat m_colorAttachmentformat;
 
-      void Clear();
-      PipelineBuilder(VkDevice device) : m_device(device) {Clear();}
-      Pipeline BuildPipeline(VkDevice device);
+    void Clear();
+    PipelineBuilder(VkDevice device) : m_device(device) { Clear(); }
+    Pipeline BuildPipeline(VkDevice device);
 
-      void SetShaderModules(const VkShaderModule vertex, const VkShaderModule fragment);
-      void SetInputTopology(const VkPrimitiveTopology topology);
-      void SetPolygonMode(const VkPolygonMode mode);
-      void SetCullMode(const VkCullModeFlags flags, const VkFrontFace front);
-      void SetMSAA(const VkPhysicalDevice physdevice, const VkSampleCountFlagBits samplecount); // Cap to hardware maximum
-      void SetColorAttachmentFormat(const VkFormat format);
-      void SetDepthFormat(const VkFormat format);
-      void DisableBlending();
-      void DisableDepthTest();
-    
-    private:
-      VkPipelineShaderStageCreateInfo ShaderStageCreateInfo(const VkShaderStageFlagBits stage, const VkShaderModule module);
-      VkDevice m_device;
+    void SetShaderModules(const VkShaderModule vertex, const VkShaderModule fragment);
+    void SetInputTopology(const VkPrimitiveTopology topology);
+    void SetPolygonMode(const VkPolygonMode mode);
+    void SetCullMode(const VkCullModeFlags flags, const VkFrontFace front);
+    void SetMSAA(const VkPhysicalDevice physdevice, const VkSampleCountFlagBits samplecount); // Cap to hardware maximum
+    void SetColorAttachmentFormat(const VkFormat format);
+    void SetDepthFormat(const VkFormat format);
+    void DisableBlending();
+    void DisableDepthTest();
+
+  private:
+    VkPipelineShaderStageCreateInfo ShaderStageCreateInfo(const VkShaderStageFlagBits stage, const VkShaderModule module);
+    VkDevice m_device;
   };
 
   /*
@@ -140,13 +94,6 @@ namespace VK
   };
 */
 
-  enum class PresentMode
-  {
-    Immediate,
-    Mailbox,
-    VSyncFifo
-  };
-
   class Renderer
   {
   public:
@@ -157,37 +104,43 @@ namespace VK
     void FrameStart();
     void FrameEnd();
 
-    
+    void Draw();
 
   private:
     bool Init(Plat::Window &window);
     bool CreateSwapChain(Plat::Window &window);
+    // Frame data
     bool CreateCommandPool();
-    bool CreateCommandBuffers();
+    void CreateSyncStructures();
+
+    /// ...
     bool CreateSyncObjects();
     void CreateVmaAllocator();
-    bool CreateVertexBuffer();
 
     MeshBuffers MeshUpload(std::span<uint32_t> indices, std::span<Vertex> verticess);
     Pipeline CreatePipeline(
-      const Shader& shader,
-      const VkPrimitiveTopology topology,
-      const VkPolygonMode polygonmode,
-      const VkCullModeFlags flags, 
-      const VkFrontFace front,
-      const MSAASampleCount msaa_samples,
-      const VkFormat color_attachment_format,
-      const VkFormat depth_format
-    );
+        const Shader &shader,
+        const VkPrimitiveTopology topology,
+        const VkPolygonMode polygonmode,
+        const VkCullModeFlags flags,
+        const VkFrontFace front,
+        const MSAASampleCount msaa_samples,
+        const VkFormat color_attachment_format,
+        const VkFormat depth_format);
     // Create shaders -> create pipeline
     void TransitionImage(VkCommandBuffer cmdbuffer, VkImage image, VkImageLayout oldlayout, VkImageLayout newlayout);
     uint32_t FindMemoryType(uint32_t type_filter, VkMemoryPropertyFlags properties);
 
     AllocatedBuffer CreateBuffer(const VmaMemoryUsage mem_usage, const VkBufferUsageFlags buff_usage, const size_t size);
-    void DestroyBuffer(const AllocatedBuffer& buff);
+    void DestroyBuffer(const AllocatedBuffer &buff);
     // IMMEDIATE -> MAILBOX -> FIFO
     VkPresentModeKHR DeterminePresentMode(const std::vector<VkPresentModeKHR> &available, PresentMode preferred);
     VkPresentModeKHR GetVkPresentMode(PresentMode mode) const;
+
+    static constexpr u8 FRAME_OVERLAP = 2;
+    FrameData m_frames[FRAME_OVERLAP];
+    int m_framenumber = 0;
+    FrameData& GetCurrentFrame() {return m_frames[m_framenumber % FRAME_OVERLAP];}
 
     VkInstance m_instance = VK_NULL_HANDLE;
     VkSurfaceKHR m_surface = VK_NULL_HANDLE;
@@ -204,20 +157,13 @@ namespace VK
     VkSwapchainKHR m_swapchain = VK_NULL_HANDLE;
     std::vector<VkImage> m_swapchain_images;
     std::vector<VkImageView> m_swapchain_imageviews;
+    std::vector<VkSemaphore> m_render_finished_semaphores;
 
     VkFormat m_swapchain_format = VK_FORMAT_UNDEFINED;
     VkExtent2D m_swapchain_extent{};
 
-    VkCommandPool m_cmdpool = VK_NULL_HANDLE;
-    std::vector<VkCommandBuffer> m_cmdbuffers{};
-
-    VkBuffer m_vertexbuffer = VK_NULL_HANDLE;
-    VkDeviceMemory m_vertexmemory = VK_NULL_HANDLE;
-    VkDeviceSize m_vertexbuffer_size = 1024 * 1024; // 1 MiB will change this, adding vma allocator
-
-    
     VmaAllocator m_allocator = VK_NULL_HANDLE;
-      
+
     uint32_t m_current_image = 0;
     VkSemaphore m_image_available = VK_NULL_HANDLE;
     std::vector<VkSemaphore> m_render_finished{};

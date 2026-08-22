@@ -30,8 +30,9 @@ void Global::Run()
     m_input->FrameStart();
 
 
-    m_vkrenderer->FrameStart();
+    //m_vkrenderer->FrameStart();
 
-    m_vkrenderer->FrameEnd();
+    m_vkrenderer->Draw();
+    //m_vkrenderer->FrameEnd();
   }
 }

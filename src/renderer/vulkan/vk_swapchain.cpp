@@ -336,5 +336,28 @@ bool Renderer::CreateSwapChain(Plat::Window &window)
     }
   }
 
+  // One "render finished" semaphore per swapchain image, NOT per frame-in-flight.
+  // These are waited on by vkQueuePresentKHR, whose lifecycle is tied to
+  // swapchain images, not to FRAME_OVERLAP. See Draw()'s validation error
+  // from swapchain_semaphore_reuse.html for why this can't share FrameData's
+  // per-frame semaphore.
+  m_render_finished_semaphores.resize(m_swapchain_images.size());
+  VkSemaphoreCreateInfo semaphore_info = CreateInfo_Semaphore();
+
+  for (size_t i = 0; i < m_swapchain_images.size(); ++i)
+  {
+    result = vkCreateSemaphore(
+        m_device,
+        &semaphore_info,
+        nullptr,
+        &m_render_finished_semaphores[i]);
+
+    if (result != VK_SUCCESS)
+    {
+      LOG_FATAL("Failed to create Vulkan render-finished semaphore");
+      return false;
+    }
+  }
+
   return true;
 }

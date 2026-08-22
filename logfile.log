@@ -122,3 +122,89 @@
 [LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_renderer.cpp:84: Vulkan API: 1.4.354
 [LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
 [LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_renderer.cpp:68: Instanced created
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_renderer.cpp:84: Vulkan API: 1.4.354
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_renderer.cpp:68: Instanced created
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_renderer.cpp:84: Vulkan API: 1.4.354
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_renderer.cpp:68: Instanced created
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_renderer.cpp:84: Vulkan API: 1.4.354
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_renderer.cpp:68: Instanced created
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_renderer.cpp:84: Vulkan API: 1.4.354
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:99: Instanced created
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:115: Vulkan API: 1.4.354
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:99: Instanced created
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:115: Vulkan API: 1.4.354
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:99: Instanced created
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:115: Vulkan API: 1.4.354
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:99: Instanced created
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:115: Vulkan API: 1.4.354
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[FATAL] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_renderer.cpp:394: Unsupported image layout transition
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:99: Instanced created
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:115: Vulkan API: 1.4.354
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[FATAL] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_renderer.cpp:394: Unsupported image layout transition
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:99: Instanced created
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:115: Vulkan API: 1.4.354
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:99: Instanced created
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:115: Vulkan API: 1.4.354
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:99: Instanced created
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:115: Vulkan API: 1.4.354
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:99: Instanced created
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:115: Vulkan API: 1.4.354
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:99: Instanced created
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:115: Vulkan API: 1.4.354
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:99: Instanced created
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:115: Vulkan API: 1.4.354
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:99: Instanced created
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:115: Vulkan API: 1.4.354
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:99: Instanced created
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:115: Vulkan API: 1.4.354
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:99: Instanced created
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:115: Vulkan API: 1.4.354
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:99: Instanced created
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:115: Vulkan API: 1.4.354
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:99: Instanced created
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:115: Vulkan API: 1.4.354
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:99: Instanced created
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:115: Vulkan API: 1.4.354
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
