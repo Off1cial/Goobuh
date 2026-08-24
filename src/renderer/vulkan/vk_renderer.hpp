@@ -1,13 +1,14 @@
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_core.h>
-#include "renderer/vulkan/vk_vma.h"
 #include "renderer/vulkan/vk_types.hpp"
+#include "renderer/vulkan/vk_loader.hpp"
 #include "platform/window.hpp"
 #include "core/common.h"
 #include <vector>
 #include <memory>
 #include <span>
 #include <iostream>
+#include <functional>
 
 namespace VK
 {
@@ -69,6 +70,8 @@ namespace VK
     void SetColorAttachmentFormat(const VkFormat format);
     void SetDepthFormat(const VkFormat format);
     void DisableBlending();
+    void EnableBlending_Additive();
+    void EnableBlending_AlphaBlend();
     void DisableDepthTest();
 
   private:
@@ -104,6 +107,9 @@ namespace VK
     void FrameStart();
     void FrameEnd();
 
+    MeshBuffers MeshUpload(std::span<uint32_t> indices, std::span<Vertex> vertices);
+
+
     void Draw();
 
   private:
@@ -113,11 +119,12 @@ namespace VK
     bool CreateCommandPool();
     void CreateSyncStructures();
 
+    void ImmediateSubmit(std::function<void(VkCommandBuffer cmd)>&& function);
+
     /// ...
     bool CreateSyncObjects();
     void CreateVmaAllocator();
 
-    MeshBuffers MeshUpload(std::span<uint32_t> indices, std::span<Vertex> verticess);
     Pipeline CreatePipeline(
         const Shader &shader,
         const VkPrimitiveTopology topology,
@@ -129,6 +136,9 @@ namespace VK
         const VkFormat depth_format);
     // Create shaders -> create pipeline
     void TransitionImage(VkCommandBuffer cmdbuffer, VkImage image, VkImageLayout oldlayout, VkImageLayout newlayout);
+    void CopyImageToImage(VkCommandBuffer cmd, VkImage source, VkImage destionation, VkExtent2D src_size, VkExtent2D dest_size);
+    void DrawBackground(VkCommandBuffer cmd);
+
     uint32_t FindMemoryType(uint32_t type_filter, VkMemoryPropertyFlags properties);
 
     AllocatedBuffer CreateBuffer(const VmaMemoryUsage mem_usage, const VkBufferUsageFlags buff_usage, const size_t size);
@@ -141,6 +151,10 @@ namespace VK
     FrameData m_frames[FRAME_OVERLAP];
     int m_framenumber = 0;
     FrameData& GetCurrentFrame() {return m_frames[m_framenumber % FRAME_OVERLAP];}
+    // Immediate submission data
+    VkFence m_imm_fence;
+    VkCommandBuffer m_imm_commandbuffer;
+    VkCommandPool m_imm_commandpool;
 
     VkInstance m_instance = VK_NULL_HANDLE;
     VkSurfaceKHR m_surface = VK_NULL_HANDLE;
@@ -163,17 +177,25 @@ namespace VK
     VkExtent2D m_swapchain_extent{};
 
     VmaAllocator m_allocator = VK_NULL_HANDLE;
+    DeletionQueue m_deletions{};
 
     uint32_t m_current_image = 0;
     VkSemaphore m_image_available = VK_NULL_HANDLE;
     std::vector<VkSemaphore> m_render_finished{};
     VkFence m_in_flight = VK_NULL_HANDLE;
 
+    // Draw forces
+    AllocatedImage m_draw_image;
+    VkExtent2D m_draw_extent;
+
     // Currently bound shaders, make a shader wrapper to be handled by an asset manager?
     std::unique_ptr<Shader> m_shader;
     // HELLO RENDERER BRANCH
     std::unique_ptr<PipelineBuilder> m_pipelinebuilder;
     std::vector<std::unique_ptr<Pipeline>> m_pipelines;
+
+
+    std::optional<std::vector<std::shared_ptr<MeshAsset>>> m_meshes;
   };
 
 };

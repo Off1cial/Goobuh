@@ -10,7 +10,9 @@
 #pragma clang diagnostic ignored "-Wunused-variable"
 #pragma clang diagnostic ignored "-Wunused-private-field"
 
+#ifndef VMA_IMPLEMENTATION
 #define VMA_IMPLEMENTATION
+#endif
 #include "vulkan/vk_mem_alloc.h"
 
 #pragma clang diagnostic pop

@@ -1,3 +1,4 @@
+#include "renderer/vulkan/vk_loader.hpp"
 #include "renderer/vulkan/vk_renderer.hpp"
 #include "renderer/vulkan/vk_types.hpp"
 #include "core/logsys.hpp"
@@ -10,6 +11,7 @@ void Renderer::CreateSyncStructures()
 {
   VkFenceCreateInfo fence_info = CreateInfo_Fence(VK_FENCE_CREATE_SIGNALED_BIT);
   VkSemaphoreCreateInfo semaphore_info = CreateInfo_Semaphore();
+  vkCreateFence(m_device, &fence_info, nullptr, &m_imm_fence);
 
   for (int i = 0; i < FRAME_OVERLAP; i++){
     VK_CHECK(vkCreateFence(m_device, &fence_info, nullptr, &m_frames[i].render_fence));
@@ -60,7 +62,8 @@ Pipeline Renderer::CreatePipeline(
   m_pipelinebuilder->SetMSAA(m_physdevice, (VkSampleCountFlagBits)msaa_samples);
   m_pipelinebuilder->SetColorAttachmentFormat(color_attachment_format);
   m_pipelinebuilder->SetDepthFormat(depth_format);
-  m_pipelinebuilder->DisableBlending();
+  m_pipelinebuilder->EnableBlending_Additive();
+  //m_pipelinebuilder->DisableBlending();
   return m_pipelinebuilder->BuildPipeline(m_device);
 }
 
@@ -163,12 +166,17 @@ bool Renderer::Init(Plat::Window &window)
   sync2_features.synchronization2 = VK_TRUE;
   sync2_features.pNext = &dynamic_rendering; // chain: sync2 -> dynamic_rendering
 
+  VkPhysicalDeviceBufferDeviceAddressFeatures bufferDeviceAddress{};
+  bufferDeviceAddress.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES;
+  bufferDeviceAddress.bufferDeviceAddress = VK_TRUE;
+  bufferDeviceAddress.pNext = &sync2_features;
+
 
   VkDeviceCreateInfo create_info =
       {
           .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
           //.pNext = &dynamic_rendering,
-          .pNext = &sync2_features,
+          .pNext = &bufferDeviceAddress,
           .flags = 0,
           .queueCreateInfoCount = 1,
           .pQueueCreateInfos = &q_info,
@@ -179,21 +187,10 @@ bool Renderer::Init(Plat::Window &window)
           .pEnabledFeatures = &device_features};
 
   VK_CHECK(vkCreateDevice(m_physdevice, &create_info, nullptr, &m_device));
-  //RESULTCHECK("Failed to create vulkan device");
-  /*
-  auto pfnBeginRendering =
-    reinterpret_cast<PFN_vkCmdBeginRendering>(
-        vkGetDeviceProcAddr(m_device, "vkCmdBeginRendering"));
-  auto pfnEndRendering =
-    reinterpret_cast<PFN_vkCmdEndRendering>(
-        vkGetDeviceProcAddr(m_device, "vkCmdEndRendering"));
-
-
-  LOG_DEFAULT("vkCmdBeginRendering: %p", (void*)pfnBeginRendering);
-  LOG_DEFAULT("vkCmdEndRendering:   %p", (void*)pfnEndRendering);
-  */
   vkGetDeviceQueue(m_device, m_graphqueue_index, 0, &m_graphqueue);
   vkGetDeviceQueue(m_device, m_presentqueue_index, 0, &m_presentqueue);
+
+  CreateVmaAllocator();  // Add error checking
 
   if (!CreateSwapChain(window))
   {
@@ -206,17 +203,12 @@ bool Renderer::Init(Plat::Window &window)
     return false;
   }
   CreateSyncStructures();
-  /*
-  if (!CreateSyncObjects())
-  {
-    LOG_FATAL("Failed to create vulkan sync objects");
-    return false;
-  }*/
-  CreateVmaAllocator();  // Add error checking
 
-  std::string vertsrc = "resource/shaders/triangle.vert.spv";
-  std::string fragsrc = "resource/shaders/triangle.frag.spv";
+  std::string vertsrc = "resource/shaders/spv/default.vert.spv";
+  std::string fragsrc = "resource/shaders/spv/default.frag.spv";
   m_shader = std::make_unique<Shader>(m_device, vertsrc, fragsrc);
+
+  //m_meshes = loadGltfMeshes(this, "resource/models/cone.glb").value();
 
   m_pipelinebuilder = std::make_unique<PipelineBuilder>(m_device);
   m_pipelines.push_back(
@@ -230,6 +222,5 @@ bool Renderer::Init(Plat::Window &window)
           VK_FORMAT_UNDEFINED
           )
   ));
-  //m_pipelines.push_back(std::make_unique<Pipeline>(m_device, *m_shader, m_swapchain_format));
   return true;
 }

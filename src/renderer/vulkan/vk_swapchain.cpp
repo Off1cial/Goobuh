@@ -359,5 +359,41 @@ bool Renderer::CreateSwapChain(Plat::Window &window)
     }
   }
 
+  int w, h;
+  window.GetDimensions(w, h);
+  VkExtent3D draw_image_extent{.width = (uint32_t)w, .height = (uint32_t)h, .depth = 1};
+  
+  m_draw_extent.width = (uint32_t)w; m_draw_extent.height = (uint32_t)h;
+  m_draw_image.image_format = VK_FORMAT_R16G16B16A16_SFLOAT;
+  m_draw_image.image_extent = draw_image_extent;
+
+  // TODO https://vkguide.dev/docs/new_chapter_2/vulkan_new_rendering/
+  VkImageUsageFlags draw_image_usages{};
+  draw_image_usages |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+	draw_image_usages |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+	draw_image_usages |= VK_IMAGE_USAGE_STORAGE_BIT;
+	draw_image_usages |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+
+	VkImageCreateInfo rimg_info = CreateInfo_Image(m_draw_image.image_format, draw_image_usages, draw_image_extent);
+
+	//for the draw image, we want to allocate it from gpu local memory
+	VmaAllocationCreateInfo rimg_allocinfo = {};
+	rimg_allocinfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+	rimg_allocinfo.requiredFlags = VkMemoryPropertyFlags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+	//allocate and create the image
+	vmaCreateImage(m_allocator, &rimg_info, &rimg_allocinfo, &m_draw_image.image, &m_draw_image.allocation, nullptr);
+
+	//build a image-view for the draw image to use for rendering
+	VkImageViewCreateInfo rview_info = CreateInfo_ImageView(m_draw_image.image_format, m_draw_image.image, VK_IMAGE_ASPECT_COLOR_BIT);
+
+	VK_CHECK(vkCreateImageView(m_device, &rview_info, nullptr, &m_draw_image.image_view));
+	//add to deletion queues
+	m_deletions.push_function([=]() {
+		vkDestroyImageView(m_device, m_draw_image.image_view, nullptr);
+		vmaDestroyImage(m_allocator, m_draw_image.image, m_draw_image.allocation);
+	});
+
+
   return true;
 }

@@ -4,6 +4,7 @@
 #include <cmath>
 #include "core/common.h"
 
+
 class Vector
 {
 public:
@@ -41,6 +42,37 @@ public:
   }
 };
 
+class Vector4
+{
+public:
+  float x, y, z, w;
+
+  Vector4(void);
+  explicit Vector4(float _x, float _y, float _z, float _w) : x(_x), y(_y), z(_z), w(_w) {};
+  explicit Vector4(float _val) : x(_val), y(_val), z(_val), w(_val) {};
+
+  // Allows access with v.x and v[0] (Array access)
+  float &operator[](int i);
+  float operator[](int i) const;
+
+  FORCEINLINE bool operator==(const Vector4 &v) const;
+  FORCEINLINE bool operator!=(const Vector4 &v) const;
+
+  // Allows syntax like VectorA += VectorB, very helpful
+  // FORCEINLINE Vector& operator*(const float s);
+  FORCEINLINE Vector4 &operator+=(const Vector4 &v);
+  FORCEINLINE Vector4 &operator-=(const Vector4 &v);
+  FORCEINLINE Vector4 &operator*=(const float s);
+
+  bool IsZero(float tolerance = 0.01f) const
+  {
+    return (x > -tolerance && x < tolerance &&
+            y > -tolerance && y < tolerance &&
+            z > -tolerance && z < tolerance && 
+            w > -tolerance && w < tolerance
+          );
+  }
+};
 
 
 // Attempting to be mindful of creating copies on the stack via operator
@@ -194,6 +226,46 @@ FORCEINLINE Vector &Vector::operator*=(const float s)
   z *= s;
   return *this;
 }
+
+
+FORCEINLINE float& Vector4::operator[](int i)
+{
+  return ((float*)this)[i];
+}
+
+FORCEINLINE float Vector4::operator[](int i) const
+{
+  return ((float*)this)[i];
+}
+
+FORCEINLINE bool Vector4::operator==(const Vector4& v) const
+{
+  return (x == v.x) && (y == v.y) && (z == v.z) && (w == v.w);
+}
+
+FORCEINLINE bool Vector4::operator!=(const Vector4& v) const
+{
+  return (x != v.x) && (y != v.y) && (z != v.z) && (w != v.w);
+}
+
+FORCEINLINE Vector4& Vector4::operator+=(const Vector4& v)
+{
+  x+=v.x; y+=v.y; z+=v.z; w+=v.w;
+  return *this;
+}
+
+FORCEINLINE Vector4& Vector4::operator-=(const Vector4& v)
+{
+  x-=v.x; y-=v.y; z-=v.z; w-=v.w;
+  return *this;
+}
+
+FORCEINLINE Vector4& Vector4::operator*=(const float s)
+{
+  x*=s; y*=s; z*=s; w*=s;
+  return *this;
+}
+
 
 
 #endif // MATH_VECTOR_H

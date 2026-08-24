@@ -9,6 +9,7 @@ add_compile_definitions(_POSIX_C_SOURCE=200112L)
 
 find_package(PkgConfig REQUIRED)
 
+
 pkg_check_modules(SDL3 REQUIRED sdl3)
 pkg_check_modules(SDL3IMAGE REQUIRED sdl3-image)
 pkg_check_modules(SDL3TTF REQUIRED sdl3-ttf)

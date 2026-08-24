@@ -3,6 +3,9 @@
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_core.h>
 #include "renderer/vulkan/vk_vma.h"
+#include <functional>
+#include <queue>
+#include "math/vector.hpp"
 
 namespace VK
 {
@@ -37,9 +40,11 @@ namespace VK
 
   struct Vertex
   {
+
     float pos[3];
     float normal[3];
     float col[4];
+    float uv[2];
   };
 
   enum class ShaderType
@@ -68,7 +73,34 @@ namespace VK
   };
 
 
+  struct AllocatedImage
+  {
+    VkImage image; 
+    VkImageView image_view;
+    VmaAllocation allocation;
+    VkExtent3D image_extent;
+    VkFormat image_format;
+  };
 
+  
+  struct DeletionQueue
+  {
+    std::deque<std::function<void()>> deletors;
+
+    void push_function(std::function<void()>&& function)
+    {
+      deletors.push_back(function);
+    }
+
+    void flush()
+    {
+      for (auto func = deletors.rbegin(); func != deletors.rend(); func++)  
+      {
+        (*func)();
+      }
+      deletors.clear();
+    }
+  };
 };
 
 
@@ -85,3 +117,6 @@ namespace VK
 
   VkCommandBufferSubmitInfo CreateInfo_CommandBufferSubmit(VkCommandBuffer cmd);
   VkSubmitInfo2 SubmitInfo(VkCommandBufferSubmitInfo* cmd, VkSemaphoreSubmitInfo* semaphore_signal_info, VkSemaphoreSubmitInfo* semaphore_wait_info);
+
+  VkImageCreateInfo CreateInfo_Image(VkFormat format, VkImageUsageFlags usage_flags, VkExtent3D extent);
+  VkImageViewCreateInfo CreateInfo_ImageView(VkFormat format, VkImage image, VkImageAspectFlags aspect_flags);
