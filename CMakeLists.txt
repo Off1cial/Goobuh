@@ -47,6 +47,8 @@ file(GLOB_RECURSE SOURCE_RENDERER
   src/renderer/*.cpp
   src/renderer/vulkan/*.cpp
   src/renderer/vulkan/*.c
+  include/volk/volk.c
+  include/tinyobj/tiny_obj_loader.cpp
 )
 
 file(GLOB_RECURSE SOURCE_ENGINE
@@ -75,9 +77,6 @@ target_compile_definitions(engine PRIVATE
 # Include paths
 # -------------------------
 
-target_include_directories(engine SYSTEM PRIVATE
-    ${CMAKE_SOURCE_DIR}/include/vulkan
-)
 
 target_include_directories(engine PRIVATE
     ${CMAKE_SOURCE_DIR}/include
@@ -89,7 +88,10 @@ target_include_directories(engine PRIVATE
 )
 
 target_include_directories(engine SYSTEM PRIVATE
+    ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/include/vulkan
+    ${CMAKE_SOURCE_DIR}/include/tinyobj
+    ${CMAKE_SOURCE_DIR}/include/volk
 )
 
 # -------------------------

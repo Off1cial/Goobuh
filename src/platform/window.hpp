@@ -16,6 +16,8 @@ namespace Plat
       void Shutdown();
       void PollEvents(Input& input);
 
+      std::string GetName() {return name;}
+
       void GetDimensions(int& w, int& h) const {w = m_width; h = m_height;}
       void SetDimensions(int w, int h);
 

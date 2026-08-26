@@ -344,3 +344,56 @@
 [LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:118: Vulkan API: 1.4.354
 [LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
 [LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:102: Instanced created
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:118: Vulkan API: 1.4.354
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:102: Instanced created
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:118: Vulkan API: 1.4.354
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:101: Instanced created
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:117: Vulkan API: 1.4.354
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:101: Instanced created
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:117: Vulkan API: 1.4.354
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_shader.cpp:12: Working dir: /home/redw0od0/Goobuh
+[FATAL] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:12: Vulkan check failed
+[FATAL] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:12: Vulkan check failed
+[FATAL] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:12: Vulkan check failed
+[FATAL] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:14: Vulkan check failed
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:40: Vulkan instance created
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:82: Vulkan: Fetched presentation support
+[FATAL] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:14: Vulkan check failed
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:40: Vulkan instance created
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:82: Vulkan: Fetched presentation support
+[FATAL] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:14: Vulkan check failed
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:40: Vulkan instance created
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:82: Vulkan: Fetched presentation support
+[FATAL] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:14: Vulkan check failed, result -7
+
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:40: Vulkan instance created
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:82: Vulkan: Fetched presentation support
+[FATAL] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:14: Vulkan check failed, result -7
+
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:40: Vulkan instance created
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:82: Vulkan: Fetched presentation support
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:121: Vulkan: created _device
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:40: Vulkan instance created
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:82: Vulkan: Fetched presentation support
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:121: Vulkan: created _device
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:40: Vulkan instance created
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:82: Vulkan: Fetched presentation support
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:121: Vulkan: created _device
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:39: Vulkan instance created
+[FATAL] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:80: Failed to obtain SDL presentation support
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:39: Vulkan instance created
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:84: Vulkan: Fetched presentation support
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:123: Vulkan: created _device
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:138: Vulkan: allocator created
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:39: Vulkan instance created
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:84: Vulkan: Fetched presentation support
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:123: Vulkan: created _device
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:138: Vulkan: allocator created

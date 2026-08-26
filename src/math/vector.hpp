@@ -227,6 +227,11 @@ FORCEINLINE Vector &Vector::operator*=(const float s)
   return *this;
 }
 
+FORCEINLINE Vector4::Vector4(void)
+{
+  x = y = z = w = 0;
+}
+
 
 FORCEINLINE float& Vector4::operator[](int i)
 {

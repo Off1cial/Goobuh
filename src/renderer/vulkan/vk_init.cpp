@@ -1,226 +1,247 @@
-#include "renderer/vulkan/vk_loader.hpp"
-#include "renderer/vulkan/vk_renderer.hpp"
-#include "renderer/vulkan/vk_types.hpp"
-#include "core/logsys.hpp"
+#include "volk/volk.h"
+
+#include "renderer/vulkan/vk_vma.h"
+#include "renderer/vulkan/vk_engine.hpp"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_vulkan.h>
+#include <vector>
+
+static inline void vkcheck(int result)
+{
+  if (result != VK_SUCCESS)
+  {
+    LOG_FATAL("Vulkan check failed, result %d\n", result);
+    exit(1);
+  }
+}
 
 using namespace VK;
 
-void Renderer::CreateSyncStructures()
+void Engine::Init()
 {
-  VkFenceCreateInfo fence_info = CreateInfo_Fence(VK_FENCE_CREATE_SIGNALED_BIT);
-  VkSemaphoreCreateInfo semaphore_info = CreateInfo_Semaphore();
-  vkCreateFence(m_device, &fence_info, nullptr, &m_imm_fence);
-
-  for (int i = 0; i < FRAME_OVERLAP; i++){
-    VK_CHECK(vkCreateFence(m_device, &fence_info, nullptr, &m_frames[i].render_fence));
-
-    VK_CHECK(vkCreateSemaphore(m_device, &semaphore_info, nullptr, &m_frames[i].swapchain_semaphore));
-    //VK_CHECK(vkCreateSemaphore(m_device, &semaphore_info, nullptr, &m_frames[i].render_semaphore));
-
-  }
-}
-
-AllocatedBuffer Renderer::CreateBuffer(const VmaMemoryUsage mem_usage, const VkBufferUsageFlags buff_usage, const size_t size)
-{
-  VkBufferCreateInfo buff_info{};
-  VmaAllocationCreateInfo alloc_info{};
-  AllocatedBuffer new_buff{};
-
-  // Prepare buffer information
-  buff_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-  buff_info.pNext = nullptr;
-  buff_info.usage = buff_usage;
-  buff_info.size  = size;
-  // Prepare allocation information
-  alloc_info.usage = mem_usage; 
-  alloc_info.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
-
-  VK_CHECK(vmaCreateBuffer(m_allocator, &buff_info, &alloc_info, &new_buff.buffer, &new_buff.allocation, &new_buff.info));
-  return new_buff;
-}
-
-
-
-Pipeline Renderer::CreatePipeline(
-    const Shader& shader,
-    const VkPrimitiveTopology topology,
-    const VkPolygonMode polygonmode,
-    const VkCullModeFlags flags, 
-    const VkFrontFace front,
-    const MSAASampleCount msaa_samples,
-    const VkFormat color_attachment_format,
-    const VkFormat depth_format
-    )
-{
-  m_pipelinebuilder->Clear();
-  m_pipelinebuilder->SetShaderModules(shader.GetModule_Vertex(), shader.GetModule_Fragment());
-  m_pipelinebuilder->SetInputTopology(topology);
-  m_pipelinebuilder->SetPolygonMode(polygonmode);
-  m_pipelinebuilder->SetCullMode(flags, front);
-  m_pipelinebuilder->SetMSAA(m_physdevice, (VkSampleCountFlagBits)msaa_samples);
-  m_pipelinebuilder->SetColorAttachmentFormat(color_attachment_format);
-  m_pipelinebuilder->SetDepthFormat(depth_format);
-  m_pipelinebuilder->EnableBlending_Additive();
-  //m_pipelinebuilder->DisableBlending();
-  return m_pipelinebuilder->BuildPipeline(m_device);
-}
-
-
-
-bool Renderer::Init(Plat::Window &window)
-{
-
+  vkcheck(volkInitialize());
+  // Create Application/Info
   VkApplicationInfo app_info{};
   app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
   app_info.pApplicationName = "Goobuh";
-  app_info.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-  app_info.pEngineName = "Goobuh Engine";
-  app_info.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-  app_info.apiVersion = VK_API_VERSION_1_4;
+  app_info.apiVersion = VK_API_VERSION_1_3;
 
-  u32 extension_count = 0;
-  const char *const *extension_names = 0; // A pointer which is const, to a pointer of const char*??
-  extension_names = SDL_Vulkan_GetInstanceExtensions(&extension_count);
-  const char *validation_layer =
-      "VK_LAYER_KHRONOS_validation";
-  const VkInstanceCreateInfo vkinfo =
-      {
-          .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
-          .pNext = nullptr,
-          .flags = 0,
-          .pApplicationInfo = &app_info,
-          .enabledLayerCount = 1,
-          .ppEnabledLayerNames = &validation_layer,
-          .enabledExtensionCount = extension_count,
-          .ppEnabledExtensionNames = extension_names,
-      };
+  uint32_t instance_ext_count = 0;
+  char const *const *extension_names = SDL_Vulkan_GetInstanceExtensions(&instance_ext_count);
 
-  VK_CHECK(vkCreateInstance(&vkinfo, nullptr, &m_instance));
-  //RESULTCHECK("Failed to create vulkan instance");
-  LOG_DEFAULT("Instanced created");
-  // Set up physical device
-  u32 physdevice_count = 0;
-  vkEnumeratePhysicalDevices(m_instance, &physdevice_count, nullptr);
-  std::vector<VkPhysicalDevice> physical_devices(physdevice_count);
-  vkEnumeratePhysicalDevices(m_instance, &physdevice_count, physical_devices.data());
-  m_physdevice = physical_devices[0];
+  VkInstanceCreateInfo instance_info{};
+  instance_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+  instance_info.pApplicationInfo = &app_info;
+  instance_info.enabledExtensionCount = instance_ext_count;
+  instance_info.ppEnabledExtensionNames = extension_names;
 
-  // Physical device properties
-  VkPhysicalDeviceProperties physdevice_properties{};
-  vkGetPhysicalDeviceProperties(m_physdevice, &physdevice_properties);
-  // Log the api version
-  LOG_DEFAULT(
-    "Vulkan API: %u.%u.%u",
-    VK_API_VERSION_MAJOR(physdevice_properties.apiVersion),
-    VK_API_VERSION_MINOR(physdevice_properties.apiVersion),
-    VK_API_VERSION_PATCH(physdevice_properties.apiVersion));
+  vkcheck(vkCreateInstance(&instance_info, nullptr, &_instance));
+  LOG_DEFAULT("Vulkan instance created");
+  volkLoadInstance(_instance);
 
-  uint32_t q_familycount = 0;
-  vkGetPhysicalDeviceQueueFamilyProperties(m_physdevice, &q_familycount, nullptr);
-  std::vector<VkQueueFamilyProperties> queue_families(q_familycount);
-  vkGetPhysicalDeviceQueueFamilyProperties(m_physdevice, &q_familycount, queue_families.data());
-  // Create Vulkan surface
-  bool res = SDL_Vulkan_CreateSurface(window.GetSDLWindow(), m_instance, nullptr, &m_surface);
-  if (!res)
+  // Find physical devices
+  uint32_t device_count = 0;
+  vkcheck(vkEnumeratePhysicalDevices(_instance, &device_count, nullptr));
+  _physdevices.resize(device_count);
+  vkcheck(vkEnumeratePhysicalDevices(_instance, &device_count, _physdevices.data()));
+  // Default to device 0
+  _physdevice_index = 0;
+
+  VkPhysicalDeviceProperties2 phys_properties{};
+  phys_properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+  vkGetPhysicalDeviceProperties2(_physdevices[_physdevice_index], &phys_properties);
+  printf("Selected device: %s\n", phys_properties.properties.deviceName);
+
+  // Get the needed queue
+  uint32_t qfamily_count = 0;
+  vkGetPhysicalDeviceQueueFamilyProperties(
+      _physdevices[_physdevice_index],
+      &qfamily_count,
+      nullptr);
+  _qfamilies.resize(qfamily_count);
+  vkGetPhysicalDeviceQueueFamilyProperties(
+      _physdevices[_physdevice_index],
+      &qfamily_count,
+      _qfamilies.data());
+  for (uint32_t i = 0; i < qfamily_count; i++)
   {
-    LOG_FATAL("Failed to create vulkan surface");
+    if (_qfamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
+    {
+      qfamily = i;
+      break;
+    }
+  }
+  // Check if presentation is supported
+  if(SDL_Vulkan_GetPresentationSupport(
+      _instance,
+      _physdevices[_physdevice_index],
+      qfamily_count))
+  {
+    LOG_FATAL("Failed to obtain SDL presentation support");
   }
 
-  VkBool32 support;
-  u32 i = 0;
-  for (VkQueueFamilyProperties q_family : queue_families)
-  {
-    if (m_graphqueue_index == UINT32_MAX && q_family.queueCount > 0 && q_family.queueFlags & VK_QUEUE_GRAPHICS_BIT)
-    {
-      m_graphqueue_index = i;
-    }
-    if (m_presentqueue_index == UINT32_MAX)
-    {
-      vkGetPhysicalDeviceSurfaceSupportKHR(m_physdevice, i, m_surface, &support);
-      if (support)
-        m_presentqueue_index = i;
-    }
-    ++i;
-  }
-  float q_priority = 1.0f;
-  VkDeviceQueueCreateInfo q_info =
-      {
-          .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
-          .pNext = nullptr,
-          .flags = 0,
-          .queueFamilyIndex = m_graphqueue_index,
-          .queueCount = 1,
-          .pQueuePriorities = &q_priority};
+    
+  LOG_DEFAULT("Vulkan: Fetched presentation support");
 
-  VkPhysicalDeviceFeatures device_features = {};
-  const char *device_extensions[] = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+  const float qpriorities = {1.0f};
+  VkDeviceQueueCreateInfo queue_info{};
+  queue_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+  queue_info.queueCount = 1;
+  queue_info.queueFamilyIndex = qfamily;
+  queue_info.pQueuePriorities = &qpriorities;
 
-  VkPhysicalDeviceDynamicRenderingFeatures dynamic_rendering{};
-  dynamic_rendering.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES;
-  dynamic_rendering.dynamicRendering = VK_TRUE;
+  const std::vector<const char *> device_extensions{VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
-  VkPhysicalDeviceSynchronization2Features sync2_features{};
-  sync2_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES;
-  sync2_features.synchronization2 = VK_TRUE;
-  sync2_features.pNext = &dynamic_rendering; // chain: sync2 -> dynamic_rendering
-
-  VkPhysicalDeviceBufferDeviceAddressFeatures bufferDeviceAddress{};
-  bufferDeviceAddress.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES;
-  bufferDeviceAddress.bufferDeviceAddress = VK_TRUE;
-  bufferDeviceAddress.pNext = &sync2_features;
-
-
-  VkDeviceCreateInfo create_info =
-      {
-          .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
-          //.pNext = &dynamic_rendering,
-          .pNext = &bufferDeviceAddress,
-          .flags = 0,
-          .queueCreateInfoCount = 1,
-          .pQueueCreateInfos = &q_info,
-          .enabledLayerCount = 0,
-          .ppEnabledLayerNames = nullptr,
-          .enabledExtensionCount = 1,
-          .ppEnabledExtensionNames = device_extensions,
-          .pEnabledFeatures = &device_features};
-
-  VK_CHECK(vkCreateDevice(m_physdevice, &create_info, nullptr, &m_device));
-  vkGetDeviceQueue(m_device, m_graphqueue_index, 0, &m_graphqueue);
-  vkGetDeviceQueue(m_device, m_presentqueue_index, 0, &m_presentqueue);
-
-  CreateVmaAllocator();  // Add error checking
-
-  if (!CreateSwapChain(window))
-  {
-    LOG_FATAL("Failed to create vulkan swapchain");
-    return false;
+  VkPhysicalDeviceVulkan12Features enabledVk12Features{
+      .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
+      .descriptorIndexing = true,
+      .shaderSampledImageArrayNonUniformIndexing = true,
+      .descriptorBindingVariableDescriptorCount = true,
+      .runtimeDescriptorArray = true,
+      .bufferDeviceAddress = true};
+  VkPhysicalDeviceVulkan13Features enabledVk13Features{
+      .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
+      .pNext = &enabledVk12Features,
+      .synchronization2 = true,
+      .dynamicRendering = true,
   };
-  if (!CreateCommandPool())
+  VkPhysicalDeviceFeatures enabledVk10Features{
+      .samplerAnisotropy = VK_TRUE,
+  };
+
+  // Get driver
+  //
+  VkDeviceCreateInfo device_info{};
+  device_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+  device_info.queueCreateInfoCount = 1;
+  device_info.pQueueCreateInfos = &queue_info;
+  device_info.enabledExtensionCount = (unsigned int)device_extensions.size();
+  device_info.ppEnabledExtensionNames = device_extensions.data();
+  device_info.pEnabledFeatures = &enabledVk10Features;
+  device_info.pNext = &enabledVk13Features;
+  vkcheck(vkCreateDevice(_physdevices[_physdevice_index], &device_info, nullptr, &_device));
+  LOG_DEFAULT("Vulkan: created _device");
+  volkLoadDevice(_device);
+
+
+  // Initialise VMA
+  VmaVulkanFunctions vkFunctions{};
+  VmaAllocatorCreateInfo allocatorCI{
+      .flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT,
+      .physicalDevice = _physdevices[_physdevice_index],
+      .device = _device,
+      .pVulkanFunctions = &vkFunctions,
+      .instance = _instance};
+  vmaImportVulkanFunctionsFromVolk(&allocatorCI, &vkFunctions);
+
+  vkcheck(vmaCreateAllocator(&allocatorCI, &_allocator));
+  LOG_DEFAULT("Vulkan: allocator created");
+
+}
+
+void Engine::CreateSwapchain()
+{
+  vkcheck(
+      vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
+          _physdevices[_physdevice_index],
+          _surface,
+          &_surface_capabilities));
+  VkExtent2D swapchain_extent = _surface_capabilities.currentExtent;
+
+  // dimension correction
+  int window_width, window_height;
+  _window->GetDimensions(window_width, window_height);
+  if (swapchain_extent.width == 0xFFFFFFFF)
   {
-    LOG_FATAL("Failed to create vulkan command pool");
-    return false;
+    swapchain_extent.width = (uint32_t)(window_width);
+    swapchain_extent.height = (uint32_t)(window_height);
   }
-  CreateSyncStructures();
 
-  std::string vertsrc = "resource/shaders/spv/default.vert.spv";
-  std::string fragsrc = "resource/shaders/spv/default.frag.spv";
-  m_shader = std::make_unique<Shader>(m_device, vertsrc, fragsrc);
+  const VkFormat image_format = VK_FORMAT_B8G8R8A8_SRGB;
+  // Prepare swapchain information
+  VkSwapchainCreateInfoKHR swapchain_info{};
+  swapchain_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+  swapchain_info.surface = _surface;
+  swapchain_info.minImageCount = _surface_capabilities.minImageCount;
+  swapchain_info.imageFormat = image_format;
+  swapchain_info.imageColorSpace = VK_COLORSPACE_SRGB_NONLINEAR_KHR;
+  swapchain_info.imageExtent.width = swapchain_extent.width;
+  swapchain_info.imageExtent.height = swapchain_extent.height;
+  swapchain_info.imageArrayLayers = 1;
+  swapchain_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-  //m_meshes = loadGltfMeshes(this, "resource/models/cone.glb").value();
+  swapchain_info.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+  swapchain_info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+  swapchain_info.presentMode = VK_PRESENT_MODE_MAILBOX_KHR;
 
-  m_pipelinebuilder = std::make_unique<PipelineBuilder>(m_device);
-  m_pipelines.push_back(
-      std::make_unique<Pipeline>(CreatePipeline(
-          *m_shader,
-          VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
-          VK_POLYGON_MODE_FILL,
-          VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE,
-          MSAASampleCount::MSAA1,
-          m_swapchain_format,
-          VK_FORMAT_UNDEFINED
-          )
-  ));
-  return true;
+  vkcheck(vkCreateSwapchainKHR(_device, &swapchain_info, nullptr, &_swapchain));
+
+  uint32_t image_count = 0;
+  vkcheck(vkGetSwapchainImagesKHR(_device, _swapchain, &image_count, nullptr));
+  _swapchain_images.resize(image_count);
+  vkcheck(vkGetSwapchainImagesKHR(_device, _swapchain, &image_count, _swapchain_images.data()));
+  _swapchain_images.resize(image_count); // just in case it magically changed
+
+  std::vector<VkFormat> depth_format_list{VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D32_SFLOAT_S8_UINT};
+  VkFormat depth_format = VK_FORMAT_UNDEFINED;
+  for (VkFormat &format : depth_format_list)
+  {
+    VkFormatProperties2 format_properties;
+    format_properties.sType = VK_STRUCTURE_TYPE_FORMAT_PROPERTIES_2;
+    vkGetPhysicalDeviceFormatProperties2(
+        _physdevices[_physdevice_index],
+        format,
+        &format_properties);
+
+    if (format_properties.formatProperties.optimalTilingFeatures &
+        VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)
+    {
+      depth_format = format;
+      break;
+    }
+  }
+  _depth_format = depth_format;
+
+  VkImageCreateInfo depth_image_info = {
+      .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+      .pNext = nullptr,
+      .imageType = VK_IMAGE_TYPE_2D,
+      .format = depth_format,
+      .extent{
+          .width = (uint32_t)window_width,
+          .height = (uint32_t)window_height,
+          .depth = 1},
+
+      .mipLevels = 1,
+      .arrayLayers = 1,
+      .samples = VK_SAMPLE_COUNT_1_BIT,
+      .tiling = VK_IMAGE_TILING_OPTIMAL,
+      .usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+      .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+  };
+
+  VmaAllocationCreateInfo alloc_info{};
+  alloc_info.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
+  alloc_info.usage = VMA_MEMORY_USAGE_AUTO;
+
+  vkcheck(
+      vmaCreateImage(
+          _allocator,
+          &depth_image_info,
+          &alloc_info,
+          &_depth_image,
+          &_depth_image_allocation,
+          nullptr));
+
+  VkImageViewCreateInfo depth_view_info{};
+  depth_view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+  depth_view_info.image = _depth_image;
+  depth_view_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+  depth_view_info.format = _depth_format;
+  depth_view_info.subresourceRange = {
+      .aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT,
+      .levelCount = 1,
+      .layerCount = 1};
+
+  vkcheck(vkCreateImageView(_device, &depth_view_info, nullptr, &_depth_image_view));
 }
