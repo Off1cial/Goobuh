@@ -1,8 +1,14 @@
 #pragma once
 
+
 #include "math/vector.hpp"
+#include "math/matrix.hpp"
 #include <vector>
 #include "renderer/vulkan/vk_vma.h"
+
+#define MAT_TRANSLATE 0
+#define MAT_ROTATE 1
+#define MAT_SCALE  2
 
 namespace VK
 {
@@ -21,6 +27,21 @@ namespace VK
     VmaAllocation allocation;
     VmaAllocationInfo allocation_info;
     VkBuffer buffer;
+  };
+
+  struct ShaderData
+  {
+    Mat4 projection;
+    Mat4 view;
+    Mat4 model[3];
+  };
+
+  struct ShaderDataBuffer
+  {
+    VmaAllocation allocation;
+    VmaAllocationInfo allocation_info;
+    VkBuffer buffer;
+    VkDeviceAddress address;
   };
 
 };

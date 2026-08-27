@@ -38,6 +38,9 @@ void Engine::Init()
   vkcheck(vkCreateInstance(&instance_info, nullptr, &_instance));
   LOG_DEFAULT("Vulkan instance created");
   volkLoadInstance(_instance);
+  if(!SDL_Vulkan_CreateSurface(_window->GetSDLWindow(), _instance, nullptr, &_surface)){
+    LOG_FATAL("Failed to create vulkan surface");
+  }
 
   // Find physical devices
   uint32_t device_count = 0;
@@ -67,7 +70,7 @@ void Engine::Init()
   {
     if (_qfamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
     {
-      qfamily = i;
+      _qfamily = i;
       break;
     }
   }
@@ -87,7 +90,7 @@ void Engine::Init()
   VkDeviceQueueCreateInfo queue_info{};
   queue_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
   queue_info.queueCount = 1;
-  queue_info.queueFamilyIndex = qfamily;
+  queue_info.queueFamilyIndex = _qfamily;
   queue_info.pQueuePriorities = &qpriorities;
 
   const std::vector<const char *> device_extensions{VK_KHR_SWAPCHAIN_EXTENSION_NAME};
@@ -136,6 +139,64 @@ void Engine::Init()
 
   vkcheck(vmaCreateAllocator(&allocatorCI, &_allocator));
   LOG_DEFAULT("Vulkan: allocator created");
+  
+  CreateSwapchain();
+  _render_complete_semaphores.resize(_swapchain_images.size());
+  
+
+  VkCommandPoolCreateInfo cmd_pool_info{};
+  cmd_pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+  cmd_pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+  cmd_pool_info.queueFamilyIndex = _qfamily;
+  vkcheck(vkCreateCommandPool(_device, &cmd_pool_info, nullptr, &_command_pool));
+
+  // Create data for each frame in flight
+  VkSemaphoreCreateInfo semaphore_info{};
+  semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+  VkFenceCreateInfo fence_info{};
+  fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+  fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+  VkCommandBufferAllocateInfo cmd_buff_alloc_info{
+    .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+    .pNext = nullptr,
+    .commandPool = _command_pool,
+    .commandBufferCount = _max_frames_in_flight
+  };
+  vkcheck(vkAllocateCommandBuffers(_device, &cmd_buff_alloc_info, _frame_command_buffers.data()));
+  for (uint32_t i = 0; i < _max_frames_in_flight; i++){
+    VkBufferCreateInfo buff_create_info{};
+    buff_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    buff_create_info.size = sizeof(ShaderDataBuffer);
+    buff_create_info.usage = VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
+
+    VmaAllocationCreateInfo alloc_create_info{};
+    alloc_create_info.flags = 
+      VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT |
+      VMA_ALLOCATION_CREATE_HOST_ACCESS_ALLOW_TRANSFER_INSTEAD_BIT |
+      VMA_ALLOCATION_CREATE_MAPPED_BIT;
+    alloc_create_info.usage = VMA_MEMORY_USAGE_AUTO;
+
+    vkcheck(
+        vmaCreateBuffer(
+          _allocator, 
+          &buff_create_info, 
+          &alloc_create_info, 
+          &_shader_data_buffers[i].buffer,
+          &_shader_data_buffers[i].allocation,
+          &_shader_data_buffers[i].allocation_info)
+      );
+
+    VkBufferDeviceAddressInfo addr_info{};
+    addr_info.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
+    addr_info.buffer = _shader_data_buffers[i].buffer;
+    _shader_data_buffers[i].address = vkGetBufferDeviceAddress(_device, &addr_info);
+  
+    vkcheck(vkCreateFence(_device, &fence_info, nullptr, &_frame_fences[i]));
+    vkcheck(vkCreateSemaphore(_device, &semaphore_info, nullptr, &_image_acquired_semaphores[i]));
+  }
+  for (VkSemaphore& semaphore : _render_complete_semaphores){
+    vkcheck(vkCreateSemaphore(_device, &semaphore_info, nullptr, &semaphore));
+  }
 
 }
 

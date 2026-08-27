@@ -14,9 +14,9 @@ pkg_check_modules(SDL3 REQUIRED sdl3)
 pkg_check_modules(SDL3IMAGE REQUIRED sdl3-image)
 pkg_check_modules(SDL3TTF REQUIRED sdl3-ttf)
 
-# Find Vulkan
+# Find packages
 find_package(Vulkan REQUIRED)
-
+find_package(Ktx CONFIG REQUIRED)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Check for CPU architecture support
@@ -87,12 +87,6 @@ target_include_directories(engine PRIVATE
     ${Vulkan_INCLUDE_DIRS}
 )
 
-target_include_directories(engine SYSTEM PRIVATE
-    ${CMAKE_SOURCE_DIR}/include
-    ${CMAKE_SOURCE_DIR}/include/vulkan
-    ${CMAKE_SOURCE_DIR}/include/tinyobj
-    ${CMAKE_SOURCE_DIR}/include/volk
-)
 
 # -------------------------
 # Libraries
@@ -109,6 +103,7 @@ target_link_libraries(engine PRIVATE
     ${SDL3IMAGE_LIBRARIES}
     ${SDL3TTF_LIBRARIES}
     ${Vulkan_LIBRARIES}
+    ktx
 )
 
 if(WIN32)

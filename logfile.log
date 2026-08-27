@@ -397,3 +397,26 @@
 [LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:84: Vulkan: Fetched presentation support
 [LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:123: Vulkan: created _device
 [LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:138: Vulkan: allocator created
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:39: Vulkan instance created
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:84: Vulkan: Fetched presentation support
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:123: Vulkan: created _device
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:138: Vulkan: allocator created
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:39: Vulkan instance created
+[FATAL] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:13: Vulkan check failed, result 1
+
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:39: Vulkan instance created
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:87: Vulkan: Fetched presentation support
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:126: Vulkan: created _device
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:141: Vulkan: allocator created
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:39: Vulkan instance created
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:87: Vulkan: Fetched presentation support
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:126: Vulkan: created _device
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:141: Vulkan: allocator created
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:39: Vulkan instance created
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:87: Vulkan: Fetched presentation support
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:126: Vulkan: created _device
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:141: Vulkan: allocator created
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:39: Vulkan instance created
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:87: Vulkan: Fetched presentation support
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:126: Vulkan: created _device
+[LOG] /home/redw0od0/Goobuh/src/renderer/vulkan/vk_init.cpp:141: Vulkan: allocator created

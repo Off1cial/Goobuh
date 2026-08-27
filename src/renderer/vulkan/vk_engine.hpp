@@ -25,6 +25,12 @@ namespace VK
   
 
       static constexpr uint8_t _max_frames_in_flight = 2;
+      std::array<ShaderDataBuffer, _max_frames_in_flight> _shader_data_buffers;
+      std::array<VkCommandBuffer, _max_frames_in_flight> _frame_command_buffers;
+      std::array<VkFence, _max_frames_in_flight> _frame_fences;
+      std::array<VkSemaphore, _max_frames_in_flight> _image_acquired_semaphores;
+      VkCommandPool _command_pool = VK_NULL_HANDLE;
+      std::vector<VkSemaphore> _render_complete_semaphores;
 
       MeshData LoadMesh_OBJ(const char* path);
 
@@ -38,7 +44,7 @@ namespace VK
       VmaAllocator _allocator = VK_NULL_HANDLE;
 
       std::vector<VkQueueFamilyProperties> _qfamilies;
-      uint32_t qfamily = 0;
+      uint32_t _qfamily = 0;
       
       VkSurfaceKHR _surface = VK_NULL_HANDLE;
       VkSurfaceCapabilitiesKHR _surface_capabilities;
