@@ -3,6 +3,6 @@
 
 int main( void )
 {
-  Global gbl;
+  Global gbl(Plat::GraphicsAPI::OpenGL);
   gbl.Run(); 
 } 

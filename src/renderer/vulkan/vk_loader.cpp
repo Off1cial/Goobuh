@@ -8,7 +8,7 @@
 using namespace VK;
 
 
-MeshData Engine::LoadMesh_OBJ(const char* path)
+MeshData VKRenderer::LoadMesh_OBJ(const char* path)
 {
   tinyobj::attrib_t attrib;
   std::vector<tinyobj::shape_t> shapes;
@@ -35,6 +35,8 @@ MeshData Engine::LoadMesh_OBJ(const char* path)
 
     v.pos.x = attrib.vertices[(size_t)(u_index * 2)];
     v.pos.y = 1.0f - attrib.vertices[(size_t)(u_index * 2 + 1)];
+
+    v.col.x = v.col.y = v.col.z = v.col.w = 1;
     data.vertices.push_back(v);
     data.indices.push_back((uint32_t)data.indices.size());
   }

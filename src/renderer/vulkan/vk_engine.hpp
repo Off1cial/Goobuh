@@ -1,6 +1,7 @@
 #pragma once
 
 #include "platform/window.hpp"
+#include "renderer/interface/r_engine.hpp"
 #include "renderer/vulkan/vk_vma.h"
 #include "renderer/vulkan/vk_types.h"
 #include "core/logsys.hpp"
@@ -12,19 +13,28 @@
 
 namespace VK
 {
-  class Engine
+  class VKRenderer : public IRenderer
   {
     public:
-      Engine(Plat::Window* window) : _window(window) {Init();}
+      VKRenderer(Plat::Window* window) : _window(window) {Init();}
 
+
+      void Draw() override;
+      void Shutdown() override;
+
+      //void SubmitMesh() override;
     private:
 
       void InitDepthFormat();
       void CreateSwapchain();
-      void Init();
+      void Init() override;
   
 
+      void TransitionImage(VkCommandBuffer cmd, VkImage image, VkImageLayout currentLayout, VkImageLayout newLayout);
+
+
       static constexpr uint8_t _max_frames_in_flight = 2;
+      uint64_t _framenumber = 0;
       std::array<ShaderDataBuffer, _max_frames_in_flight> _shader_data_buffers;
       std::array<VkCommandBuffer, _max_frames_in_flight> _frame_command_buffers;
       std::array<VkFence, _max_frames_in_flight> _frame_fences;

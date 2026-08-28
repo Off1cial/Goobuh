@@ -1,6 +1,6 @@
 #pragma once
 
-
+#include "renderer/interface/r_types.hpp"
 #include "math/vector.hpp"
 #include "math/matrix.hpp"
 #include <vector>
@@ -12,13 +12,14 @@
 
 namespace VK
 {
+  /*
   struct Vertex
   {
     Vector pos;
     Vector normal;
-    Vector4 colour;
+    Vector4 col;
     float uv[2];
-  };
+  };*/
 
   struct MeshData
   {

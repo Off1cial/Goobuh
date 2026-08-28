@@ -109,6 +109,7 @@ target_link_libraries(engine PRIVATE
 if(WIN32)
     target_link_libraries(engine PRIVATE
         ${Vulkan_LIBRARIES}
+        opengl32
     )
 elseif(UNIX)
     target_link_libraries(engine PRIVATE
@@ -116,6 +117,7 @@ elseif(UNIX)
         dl
         pthread
         m
+        GL
     )
 endif()
 
