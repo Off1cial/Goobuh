@@ -1,6 +1,5 @@
 #pragma once
 
-// Strictly vulkan
 #include <SDL3/SDL.h>
 #include <string>
 
@@ -8,10 +7,18 @@
 namespace Plat
 {
   class Input;
+
+  enum class GraphicsAPI
+  {
+    OpenGL,
+    Vulkan,
+    DirectX
+  };
+
   class Window 
   {
     public:
-      Window(const char* name, int width, int height);
+      Window(GraphicsAPI api, const char* name, int width, int height);
       ~Window();
       void Shutdown();
       void PollEvents(Input& input);
@@ -25,7 +32,6 @@ namespace Plat
 
 
       SDL_Window* GetSDLWindow() const {return m_window;}
-      SDL_Renderer* GetSDLRenderer() const {return m_renderer;}
 
     private:
       int m_width;
@@ -36,8 +42,9 @@ namespace Plat
       static inline constexpr int MIN_WIDTH = 640;
       static inline constexpr int MIN_HEIGHT = 480;
 
+      GraphicsAPI _api;
+
       SDL_Window* m_window = nullptr;
-      SDL_Renderer* m_renderer = nullptr;// Temporary for getting the app working 
       std::string name;
   };
-}
+};

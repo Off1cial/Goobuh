@@ -2,13 +2,13 @@
 
 #include "platform/input.hpp"
 #include "platform/window.hpp"
+#include "renderer/interface/r_engine.hpp"
 #include <memory>
-#include "renderer/vulkan/vk_engine.hpp"
 
 class Global
 {
   public:
-    Global();
+    Global(Plat::GraphicsAPI api);
     ~Global();
 
     virtual void Shutdown();
@@ -18,5 +18,5 @@ class Global
   private:
     std::unique_ptr<Plat::Window> _window = nullptr;
     std::unique_ptr<Plat::Input>  _input  = nullptr;
-    std::unique_ptr<VK::Engine>   _renderer = nullptr;
+    std::unique_ptr<IRenderer>   _renderer = nullptr;
 };

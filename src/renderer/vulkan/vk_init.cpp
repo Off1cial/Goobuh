@@ -5,6 +5,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_vulkan.h>
 #include <vector>
+#include <iostream>
 
 static inline void vkcheck(int result)
 {
@@ -17,8 +18,9 @@ static inline void vkcheck(int result)
 
 using namespace VK;
 
-void Engine::Init()
+void VKRenderer::Init()
 {
+  std::cout << "Initialising Vulkan renderer\n";
   vkcheck(volkInitialize());
   // Create Application/Info
   VkApplicationInfo app_info{};
@@ -200,7 +202,7 @@ void Engine::Init()
 
 }
 
-void Engine::CreateSwapchain()
+void VKRenderer::CreateSwapchain()
 {
   vkcheck(
       vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
