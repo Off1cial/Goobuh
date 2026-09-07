@@ -112,6 +112,13 @@ sudo dnf install SDL3_ttf-devel
 sudo pacman -S sdl3_ttf
 ```
 
+### KTX 
+
+#### Arch (with yay)
+```
+yay -S ktx-software-bin
+```
+
 ## Full Installation (All Dependencies)
 
 ### Ubuntu/Debian

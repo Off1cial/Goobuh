@@ -9,13 +9,14 @@ add_compile_definitions(_POSIX_C_SOURCE=200112L)
 
 find_package(PkgConfig REQUIRED)
 
+
 pkg_check_modules(SDL3 REQUIRED sdl3)
 pkg_check_modules(SDL3IMAGE REQUIRED sdl3-image)
 pkg_check_modules(SDL3TTF REQUIRED sdl3-ttf)
 
-# Find Vulkan
+# Find packages
 find_package(Vulkan REQUIRED)
-
+find_package(Ktx CONFIG REQUIRED)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Check for CPU architecture support
@@ -28,6 +29,8 @@ include(CheckCXXCompilerFlag)
 file(GLOB_RECURSE SOURCE_CORE
     src/core/*.c
     src/core/*.cpp
+    src/*.c
+    src/*.cpp
 )
 
 file(GLOB_RECURSE SOURCE_MATH
@@ -44,6 +47,10 @@ file(GLOB_RECURSE SOURCE_PLATFORM
 file(GLOB_RECURSE SOURCE_RENDERER
   src/renderer/*.c
   src/renderer/*.cpp
+  src/renderer/vulkan/*.cpp
+  src/renderer/vulkan/*.c
+  include/volk/volk.c
+  include/tinyobj/tiny_obj_loader.cpp
 )
 
 file(GLOB_RECURSE SOURCE_ENGINE
@@ -72,6 +79,7 @@ target_compile_definitions(engine PRIVATE
 # Include paths
 # -------------------------
 
+
 target_include_directories(engine PRIVATE
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/src
@@ -80,6 +88,7 @@ target_include_directories(engine PRIVATE
     ${SDL3TTF_INCLUDE_DIRS}
     ${Vulkan_INCLUDE_DIRS}
 )
+
 
 # -------------------------
 # Libraries
@@ -96,11 +105,13 @@ target_link_libraries(engine PRIVATE
     ${SDL3IMAGE_LIBRARIES}
     ${SDL3TTF_LIBRARIES}
     ${Vulkan_LIBRARIES}
+    ktx
 )
 
 if(WIN32)
     target_link_libraries(engine PRIVATE
         ${Vulkan_LIBRARIES}
+        opengl32
     )
 elseif(UNIX)
     target_link_libraries(engine PRIVATE
@@ -108,6 +119,7 @@ elseif(UNIX)
         dl
         pthread
         m
+        GL
     )
 endif()
 

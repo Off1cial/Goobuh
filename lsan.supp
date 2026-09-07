@@ -3,3 +3,6 @@ leak:libdecor-gtk
 leak:libgtk
 leak:libpango
 leak:libfontconfig
+leak:libwayland-client
+leak:libSDL3.so
+leak:libc.so
