@@ -106,6 +106,7 @@ target_link_libraries(engine PRIVATE
     ${SDL3TTF_LIBRARIES}
     ${Vulkan_LIBRARIES}
     ktx
+    simdjson
 )
 
 if(WIN32)

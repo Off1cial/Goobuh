@@ -22,6 +22,9 @@ typedef struct VKPipelineSet
   VkPipelineMultisampleStateCreateInfo multisampling;
   VkPipelineDepthStencilStateCreateInfo depth_stencil;
   VkPipelineRenderingCreateInfo rendering;
+  
+  VkVertexInputBindingDescription vertex_binding;
+  VkVertexInputAttributeDescription vertex_attributes[4];
 
   VkPipelineLayout layout;
 } VKPipelineSet;

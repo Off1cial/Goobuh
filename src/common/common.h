@@ -36,6 +36,14 @@ typedef int8_t   i8;
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 #endif
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
+
+#define DEG2RAD(theta) (theta * M_PI/180.0F)
+#define RAG2DEG(theta) (theta * 180.0F/M_PI)
+
 #ifdef __cplusplus
 
   template <class T>

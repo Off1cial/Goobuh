@@ -2,6 +2,7 @@
 #include "renderer/vulkan/vk_renderer.h"
 #include "common/logsys.h"
 
+#include "math/matrix.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -28,7 +29,7 @@ VKMesh VKMesh_create(
   VkBufferCreateInfo buffer_info = {
       .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
       .size = sizeof(vertex_t) * vertex_count,
-      .usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+      .usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
       .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
   };
 
@@ -91,4 +92,46 @@ VKMesh VKMesh_create(
   }
 
   return mesh;
+}
+
+/*
+void VKMesh_draw(VkDevice device, VkPipelineLayout pipeline_layout, VkCommandBuffer cmd, VkPipeline pipeline, VKMesh *mesh_data)
+{
+  vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+  VkDeviceSize offset = 0;
+
+  vkCmdBindVertexBuffers(cmd, 0, 1, &mesh_data->vertex_buffer, &offset);
+  //vkCmdBindIndexBuffer(cmd, mesh_data->index_buffer, 0, VK_INDEX_TYPE_UINT32);
+
+  if (mesh_data->index_count){
+    vkCmdBindIndexBuffer(cmd, mesh_data->index_buffer, 0, VK_INDEX_TYPE_UINT32);
+    vkCmdDrawIndexed(cmd, mesh_data->index_count, 1, 0, 0, 0);
+  }
+  else{
+    vkCmdDraw(cmd, mesh_data->vertex_count, 1, 0, 0);
+  }
+}
+*/
+
+void VKMesh_draw(VkDevice device, VkPipelineLayout pipeline_layout, VkCommandBuffer cmd, VkPipeline pipeline, VKMesh *mesh_data, mat4 proj, mat4 view, mat4 model)
+{
+  vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+
+  VkBufferDeviceAddressInfo address_info = {0};
+  address_info.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
+  address_info.buffer = mesh_data->vertex_buffer;
+
+  PushConstants constants = {0};
+  MatrixIdentity(constants.m);
+  constants.vertex_addr = vkGetBufferDeviceAddress(device, &address_info);
+
+  vkCmdPushConstants(cmd, pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstants), &constants);
+
+  if (mesh_data->index_count) {
+    vkCmdBindIndexBuffer(cmd, mesh_data->index_buffer, 0, VK_INDEX_TYPE_UINT32);
+    vkCmdDrawIndexed(cmd, mesh_data->index_count, 1, 0, 0, 0);
+  }
+  else {
+    vkCmdDraw(cmd, mesh_data->vertex_count, 1, 0, 0);
+  }
 }

@@ -11,9 +11,15 @@
 typedef struct
 {
   float pos[3];
+  float _pad0;
+
   float normal[3];
+  float _pad1;
+
   float col[4];
+
   float uv[2];
+  float _pad2[2];
 } vertex_t;
 
 typedef struct 
@@ -35,6 +41,12 @@ typedef struct VertexBuffer
   VkBuffer buffer;
   VmaAllocation allocation;
 } VertexBuffer;
+
+typedef struct PushConstants
+{
+  float m[16];
+  VkDeviceAddress vertex_addr;
+} PushConstants;
 
 
 VKShader VKShader_create(VkDevice device, const char*  vertexpath, const char* fragmentpath);
