@@ -16,11 +16,3 @@
 
 #pragma clang diagnostic pop
 
-
-// vk_vma.h
-inline void vmaImportVulkanFunctionsFromVolk(VmaAllocatorCreateInfo* allocatorCI, VmaVulkanFunctions* vkFunctions)
-{
-    vkFunctions->vkGetInstanceProcAddr = vkGetInstanceProcAddr;
-    vkFunctions->vkGetDeviceProcAddr = vkGetDeviceProcAddr;
-    allocatorCI->pVulkanFunctions = vkFunctions;
-}

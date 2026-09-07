@@ -29,6 +29,8 @@ include(CheckCXXCompilerFlag)
 file(GLOB_RECURSE SOURCE_CORE
     src/core/*.c
     src/core/*.cpp
+    src/*.c
+    src/*.cpp
 )
 
 file(GLOB_RECURSE SOURCE_MATH

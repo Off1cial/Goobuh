@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
-#include "core/logsys.hpp"
+#include "common/logsys.h"
 
 static FILE* outfile = NULL;
 

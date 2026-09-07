@@ -1,48 +1,43 @@
-#pragma once
+#ifndef VK_TYPES_H
+#define VK_TYPES_H
+#ifndef VK_NO_PROTOTYPES
+#define VK_NO_PROTOTYPES
+#endif
 
-#include "renderer/interface/r_types.hpp"
-#include "math/vector.hpp"
-#include "math/matrix.hpp"
-#include <vector>
+#include <volk/volk.h>
+
 #include "renderer/vulkan/vk_vma.h"
 
-#define MAT_TRANSLATE 0
-#define MAT_ROTATE 1
-#define MAT_SCALE  2
-
-namespace VK
+typedef struct
 {
-  /*
-  struct Vertex
-  {
-    Vector pos;
-    Vector normal;
-    Vector4 col;
-    float uv[2];
-  };*/
+  float pos[3];
+  float normal[3];
+  float col[4];
+  float uv[2];
+} vertex_t;
 
-  struct MeshData
-  {
-    std::vector<Vertex> vertices;
-    std::vector<uint32_t> indices;
-    VmaAllocation allocation;
-    VmaAllocationInfo allocation_info;
-    VkBuffer buffer;
-  };
+typedef struct 
+{
+  float projection[16];
+  float view[16];
+  float model[16];
+} ShaderData;
 
-  struct ShaderData
-  {
-    Mat4 projection;
-    Mat4 view;
-    Mat4 model[3];
-  };
+typedef struct 
+{
+  VkShaderModule vertex_module;
+  VkShaderModule fragment_module;
+  VkDevice device;
+} VKShader;
 
-  struct ShaderDataBuffer
-  {
-    VmaAllocation allocation;
-    VmaAllocationInfo allocation_info;
-    VkBuffer buffer;
-    VkDeviceAddress address;
-  };
+typedef struct VertexBuffer
+{
+  VkBuffer buffer;
+  VmaAllocation allocation;
+} VertexBuffer;
 
-};
+
+VKShader VKShader_create(VkDevice device, const char*  vertexpath, const char* fragmentpath);
+
+
+#endif
