@@ -16,6 +16,11 @@ static mat4 MATRIX_IDENTITY = {
   0, 0, 0, 1
 };
 
+#define _MatIdentity_ { \
+  1, 0, 0, 0, \
+  0, 1, 0, 0, \
+  0, 0, 1, 0, \
+  0, 0, 0, 1 }
 
 FORCEINLINE void MatrixIdentity(mat4 out)
 {
@@ -115,7 +120,8 @@ FORCEINLINE void MatrixLookAt(vec3_t eye, vec3_t centre, vec3_t up, mat4 out)
   out[14] = -VectorDot(back, eye);
 }
 
-FORCEINLINE void MatrixPerspective(float fov, float aspect, float znear, float zfar, mat4 out)
+
+FORCEINLINE void MatrixPerspective_GL(float fov, float aspect, float znear, float zfar, mat4 out)
 {
   memset(out, 0, sizeof(mat4));
 
@@ -127,6 +133,26 @@ FORCEINLINE void MatrixPerspective(float fov, float aspect, float znear, float z
   out[11] = -1.0f;
   out[14] = (2.0f * zfar * znear) / (znear - zfar);
 }
+
+FORCEINLINE void MatrixPerspective_VK(
+    float fov,
+    float aspect,
+    float znear,
+    float zfar,
+    mat4 out)
+{
+    memset(out, 0, sizeof(mat4));
+
+    float f = 1.0f / tanf(fov * 0.5f);
+
+    out[0] = f / aspect;
+    out[5] = f;
+
+    out[10] = zfar / (znear - zfar);
+    out[11] = -1.0f;
+    out[14] = (zfar * znear) / (znear - zfar);
+}
+
 
 FORCEINLINE void MatrixOrthographic(float left, float right, float bottom, float top, float znear, float zfar, mat4 out)
 {
@@ -218,6 +244,10 @@ FORCEINLINE void MatrixInverse(mat4 matrix, mat4 out)
     inv[i] *= inv_det;
 
   memcpy(out, result, sizeof(mat4));
+}
+
+FORCEINLINE void MatrixCopy(mat4 src, mat4 dst){
+  memcpy(dst, src, sizeof(float) * 16);
 }
 
 #endif

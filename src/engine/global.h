@@ -11,6 +11,8 @@ typedef struct GlobalState
   InputState* input;
   VK_Renderer* renderer;
 
+  camera_t* camera_active;
+
 } GlobalState;
 
 extern GlobalState* g_Global;

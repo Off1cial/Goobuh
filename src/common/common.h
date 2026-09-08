@@ -41,8 +41,8 @@ typedef int8_t   i8;
 #endif
 
 
-#define DEG2RAD(theta) (theta * M_PI/180.0F)
-#define RAG2DEG(theta) (theta * 180.0F/M_PI)
+#define DEG2RAD(theta) (theta * M_PI/180.0)
+#define RAG2DEG(theta) (theta * 180.0/M_PI)
 
 #ifdef __cplusplus
 

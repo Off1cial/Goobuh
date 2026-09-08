@@ -1,6 +1,5 @@
 #include "renderer/vulkan/vk_mesh_loader.h"
 #include "renderer/vulkan/vk_mesh.h"
-#include "renderer/vulkan/vk_renderer.h"
 #include "renderer/vulkan/vk_types.h"
 
 #include "tinyobj/tiny_obj_loader.h"
@@ -11,8 +10,6 @@
 #include "fastgltf/types.hpp"
 #include "fastgltf/math.hpp"
 #include "fastgltf/util.hpp"
-
-#include "fastgltf/glm_element_traits.hpp"
 
 
 
@@ -55,16 +52,16 @@ static vertex_t make_obj_vertex(const tinyobj::attrib_t& attrib, const tinyobj::
 
   if (index.vertex_index >= 0)
   {
-    vertex.pos[0] = attrib.vertices[index.vertex_index * 3 + 0];
-    vertex.pos[1] = attrib.vertices[index.vertex_index * 3 + 1];
-    vertex.pos[2] = attrib.vertices[index.vertex_index * 3 + 2];
+    vertex.pos[0] = attrib.vertices[(size_t)index.vertex_index * 3 + 0];
+    vertex.pos[1] = attrib.vertices[(size_t)index.vertex_index * 3 + 1];
+    vertex.pos[2] = attrib.vertices[(size_t)index.vertex_index * 3 + 2];
   }
 
   if (index.normal_index >= 0)
   {
-    vertex.normal[0] = attrib.normals[index.normal_index * 3 + 0];
-    vertex.normal[1] = attrib.normals[index.normal_index * 3 + 1];
-    vertex.normal[2] = attrib.normals[index.normal_index * 3 + 2];
+    vertex.normal[0] = attrib.normals[(size_t)index.normal_index * 3 + 0];
+    vertex.normal[1] = attrib.normals[(size_t)index.normal_index * 3 + 1];
+    vertex.normal[2] = attrib.normals[(size_t)index.normal_index * 3 + 2];
   }
 
   vertex.col[0] = 1.0f;
@@ -74,8 +71,8 @@ static vertex_t make_obj_vertex(const tinyobj::attrib_t& attrib, const tinyobj::
 
   if (index.texcoord_index >= 0)
   {
-    vertex.uv[0] = attrib.texcoords[index.texcoord_index * 2 + 0];
-    vertex.uv[1] = 1.0f - attrib.texcoords[index.texcoord_index * 2 + 1];
+    vertex.uv[0] = attrib.texcoords[(size_t)index.texcoord_index * 2 + 0];
+    vertex.uv[1] = 1.0f - attrib.texcoords[(size_t)index.texcoord_index * 2 + 1];
   }
 
   return vertex;
@@ -119,7 +116,7 @@ VKMesh VKMesh_load_obj(VK_Renderer* engine, const char* path)
         continue;
       }
 
-      uint32_t vertex_index = (uint32_t)vertices.size();
+      auto vertex_index = (uint32_t)vertices.size();
 
       vertices.push_back(make_obj_vertex(attrib, index));
       indices.push_back(vertex_index);
@@ -140,6 +137,8 @@ static vertex_t make_gltf_vertex(const fastgltf::math::fvec3& position, const fa
   vertex.pos[0] = position[0];
   vertex.pos[1] = position[1];
   vertex.pos[2] = position[2];
+
+  printf("Vertex loaded {%0.2f, %0.2f, %0.2f}\n", position[0], position[1], position[2]);
 
   vertex.normal[0] = normal[0];
   vertex.normal[1] = normal[1];
@@ -171,7 +170,7 @@ VKMesh VKMesh_load_gltf(VK_Renderer* engine, const char* path)
     return mesh;
   }
 
-  auto asset = parser.loadGltf(data.get(), filepath.parent_path(), fastgltf::Options::LoadExternalBuffers | fastgltf::Options::LoadGLBBuffers);
+  auto asset = parser.loadGltf(data.get(), filepath.parent_path(), fastgltf::Options::LoadExternalBuffers);
 
   if (!asset)
   {

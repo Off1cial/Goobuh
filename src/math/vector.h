@@ -9,8 +9,10 @@ typedef vec_t vec2_t[2];
 typedef vec_t vec3_t[3];
 typedef vec_t vec4_t[4];
 
+static vec3_t VEC_ZERO = {0, 0, 0};
+
 static vec3_t AXIS_X = {1, 0, 0};
-static vec3_t AXIS_Y = {0, 0, 0};
+static vec3_t AXIS_Y = {0, 1, 0};
 static vec3_t AXIS_Z = {0, 0, 1};
 
 static vec3_t AXIS_XN = {-1, 0, 0};

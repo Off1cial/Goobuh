@@ -44,7 +44,9 @@ typedef struct VertexBuffer
 
 typedef struct PushConstants
 {
-  float m[16];
+  float projection[16];
+  float view[16];
+  float model[16];
   VkDeviceAddress vertex_addr;
 } PushConstants;
 

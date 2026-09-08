@@ -113,7 +113,7 @@ void VKMesh_draw(VkDevice device, VkPipelineLayout pipeline_layout, VkCommandBuf
 }
 */
 
-void VKMesh_draw(VkDevice device, VkPipelineLayout pipeline_layout, VkCommandBuffer cmd, VkPipeline pipeline, VKMesh *mesh_data, mat4 proj, mat4 view, mat4 model)
+void VKMesh_draw(VkDevice device, VkPipelineLayout pipeline_layout, VkCommandBuffer cmd, VkPipeline pipeline, VKMesh *mesh_data, PushConstants* push_constants)
 {
   vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
@@ -121,11 +121,9 @@ void VKMesh_draw(VkDevice device, VkPipelineLayout pipeline_layout, VkCommandBuf
   address_info.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
   address_info.buffer = mesh_data->vertex_buffer;
 
-  PushConstants constants = {0};
-  MatrixIdentity(constants.m);
-  constants.vertex_addr = vkGetBufferDeviceAddress(device, &address_info);
+  push_constants->vertex_addr = vkGetBufferDeviceAddress(device, &address_info);
 
-  vkCmdPushConstants(cmd, pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstants), &constants);
+  vkCmdPushConstants(cmd, pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstants), push_constants);
 
   if (mesh_data->index_count) {
     vkCmdBindIndexBuffer(cmd, mesh_data->index_buffer, 0, VK_INDEX_TYPE_UINT32);

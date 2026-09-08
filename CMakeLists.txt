@@ -60,6 +60,28 @@ file(GLOB_RECURSE SOURCE_ENGINE
 )
 
 # -------------------------
+# fastgltf
+# -------------------------
+
+file(GLOB_RECURSE SOURCE_FASTGLTF
+    include/fastgltf/fastgltfsrc/*.cpp
+)
+
+add_library(fastgltf STATIC
+    ${SOURCE_FASTGLTF}
+)
+
+target_include_directories(fastgltf SYSTEM PUBLIC
+    ${CMAKE_SOURCE_DIR}/include
+)
+
+# fastgltf is third-party code; don't apply engine warnings to it
+target_compile_options(fastgltf PRIVATE
+    -w
+)
+
+
+# -------------------------
 # Engine executable
 # -------------------------
 
@@ -79,14 +101,17 @@ target_compile_definitions(engine PRIVATE
 # Include paths
 # -------------------------
 
-
-target_include_directories(engine PRIVATE
+target_include_directories(engine SYSTEM PRIVATE
     ${CMAKE_SOURCE_DIR}/include
-    ${CMAKE_SOURCE_DIR}/src
     ${SDL3_INCLUDE_DIRS}
     ${SDL3IMAGE_INCLUDE_DIRS}
     ${SDL3TTF_INCLUDE_DIRS}
     ${Vulkan_INCLUDE_DIRS}
+)
+
+
+target_include_directories(engine PRIVATE
+    ${CMAKE_SOURCE_DIR}/src
 )
 
 
@@ -105,6 +130,7 @@ target_link_libraries(engine PRIVATE
     ${SDL3IMAGE_LIBRARIES}
     ${SDL3TTF_LIBRARIES}
     ${Vulkan_LIBRARIES}
+    fastgltf
     ktx
     simdjson
 )
@@ -253,16 +279,16 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         -fno-optimize-sibling-calls
         -fno-elide-constructors
         -fstack-protector-strong
-        #-Werror
+        -Werror
         -Wall
         -Wextra
         -Wpedantic
         -Wshadow
-        #-Wunused
+        -Wunused
         -Wcast-align
         -Wconversion
         -Wsign-conversion
-        -Wdouble-promotion
+        #-Wdouble-promotion
         -Wformat=2
         -Wmissing-include-dirs
         -Wundef

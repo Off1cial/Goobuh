@@ -1,6 +1,7 @@
 #include "platform/input.h"
 #include "common//logsys.h"
 #include <stdlib.h>
+#include <stdio.h>
 
 
 InputState* Platform_CreateInput(void)
@@ -33,7 +34,8 @@ void input_update(InputState* state)
   state->mouse_prev = state->mouse_current; 
 
   state->mouse_current = (state->mouse_locked)
-    ? SDL_GetMouseState(&state->mx, &state->my) 
-    : SDL_GetRelativeMouseState(&state->mx_rel, &state->my_rel);
+    ? SDL_GetRelativeMouseState(&state->mx_rel, &state->my_rel)
+    : SDL_GetMouseState(&state->mx, &state->my);
+
 }
 

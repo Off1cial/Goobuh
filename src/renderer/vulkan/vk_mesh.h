@@ -32,7 +32,10 @@ typedef struct VK_Renderer VK_Renderer;
 VKMesh VKMesh_create(VK_Renderer* engine, const vertex_t* vertices, const uint32_t* indices, const uint32_t vertex_count, const uint32_t index_count);
 
 
-void   VKMesh_draw(VkDevice device, VkPipelineLayout pipeline_layout, VkCommandBuffer buffer, VkPipeline pipeline, VKMesh* mesh_data, mat4 proj, mat4 view, mat4 model);
+
+
+void VKMesh_draw(VkDevice device, VkPipelineLayout pipeline_layout, VkCommandBuffer cmd, VkPipeline pipeline, VKMesh *mesh_data, PushConstants* push_constants);
+
 
 
 #ifdef __cplusplus

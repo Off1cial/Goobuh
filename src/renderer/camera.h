@@ -20,7 +20,7 @@ typedef struct camera_t
 
 
 
-void camera_init(camera_t* cam, vec3_t origin, vec3_t direction, float aspect, float fov);
+void camera_init(camera_t* cam, vec3_t origin, vec3_t direction, float aspect, double fov);
 void camera_update(camera_t* cam);
 
 
