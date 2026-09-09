@@ -62,6 +62,10 @@ void VK_Shutdown(VK_Renderer *engine)
 
   vkDestroyImageView(engine->device, engine->depth_image_view, NULL);
   vmaDestroyImage(engine->allocator, engine->depth_image, engine->depth_image_allocation);
+  
+  vkDestroyImageView(engine->device, engine->draw_image.view, NULL);
+  vmaDestroyImage(engine->allocator, engine->draw_image.image, engine->draw_image.allocation);
+
 
   for (uint32_t i = 0; i < engine->swapchain_data.image_count; i++)
     vkDestroyImageView(engine->device, engine->swapchain_data.image_views[i], NULL);
@@ -155,6 +159,10 @@ static void transition_image(VkCommandBuffer cmd, VkImage image, VkImageLayout c
 
 void VK_WindowResize(VK_Renderer* engine){
   vkDeviceWaitIdle(engine->device);
+  
+  vkDestroyImageView(engine->device, engine->draw_image.view, NULL);
+  vmaDestroyImage(engine->allocator, engine->draw_image.image, engine->draw_image.allocation);
+
   destroy_swapchain(engine);
   create_swapchain(engine, engine->window);
 }
@@ -198,15 +206,15 @@ void VK_Draw(VK_Renderer *engine, camera_t* camera)
   vkBeginCommandBuffer(cmd, &cmdbegin);
 
   VkImage current_image = engine->swapchain_data.images[swapchain_image];
-  VkImageView current_view = engine->swapchain_data.image_views[swapchain_image];
+  //VkImageView current_view = engine->swapchain_data.image_views[swapchain_image];
 
-  transition_image(cmd, current_image, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+  transition_image(cmd, engine->draw_image.image, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
   VkClearValue clear_color = {{{0.02f, 0.02f, 0.05f, 1.0f}}};
 
   VkRenderingAttachmentInfo color_attachment = {0};
   color_attachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
-  color_attachment.imageView = current_view;
+  color_attachment.imageView = engine->draw_image.view;
   color_attachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
   color_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
   color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -214,7 +222,7 @@ void VK_Draw(VK_Renderer *engine, camera_t* camera)
 
   VkRenderingInfo rendering_info = {0};
   rendering_info.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
-  rendering_info.renderArea.extent = engine->swapchain_data.swapchain_extent;
+  rendering_info.renderArea.extent = engine->draw_extent;
   rendering_info.layerCount = 1;
   rendering_info.colorAttachmentCount = 1;
   rendering_info.pColorAttachments = &color_attachment;
@@ -232,12 +240,12 @@ void VK_Draw(VK_Renderer *engine, camera_t* camera)
 
 
   VkViewport viewport = {0};
-  viewport.width = (float)engine->swapchain_data.swapchain_extent.width;
-  viewport.height = (float)engine->swapchain_data.swapchain_extent.height;
+  viewport.width = (float)engine->draw_extent.width;
+  viewport.height = (float)engine->draw_extent.height;
   viewport.minDepth = 0.0f;
   viewport.maxDepth = 1.0f;
   VkRect2D scissor = {0};
-  scissor.extent = engine->swapchain_data.swapchain_extent;
+  scissor.extent = engine->draw_extent;
 
   vkCmdSetViewport(cmd, 0, 1, &viewport);
   vkCmdSetScissor(cmd, 0, 1, &scissor);
@@ -269,8 +277,35 @@ for (int i = 0; i < 4; i++)
       );
 
   vkCmdEndRendering(cmd);
+  
+  transition_image(
+      cmd,
+      engine->draw_image.image,
+      VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+      VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL
+      );
+  transition_image(
+      cmd,
+      current_image,
+      VK_IMAGE_LAYOUT_UNDEFINED,
+      VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+      );
+  copy_image_to_image(
+      cmd,
+      engine->draw_image.image,
+      current_image,
+      engine->draw_extent,
+      engine->swapchain_data.swapchain_extent
+      );
 
-  transition_image(cmd, current_image, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+  transition_image(
+      cmd,
+      current_image,
+      VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+      VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+      );
+
+  //transition_image(cmd, current_image, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
   vkEndCommandBuffer(cmd);
 
   VkCommandBufferSubmitInfo cmdsubmit = submitinfo_cmdbuffer(cmd);

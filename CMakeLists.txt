@@ -9,6 +9,14 @@ add_compile_definitions(_POSIX_C_SOURCE=200112L)
 
 find_package(PkgConfig REQUIRED)
 
+add_library(Jolt STATIC IMPORTED)
+set_target_properties(Jolt PROPERTIES
+  IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/include/JoltPhysics/Build/Linux_Release/libJolt.a
+)
+target_include_directories(Jolt INTERFACE
+    ${CMAKE_SOURCE_DIR}/include/JoltPhysics
+)
+
 
 pkg_check_modules(SDL3 REQUIRED sdl3)
 pkg_check_modules(SDL3IMAGE REQUIRED sdl3-image)
@@ -80,6 +88,7 @@ add_library(fastgltf STATIC
 
 target_include_directories(fastgltf SYSTEM PUBLIC
     ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/include/JoltPhysics
 )
 
 # fastgltf is third-party code; don't apply engine warnings to it
@@ -141,6 +150,7 @@ target_link_libraries(engine PRIVATE
     fastgltf
     ktx
     simdjson
+    Jolt
 )
 
 if(WIN32)
@@ -212,6 +222,7 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
     target_compile_definitions(engine PRIVATE
         NDEBUG
         GOOBUH_RELEASE
+        JPH_NO_DEBUG
     )
 elseif(CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
     target_compile_options(engine PRIVATE
@@ -287,12 +298,12 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         -fno-optimize-sibling-calls
         -fno-elide-constructors
         -fstack-protector-strong
-        -Werror
+        #-Werror
         -Wall
         -Wextra
         -Wpedantic
         -Wshadow
-        -Wunused
+        #-Wunused
         -Wcast-align
         #-Wconversion
         -Wsign-conversion
@@ -306,6 +317,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         DEBUG
         _DEBUG
         GOOBUH_DEBUG
+        JPH_NO_DEBUG
     )
 
     # Address sanitizer

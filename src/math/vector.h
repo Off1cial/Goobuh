@@ -11,6 +11,8 @@ typedef vec_t vec2_t[2];
 typedef vec_t vec3_t[3];
 typedef vec_t vec4_t[4];
 
+typedef vec4_t quat_t;
+
 static vec3_t VEC_ZERO = {0, 0, 0};
 
 static vec3_t AXIS_X = {1, 0, 0};

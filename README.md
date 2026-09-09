@@ -119,6 +119,9 @@ sudo pacman -S sdl3_ttf
 yay -S ktx-software-bin
 ```
 
+### DirectX Shader compiler
+sudo pacman -S directx-shader-compiler
+
 ## Full Installation (All Dependencies)
 
 ### Ubuntu/Debian

@@ -228,16 +228,18 @@ static void create_surface(VK_Renderer *engine, SDL_Window *window)
     exit(1);
   }
 
-  vkcheck(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
-      active_device(engine),
-      engine->surface,
-      &engine->surface_capabilities));
+
 }
 
 void create_swapchain(VK_Renderer *engine, SDL_Window *window)
 {
   printf("Creating swapchain\n");
   VkExtent2D *swapchain_extent = &engine->swapchain_data.swapchain_extent;
+  vkcheck(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
+      active_device(engine),
+      engine->surface,
+      &engine->surface_capabilities));
+
 
   *swapchain_extent = engine->surface_capabilities.currentExtent;
   if (swapchain_extent->width == 0xFFFFFFFF)
