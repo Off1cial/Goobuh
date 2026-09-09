@@ -3,6 +3,8 @@
 
 #include "common/common.h"
 
+#include <math.h>
+
 typedef float vec_t;
 
 typedef vec_t vec2_t[2];

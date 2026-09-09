@@ -17,6 +17,13 @@ typedef struct player_t{
 
 } player_t;
 
+
+
+
 extern player_t g_player;
+
+
+void player_init(vec3_t origin, camera_t* camera);
+void player_think(InputState* input, float dt);
 
 

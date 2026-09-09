@@ -33,7 +33,7 @@ void VKPipeline_clear(VKPipelineSet* set)
 
   set->rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
   set->rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
-  set->rasterizer.cullMode = VK_CULL_MODE_NONE;
+  set->rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
   set->rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
   set->rasterizer.lineWidth = 1.0f;
 
@@ -94,6 +94,42 @@ void VKPipeline_set_cull_mode(
   set->rasterizer.cullMode = mode;
   set->rasterizer.frontFace = frontface;
 }
+
+
+void VK_Pipeline_disable_blending(VKPipelineSet* set){
+  set->colblend_attachment_state.colorWriteMask = 
+    VK_COLOR_COMPONENT_R_BIT | 
+    VK_COLOR_COMPONENT_G_BIT |
+    VK_COLOR_COMPONENT_B_BIT | 
+    VK_COLOR_COMPONENT_A_BIT;
+
+  set->colblend_attachment_state.blendEnable = VK_FALSE;
+}
+void VKPipeline_enable_blending(VKPipelineSet* set){
+
+
+    set->colblend_attachment_state.colorWriteMask = 
+      VK_COLOR_COMPONENT_R_BIT | 
+      VK_COLOR_COMPONENT_G_BIT | 
+      VK_COLOR_COMPONENT_B_BIT | 
+      VK_COLOR_COMPONENT_A_BIT;
+
+
+    set->colblend_attachment_state.blendEnable = VK_TRUE;
+
+    set->colblend_attachment_state.srcColorBlendFactor = 
+      VK_BLEND_FACTOR_SRC_ALPHA;
+    set->colblend_attachment_state.dstColorBlendFactor = 
+      VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+    set->colblend_attachment_state.colorBlendOp = 
+      VK_BLEND_OP_ADD;
+    set->colblend_attachment_state.srcAlphaBlendFactor = 
+      VK_BLEND_FACTOR_ONE;
+    set->colblend_attachment_state.dstAlphaBlendFactor = 
+      VK_BLEND_FACTOR_ZERO;
+    set->colblend_attachment_state.alphaBlendOp =  VK_BLEND_OP_ADD;
+}
+
 
 VkPipeline VKPipeline_build(
     VK_Renderer *engine,

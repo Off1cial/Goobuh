@@ -45,6 +45,13 @@ typedef struct SwapchainData
   VkExtent2D swapchain_extent;
 } SwapchainData;  
 
+struct AllocImage{
+  VkImage image;
+  VkImageView view;
+  VkExtent3D extent;
+  VkFormat format;
+  VmaAllocation allocation;
+};
 
 typedef struct VK_Renderer
 {
@@ -62,8 +69,13 @@ typedef struct VK_Renderer
   VkSurfaceKHR surface;
   VkSurfaceCapabilitiesKHR surface_capabilities;
 
+  SDL_Window* window;
+  uint32_t winresize_request;
+  VkExtent2D draw_extent;
+  float draw_scale;
   VkSwapchainKHR swapchain;
   SwapchainData swapchain_data;
+  struct AllocImage draw_image;
 
   VkImage depth_image;
   VkImageView depth_image_view;
@@ -85,8 +97,12 @@ typedef struct VK_Renderer
 
 } VK_Renderer;
 
+
+
+void create_swapchain(VK_Renderer *engine, SDL_Window *window);
 uint8_t VK_Initialise(VK_Renderer* engine, SDL_Window* window);
 void VK_Shutdown(VK_Renderer* engine);
+void VK_WindowResize(VK_Renderer* engine);
 
 
 typedef struct camera_t camera_t;

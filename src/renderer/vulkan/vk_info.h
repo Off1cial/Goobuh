@@ -59,4 +59,44 @@ static inline VkPipelineShaderStageCreateInfo createinfo_pipeline_shader_stage(V
   };
 }
 
+static inline VkImageCreateInfo createinfo_image(VkFormat format, VkImageUsageFlags usageFlags, VkExtent3D extent)
+{
+     return (VkImageCreateInfo){
+    .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+    .pNext = NULL,
+
+    .imageType = VK_IMAGE_TYPE_2D,
+
+    .format = format,
+    .extent = extent,
+
+    .mipLevels = 1,
+    .arrayLayers = 1,
+
+    //for MSAA. we will not be using it by default, so default it to 1 sample per pixel.
+    .samples = VK_SAMPLE_COUNT_1_BIT,
+
+    //optimal tiling, which means the image is stored on the best gpu format
+    .tiling = VK_IMAGE_TILING_OPTIMAL,
+    .usage = usageFlags};
+}
+
+static inline VkImageViewCreateInfo createinfo_imageview(VkFormat format, VkImage image, VkImageAspectFlags aspectFlags)
+{
+    // build a image-view for the depth image to use for rendering
+    return (VkImageViewCreateInfo){
+    .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+    .pNext = NULL,
+
+    .viewType = VK_IMAGE_VIEW_TYPE_2D,
+    .image = image,
+    .format = format,
+    .subresourceRange.baseMipLevel = 0,
+    .subresourceRange.levelCount = 1,
+    .subresourceRange.baseArrayLayer = 0,
+    .subresourceRange.layerCount = 1,
+    .subresourceRange.aspectMask = aspectFlags};
+}
+
+
 #endif

@@ -151,6 +151,8 @@ FORCEINLINE void MatrixPerspective_VK(
     out[10] = zfar / (znear - zfar);
     out[11] = -1.0f;
     out[14] = (zfar * znear) / (znear - zfar);
+
+    out[5] = -out[5];
 }
 
 

@@ -1,10 +1,12 @@
 #include "engine/global.h"
+#include "engine/client/player/player.h"
 #include "common/logsys.h"
 #include "renderer/camera.h"
 #include "renderer/vulkan/vk_renderer.h"
 
 #include <SDL3/SDL.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 GlobalState* g_Global = NULL;
 
@@ -19,13 +21,17 @@ void Global_Create(const char* AppName, int window_width, int window_height)
   
   g_Global->window = Platform_CreateWindow(AppName, window_width, window_height);
   g_Global->input = Platform_CreateInput();
+  g_Global->input->mouse_locked = 1;
 
   g_Global->renderer = malloc(sizeof(VK_Renderer));
   VK_Initialise(g_Global->renderer, g_Global->window->window);
 
   g_Global->camera_active = malloc(sizeof(camera_t));
   vec3_t cam_pos = {0, 0, 0.8f};
-  camera_init(g_Global->camera_active, cam_pos, AXIS_ZN, ((float)window_width/(float)window_height), 60.0);
+  camera_init(g_Global->camera_active, cam_pos, AXIS_ZN, ((float)window_width/(float)window_height), 90.0);
+
+  player_init(VEC_ZERO, g_Global->camera_active);
+  g_player.controller.cam_sens = 0.020f;
 }
 
 void Global_PollEvents(void)
@@ -44,19 +50,25 @@ void Global_Run(void)
 {
   while (!g_Global->window->should_close){
     Global_PollEvents();
-    input_update(g_Global->input);
+    if (g_Global->renderer->winresize_request)
+      VK_WindowResize(g_Global->renderer);
+    player_think(g_Global->input, 0.000001f);
 
+    //printf("Player origin =  (%0.2f, %0.2f, %0.2f)\n", g_player.origin[0], g_player.origin[1], g_player.origin[2]);
     if (g_Global->camera_active){
+      /*
       camera_look(
           g_Global->camera_active, 
           g_Global->input->mx_rel, 
           g_Global->input->my_rel, 
           0.02f);
       camera_update(g_Global->camera_active);
+      */
 
       VK_Draw(g_Global->renderer, g_Global->camera_active);
     }
   }
+  SDL_Delay(16);
   Global_Shutdown();
 }
 

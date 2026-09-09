@@ -53,6 +53,13 @@ file(GLOB_RECURSE SOURCE_RENDERER
   include/tinyobj/tiny_obj_loader.cpp
 )
 
+file(GLOB_RECURSE SOURCE_ENGINE_SHARED
+    src/common/*.c
+    src/common/*.cpp
+    src/engine/shared/*.c
+    src/engine/shared/*.cpp
+)
+
 file(GLOB_RECURSE SOURCE_ENGINE
     src/engine/*.c
     src/engine/*.cpp
@@ -87,6 +94,7 @@ target_compile_options(fastgltf PRIVATE
 
 add_executable(engine
     ${SOURCE_ENGINE}
+    ${SOURCE_ENGINE_SHARED}
     ${SOURCE_PLATFORM}
     ${SOURCE_RENDERER}
     ${SOURCE_CORE}
@@ -286,7 +294,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         -Wshadow
         -Wunused
         -Wcast-align
-        -Wconversion
+        #-Wconversion
         -Wsign-conversion
         #-Wdouble-promotion
         -Wformat=2

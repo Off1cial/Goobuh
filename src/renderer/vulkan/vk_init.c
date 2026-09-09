@@ -2,6 +2,8 @@
 #include "renderer/vulkan/vk_pipeline.h"
 #include "renderer/vulkan/vk_vma.h"
 #include "renderer/vulkan/vk_mesh.h"
+
+#include "renderer/vulkan/vk_info.h"
 #include "renderer/vulkan/vk_mesh_loader.h"
 #include "common/logsys.h"
 
@@ -232,7 +234,7 @@ static void create_surface(VK_Renderer *engine, SDL_Window *window)
       &engine->surface_capabilities));
 }
 
-static void create_swapchain(VK_Renderer *engine, SDL_Window *window)
+void create_swapchain(VK_Renderer *engine, SDL_Window *window)
 {
   printf("Creating swapchain\n");
   VkExtent2D *swapchain_extent = &engine->swapchain_data.swapchain_extent;
@@ -288,7 +290,56 @@ static void create_swapchain(VK_Renderer *engine, SDL_Window *window)
     view_info.subresourceRange.layerCount = 1;
     vkcheck(vkCreateImageView(engine->device, &view_info, NULL, &data->image_views[i]));
   }
+
+
+
+  // Create draw image
+  engine->draw_image.extent.width = swapchain_extent->width;
+  engine->draw_image.extent.height = swapchain_extent->height;
+  engine->draw_image.extent.depth = 1;
+  
+  engine->draw_extent.width = engine->draw_image.extent.width * engine->draw_scale;
+  engine->draw_extent.height = engine->draw_image.extent.height * engine->draw_scale;
+
+
+  engine->draw_image.format = VK_FORMAT_R16G16B16A16_SFLOAT;
+  VkImageUsageFlags usage_flags = 0;
+  usage_flags |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+  usage_flags |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+  usage_flags |= VK_IMAGE_USAGE_STORAGE_BIT;
+  usage_flags |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+
+  VkImageCreateInfo image_info = createinfo_image(
+      engine->draw_image.format, 
+      usage_flags, 
+      engine->draw_image.extent);
+
+  VmaAllocationCreateInfo alloc_info = {0};
+  alloc_info.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+  alloc_info.requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+
+  vmaCreateImage(
+      engine->allocator, 
+      &image_info, 
+      &alloc_info, 
+      &engine->draw_image.image, 
+      &engine->draw_image.allocation, 
+      NULL);
+
+  VkImageViewCreateInfo view_info = createinfo_imageview(
+      engine->draw_image.format, 
+      engine->draw_image.image, 
+      VK_IMAGE_ASPECT_COLOR_BIT);
+
+  vkcheck(vkCreateImageView(
+        engine->device, 
+        &view_info, 
+        NULL, 
+        &engine->draw_image.view));
+
 }
+
+
 
 static void create_depth_attachment(VK_Renderer *engine, SDL_Window *window)
 {
@@ -459,8 +510,10 @@ void create_default_pipeline(VK_Renderer *engine)
 
   VKPipeline_set_cull_mode(
       &pipeline_set,
-      VK_CULL_MODE_NONE,
-      VK_FRONT_FACE_CLOCKWISE);
+      VK_CULL_MODE_BACK_BIT,
+      VK_FRONT_FACE_COUNTER_CLOCKWISE);
+
+  VKPipeline_enable_blending(&pipeline_set);
 
   pipeline_set.layout = engine->pipeline_layout;
 
@@ -477,15 +530,23 @@ uint8_t VK_Initialise(VK_Renderer *engine, SDL_Window *window)
   create_logical_device(engine);
   create_allocator(engine);
 
+  engine->window = window;
+  engine->winresize_request = 0;
+  engine->draw_scale =  1.0f;
   create_surface(engine, window);
   create_swapchain(engine, window);
   create_depth_attachment(engine, window);
 
   create_frame_data(engine);
   create_default_pipeline(engine);
+  
+  int w, h;
+  SDL_GetWindowSize(window, &w, &h);
+
   engine->mesh_data = malloc(sizeof(VKMesh));
-  VKMesh testmesh = VKMesh_load_gltf(engine, "resource/models/cone.glb");
+  VKMesh testmesh = VKMesh_load_gltf(engine, "resource/models/monkey.glb");
   *engine->mesh_data = testmesh;
 
   return 1;
 }
+

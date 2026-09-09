@@ -33,9 +33,11 @@ void input_update(InputState* state)
 
   state->mouse_prev = state->mouse_current; 
 
+  state->mouse_locked = 1;
   state->mouse_current = (state->mouse_locked)
     ? SDL_GetRelativeMouseState(&state->mx_rel, &state->my_rel)
     : SDL_GetMouseState(&state->mx, &state->my);
+  //printf("mxrel, myrel = %0.2f, %0.2f\n", state->mx_rel, state->my_rel);
 
 }
 

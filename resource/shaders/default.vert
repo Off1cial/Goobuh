@@ -31,8 +31,10 @@ void main()
 	Vertex v = PushConstants.vertexBuffer.vertices[gl_VertexIndex];
 
 	//output data
-	gl_Position = PushConstants.projection * PushConstants.view * PushConstants.model * vec4(v.position, 1.0f);
-	out_col = v.col;
+	//gl_Position = PushConstants.projection * PushConstants.view * PushConstants.model * vec4(v.position, 1.0f);
+  gl_Position = PushConstants.projection * PushConstants.view * PushConstants.model * vec4(v.position, 1.0f);
+	//out_col = v.col;
+  out_col = vec4(v.normal, 1.0f);
   out_uv.x = v.uv.x;
 	out_uv.y = v.uv.y;
 }

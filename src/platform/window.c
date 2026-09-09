@@ -9,7 +9,7 @@ AppWindow* Platform_CreateWindow(
     )
 {
   SDL_Window* window = 
-    SDL_CreateWindow(name, width, height, SDL_WINDOW_VULKAN);
+    SDL_CreateWindow(name, width, height, SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE); 
 
   if (!window)
   {
@@ -28,6 +28,7 @@ AppWindow* Platform_CreateWindow(
   win->should_close = 0;
   win->window = window;
 
+  SDL_SetWindowRelativeMouseMode(window, true);
   return win;
 }
 

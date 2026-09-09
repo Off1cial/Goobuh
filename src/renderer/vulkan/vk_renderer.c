@@ -30,6 +30,14 @@ static inline void vkcheck(VkResult result)
   }
 }
 
+void destroy_swapchain(VK_Renderer* engine){
+  for (uint32_t i = 0; i < engine->swapchain_data.image_count; i++){
+    vkDestroyImageView(engine->device, engine->swapchain_data.image_views[i], NULL);
+  }
+  free(engine->swapchain_data.image_views);
+  free(engine->swapchain_data.images);
+  vkDestroySwapchainKHR(engine->device, engine->swapchain, NULL);
+}
 
 
 void VK_Shutdown(VK_Renderer *engine)
@@ -84,6 +92,40 @@ static inline VkImageSubresourceRange image_subresource_range(VkImageAspectFlags
   return subImage;
 }
 
+void copy_image_to_image(VkCommandBuffer cmd, VkImage source, VkImage destination, VkExtent2D srcSize, VkExtent2D dstSize)
+{
+	VkImageBlit2 blitRegion = { .sType = VK_STRUCTURE_TYPE_IMAGE_BLIT_2, .pNext = NULL };
+
+	blitRegion.srcOffsets[1].x = (int)srcSize.width;
+	blitRegion.srcOffsets[1].y = (int)srcSize.height;
+	blitRegion.srcOffsets[1].z = 1;
+
+	blitRegion.dstOffsets[1].x = (int)dstSize.width;
+	blitRegion.dstOffsets[1].y = (int)dstSize.height;
+	blitRegion.dstOffsets[1].z = 1;
+
+	blitRegion.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	blitRegion.srcSubresource.baseArrayLayer = 0;
+	blitRegion.srcSubresource.layerCount = 1;
+	blitRegion.srcSubresource.mipLevel = 0;
+
+	blitRegion.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	blitRegion.dstSubresource.baseArrayLayer = 0;
+	blitRegion.dstSubresource.layerCount = 1;
+	blitRegion.dstSubresource.mipLevel = 0;
+
+	VkBlitImageInfo2 blitInfo = { .sType = VK_STRUCTURE_TYPE_BLIT_IMAGE_INFO_2, .pNext = NULL };
+	blitInfo.dstImage = destination;
+	blitInfo.dstImageLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+	blitInfo.srcImage = source;
+	blitInfo.srcImageLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+	blitInfo.filter = VK_FILTER_LINEAR;
+	blitInfo.regionCount = 1;
+	blitInfo.pRegions = &blitRegion;
+
+	vkCmdBlitImage2(cmd, &blitInfo);
+}
+
 static void transition_image(VkCommandBuffer cmd, VkImage image, VkImageLayout currentLayout, VkImageLayout newLayout)
 {
   VkImageMemoryBarrier2 imageBarrier = {.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2};
@@ -109,6 +151,12 @@ static void transition_image(VkCommandBuffer cmd, VkImage image, VkImageLayout c
   depInfo.pImageMemoryBarriers = &imageBarrier;
 
   vkCmdPipelineBarrier2(cmd, &depInfo);
+}
+
+void VK_WindowResize(VK_Renderer* engine){
+  vkDeviceWaitIdle(engine->device);
+  destroy_swapchain(engine);
+  create_swapchain(engine, engine->window);
 }
 
 void VK_Draw(VK_Renderer *engine, camera_t* camera)
@@ -248,7 +296,7 @@ for (int i = 0; i < 4; i++)
 
   VkResult present_result = vkQueuePresentKHR(engine->graphics_queue, &present_info);
   if (present_result == VK_ERROR_OUT_OF_DATE_KHR || present_result == VK_SUBOPTIMAL_KHR){
-    /* TODO: recreate_swapchain(engine); */
+    engine->winresize_request = 1;
   }
   else{
     vkcheck(present_result);

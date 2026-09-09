@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
 
 #include "engine/global.h"
 #include "renderer/vulkan/vk_renderer.h"
@@ -9,8 +8,8 @@ VK_Renderer* renderer = NULL;
 
 // TODO SET UP PIPELINE TO TAKE MESH DATA
 
-int main(void)
-{
+int main(void){
+
   Global_Create("Goobuh engine", 640, 480);
 
   printf("Hello world\n");

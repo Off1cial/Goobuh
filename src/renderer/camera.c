@@ -1,4 +1,5 @@
 #include "renderer/camera.h"
+#include <stdio.h>
 
 
 void camera_init(camera_t* cam, vec3_t origin, vec3_t direction, float aspect, double fov){
@@ -23,7 +24,7 @@ void camera_update(camera_t* cam){
   AnglesVector(cam->angles, cam->front);
   VectorNormalise(cam->front);
 
-  printf("pitch/yaw = %0.2f/%0.2f\n", cam->angles[PITCH], cam->angles[YAW]);
+  //printf("pitch/yaw = %0.2f/%0.2f\n", cam->angles[PITCH], cam->angles[YAW]);
 
   VectorCrossNorm(cam->front, AXIS_Y, cam->right);
   VectorCrossNorm(cam->right, cam->front, cam->up);
@@ -34,8 +35,7 @@ void camera_update(camera_t* cam){
   VectorAdd(cam->origin, cam->front, centre);
   MatrixLookAt(cam->origin, centre, AXIS_Y, cam->view);
 
-  printf("origin: %f %f %f\n",
-    cam->origin[0], cam->origin[1], cam->origin[2]);
+  //printf("origin: %f %f %f\n", cam->origin[0], cam->origin[1], cam->origin[2]);
   /*
   printf("origin: %f %f %f\n",
     cam->origin[0], cam->origin[1], cam->origin[2]);

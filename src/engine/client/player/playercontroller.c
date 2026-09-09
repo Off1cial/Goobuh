@@ -1,27 +1,28 @@
 #include "engine/client/player/playercontroller.h"
 #include "platform/input.h"
+#include "engine/shared/playerdata.h"
 
 
 void playercontroller_update(struct playercontroller_t *cont, InputState *input){
   if (!cont || !input) return;
   
   cont->movflags = 0;
+  cont->forward = 0; cont->side = 0; cont->up = 0;
 
   if (input->keys_current.keys[SDL_SCANCODE_W])
-    cont->movflags |= PLAYERCONT_MOV_FWD;
+    cont->forward = 1;
   if (input->keys_current.keys[SDL_SCANCODE_S])
-    cont->movflags |= PLAYERCONT_MOV_BACK;
+    cont->forward = -1;
 
   if (input->keys_current.keys[SDL_SCANCODE_A])
-    cont->movflags |= PLAYERCONT_MOV_LEFT;
+    cont->side = -1;
   if (input->keys_current.keys[SDL_SCANCODE_D])
-    cont->movflags |= PLAYERCONT_MOV_RIGHT;
+    cont->side = 1;
 
   if (input->keys_current.keys[SDL_SCANCODE_SPACE])
-    cont->movflags |= PLAYERCONT_MOV_UP;
+    cont->up = 1;
   if (input->keys_current.keys[SDL_SCANCODE_LCTRL])
-    cont->movflags |= PLAYERCONT_MOV_DOWN;
-
+    cont->up = -1;
   
   cont->cam_lookx = input->mx_rel * cont->cam_sens;
   cont->cam_looky = input->my_rel * cont->cam_sens;
