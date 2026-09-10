@@ -1,4 +1,4 @@
-#include "engine/client/player/playercontroller.h"
+#include "engine/player/playercontroller.h"
 #include "platform/input.h"
 #include "engine/shared/playerdata.h"
 

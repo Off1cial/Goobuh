@@ -1,4 +1,4 @@
-#include "engine/client/player/player.h"
+#include "engine/player/player.h"
 #include "engine/shared/playerdata.h"
 #include "engine/shared/pmove.h"
 

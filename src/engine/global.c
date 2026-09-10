@@ -1,10 +1,9 @@
 #include "engine/global.h"
-#include "engine/client/player/player.h"
+#include "engine/player/player.h"
 #include "common/logsys.h"
 #include "renderer/camera.h"
 #include "renderer/vulkan/vk_renderer.h"
 
-#include "engine/physics/jolt_physics.h"
 
 #include <SDL3/SDL.h>
 #include <stdlib.h>
@@ -29,13 +28,13 @@ void Global_Create(const char* AppName, int window_width, int window_height)
   VK_Initialise(g_Global->renderer, g_Global->window->window);
 
   g_Global->camera_active = malloc(sizeof(camera_t));
-  vec3_t cam_pos = {0, 0, 0.8f};
+  vec3_t cam_pos = {0, 0, 3.0f};
   camera_init(g_Global->camera_active, cam_pos, AXIS_ZN, ((float)window_width/(float)window_height), 90.0);
 
 
   //Physics_Init();
 
-  player_init(VEC_ZERO, g_Global->camera_active);
+  player_init(cam_pos, g_Global->camera_active);
   g_player.controller.cam_sens = 0.020f;
 }
 

@@ -1,5 +1,5 @@
-#ifndef MATH_VECTOR_H
-#define MATH_VECTOR_H
+#ifndef MATHVECTOR_H
+#define MATHVECTOR_H
 
 #include "common/common.h"
 
@@ -57,6 +57,9 @@ FORCEINLINE void AnglesVector(const qangle angles, vec3_t out){
 #define VectorCopy(src, dst) dst[0]=src[0];dst[1]=src[1];dst[2]=src[2]
 
 
+
+
+
 FORCEINLINE void VectorSet(vec3_t v, vec_t x, vec_t y, vec_t z)
 {
     v[0] = x;
@@ -101,6 +104,7 @@ FORCEINLINE vec_t VectorDot(
            a[2] * b[2];
 }
 
+//#define VectorCross(a ,b, out) out[0]=a[1]*b[2]-a[2]*b[1];out[1]=a[2]*b[0]-a[0]*b[2];out[2]=a[0]*b[1]-a[1]*b[0];
 FORCEINLINE void VectorCross(
     const vec3_t a,
     const vec3_t b,

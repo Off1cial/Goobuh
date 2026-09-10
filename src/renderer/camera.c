@@ -35,7 +35,7 @@ void camera_update(camera_t* cam){
   VectorAdd(cam->origin, cam->front, centre);
   MatrixLookAt(cam->origin, centre, AXIS_Y, cam->view);
 
-  //printf("origin: %f %f %f\n", cam->origin[0], cam->origin[1], cam->origin[2]);
+  printf("origin: %f %f %f\n", cam->origin[0], cam->origin[1], cam->origin[2]);
   /*
   printf("origin: %f %f %f\n",
     cam->origin[0], cam->origin[1], cam->origin[2]);
@@ -45,6 +45,7 @@ printf("front: %f %f %f\n",
 
 printf("angles: %f %f %f\n",
     cam->angles[0], cam->angles[1], cam->angles[2]);
+  */
 
 printf("view:\n");
 for (int i = 0; i < 4; i++)
@@ -61,7 +62,7 @@ for (int i = 0; i < 4; i++)
         cam->proj[i + 4],
         cam->proj[i + 8],
         cam->proj[i + 12]);
-    */
+    
 }
 
 const float CAM_PITCH_LIMIT = (float)(89.0f * (float)M_PI/180.0f);
