@@ -7,8 +7,8 @@
 
 typedef struct GlobalState
 {
-  AppWindow* window;
-  InputState* input;
+  plt_window* window;
+  plt_input* input;
   VK_Renderer* renderer;
 
   camera_t* camera_active;

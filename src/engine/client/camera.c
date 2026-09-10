@@ -1,4 +1,4 @@
-#include "renderer/camera.h"
+#include "engine/client/camera.h"
 #include <stdio.h>
 
 
@@ -47,6 +47,7 @@ printf("angles: %f %f %f\n",
     cam->angles[0], cam->angles[1], cam->angles[2]);
   */
 
+  /*
 printf("view:\n");
 for (int i = 0; i < 4; i++)
     printf("%f %f %f %f\n",
@@ -62,6 +63,8 @@ for (int i = 0; i < 4; i++)
         cam->proj[i + 4],
         cam->proj[i + 8],
         cam->proj[i + 12]);
+
+      */
     
 }
 

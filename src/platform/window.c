@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <SDL3/SDL_vulkan.h>
 
-AppWindow* Platform_CreateWindow(
+plt_window* platform_createwindow(
     const char* name,
     int width, int height
     )
@@ -17,7 +17,7 @@ AppWindow* Platform_CreateWindow(
     return NULL;
   }
 
-  AppWindow* win = malloc(sizeof(AppWindow));
+  plt_window* win = malloc(sizeof(plt_window));
   if (!win){
     LOG_FATAL("Failed to allocate memory to app window");
     return NULL;
@@ -33,7 +33,7 @@ AppWindow* Platform_CreateWindow(
 }
 
 
-void Platform_DestroyWindow(AppWindow* window)
+void platform_destroywindow(plt_window* window)
 {
   if (!window)
     return;

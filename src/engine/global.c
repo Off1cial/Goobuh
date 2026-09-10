@@ -1,7 +1,7 @@
 #include "engine/global.h"
 #include "engine/player/player.h"
 #include "common/logsys.h"
-#include "renderer/camera.h"
+#include "engine/client/camera.h"
 #include "renderer/vulkan/vk_renderer.h"
 
 
@@ -20,8 +20,8 @@ void Global_Create(const char* AppName, int window_width, int window_height)
   }
   memset(g_Global, 0, sizeof(GlobalState));
   
-  g_Global->window = Platform_CreateWindow(AppName, window_width, window_height);
-  g_Global->input = Platform_CreateInput();
+  g_Global->window = platform_createwindow(AppName, window_width, window_height);
+  g_Global->input = platform_createinput();
   g_Global->input->mouse_locked = 1;
 
   g_Global->renderer = malloc(sizeof(VK_Renderer));
@@ -33,9 +33,6 @@ void Global_Create(const char* AppName, int window_width, int window_height)
 
 
   //Physics_Init();
-
-  player_init(cam_pos, g_Global->camera_active);
-  g_player.controller.cam_sens = 0.020f;
 }
 
 void Global_PollEvents(void)
@@ -67,8 +64,6 @@ void Global_Run(void)
     if (g_Global->renderer->winresize_request){
       window_resize();
     }
-    player_think(g_Global->input, 0.000001f);
-
     //printf("Player origin =  (%0.2f, %0.2f, %0.2f)\n", g_player.origin[0], g_player.origin[1], g_player.origin[2]);
     if (g_Global->camera_active){
       /*
@@ -92,6 +87,6 @@ void Global_Shutdown(void)
 {
   //Physics_Shutdown();
   VK_Shutdown(g_Global->renderer);
-  Platform_DestroyInput(g_Global->input);
-  Platform_DestroyWindow(g_Global->window);
+  platform_destroyinput(g_Global->input);
+  platform_destroywindow(g_Global->window);
 }

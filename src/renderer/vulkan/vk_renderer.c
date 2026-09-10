@@ -3,7 +3,7 @@
 #include "renderer/vulkan/vk_vma.h"
 #include "renderer/vulkan/vk_info.h"
 #include "renderer/vulkan/vk_mesh.h"
-#include "renderer/camera.h"
+#include "engine/client/camera.h"
 #include "common/logsys.h"
 #include "renderer/vulkan/vk_types.h"
 

@@ -4,24 +4,24 @@
 #include <stdio.h>
 
 
-InputState* Platform_CreateInput(void)
+plt_input* platform_createinput(void)
 {
-  InputState* new_state = malloc(sizeof(InputState));
+  plt_input* new_state = malloc(sizeof(plt_input));
   if (!new_state){
     LOG_FATAL("Failed to allocate input state");
     return NULL;
   }
-  memset(new_state, 0, sizeof(InputState));
+  memset(new_state, 0, sizeof(plt_input));
   return new_state;
 }
 
 
-void Platform_DestroyInput(InputState* state)
+void platform_destroyinput(plt_input* state)
 {
   free(state);
 }
 
-void input_update(InputState* state)
+void input_update(plt_input* state)
 {
   memcpy(
        state->keys_prev.keys, 
