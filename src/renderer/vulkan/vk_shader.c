@@ -34,7 +34,7 @@ static uint32_t *pull_contents(
 
     rewind(fptr);
 
-    if (file_size == 0 || file_size % sizeof(uint32_t) != 0)
+    if (file_size == 0 || (size_t)file_size % sizeof(uint32_t) != 0)
     {
         LOG_ERROR("Invalid SPIR-V file: %s\n", filename);
         fclose(fptr);

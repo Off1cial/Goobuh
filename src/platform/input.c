@@ -1,26 +1,27 @@
 #include "platform/input.h"
 #include "common//logsys.h"
 #include <stdlib.h>
+#include <stdio.h>
 
 
-InputState* Platform_CreateInput(void)
+plt_input* platform_createinput(void)
 {
-  InputState* new_state = malloc(sizeof(InputState));
+  plt_input* new_state = malloc(sizeof(plt_input));
   if (!new_state){
     LOG_FATAL("Failed to allocate input state");
     return NULL;
   }
-  memset(new_state, 0, sizeof(InputState));
+  memset(new_state, 0, sizeof(plt_input));
   return new_state;
 }
 
 
-void Platform_DestroyInput(InputState* state)
+void platform_destroyinput(plt_input* state)
 {
   free(state);
 }
 
-void input_update(InputState* state)
+void input_update(plt_input* state)
 {
   memcpy(
        state->keys_prev.keys, 
@@ -32,8 +33,11 @@ void input_update(InputState* state)
 
   state->mouse_prev = state->mouse_current; 
 
+  state->mouse_locked = 1;
   state->mouse_current = (state->mouse_locked)
-    ? SDL_GetMouseState(&state->mx, &state->my) 
-    : SDL_GetRelativeMouseState(&state->mx_rel, &state->my_rel);
+    ? SDL_GetRelativeMouseState(&state->mx_rel, &state->my_rel)
+    : SDL_GetMouseState(&state->mx, &state->my);
+  //printf("mxrel, myrel = %0.2f, %0.2f\n", state->mx_rel, state->my_rel);
+
 }
 

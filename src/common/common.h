@@ -1,9 +1,7 @@
 #ifndef CORE_COMMON_H
 #define CORE_COMMON_H
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
+#include <string.h>
 #include <stdint.h>
 
 typedef uint64_t u64;
@@ -36,6 +34,31 @@ typedef int8_t   i8;
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 #endif
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846F
+#endif
+
+
+#define DEG2RAD(theta) (theta * M_PI/180.0)
+#define RAG2DEG(theta) (theta * 180.0/M_PI)
+
+
+// Null-terminating strncpy from Quake III
+static inline void Q_strncpy(char* dst, const char* src, size_t dstsize)
+{
+  strncpy(dst, src, dstsize - 1);
+  dst[dstsize - 1] = '\0'; 
+}
+
+// Case-insensitive string compare upto n chars
+int Q_stricmpn(const char* s1, const char* s2, int n);
+
+// Case sensitive string compare to n chars
+int Q_strncmp(const char* s1, const char* s2, int n);
+
+// Case insensitive comparison of the entire string
+int Q_stricmp(const char* s1, const char* s2);
+
 #ifdef __cplusplus
 
   template <class T>
@@ -67,6 +90,7 @@ typedef int8_t   i8;
 
 
 #define OFFSETOF(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))
+
 
 
 #endif

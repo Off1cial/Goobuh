@@ -3,13 +3,13 @@
 #include <stdlib.h>
 #include <SDL3/SDL_vulkan.h>
 
-AppWindow* Platform_CreateWindow(
+plt_window* platform_createwindow(
     const char* name,
     int width, int height
     )
 {
   SDL_Window* window = 
-    SDL_CreateWindow(name, width, height, SDL_WINDOW_VULKAN);
+    SDL_CreateWindow(name, width, height, SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE); 
 
   if (!window)
   {
@@ -17,7 +17,7 @@ AppWindow* Platform_CreateWindow(
     return NULL;
   }
 
-  AppWindow* win = malloc(sizeof(AppWindow));
+  plt_window* win = malloc(sizeof(plt_window));
   if (!win){
     LOG_FATAL("Failed to allocate memory to app window");
     return NULL;
@@ -28,11 +28,12 @@ AppWindow* Platform_CreateWindow(
   win->should_close = 0;
   win->window = window;
 
+  SDL_SetWindowRelativeMouseMode(window, true);
   return win;
 }
 
 
-void Platform_DestroyWindow(AppWindow* window)
+void platform_destroywindow(plt_window* window)
 {
   if (!window)
     return;

@@ -22,6 +22,9 @@ typedef struct VKPipelineSet
   VkPipelineMultisampleStateCreateInfo multisampling;
   VkPipelineDepthStencilStateCreateInfo depth_stencil;
   VkPipelineRenderingCreateInfo rendering;
+  
+  VkVertexInputBindingDescription vertex_binding;
+  VkVertexInputAttributeDescription vertex_attributes[4];
 
   VkPipelineLayout layout;
 } VKPipelineSet;
@@ -35,6 +38,8 @@ void VKPipeline_set_topology(VKPipelineSet* set, VkPrimitiveTopology mode);
 void VKPipeline_set_polygonmode(VKPipelineSet* set, VkPolygonMode mode);
 void VKPipeline_set_cull_mode(VKPipelineSet* set, VkCullModeFlags mode, VkFrontFace frontface);
   
+void VKPipeline_disable_blending(VKPipelineSet* set);
+void VKPipeline_enable_blending(VKPipelineSet* set);
 
 VkPipeline VKPipeline_build(VK_Renderer* engine, VKPipelineSet* set);
 void VKPipeline_clear(VKPipelineSet* set);
