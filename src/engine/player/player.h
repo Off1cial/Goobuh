@@ -34,15 +34,5 @@ typedef struct pmovevars_t
 } pmovevars_t;
 
 
-typedef struct {
-  int8_t mv_forward;
-  int8_t mv_side;
-  int8_t mv_up;
-  int8_t on_ground;
-  uint8_t buttons;
-  uint32_t tick;
-  qangle viewangles;
-} usercmd_t;
-
-
+typedef struct usercmd_t usercmd_t;
 void pm_move(playerstate_t* state, usercmd_t* cmd, pmovevars_t* vars);

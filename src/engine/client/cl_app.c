@@ -1,8 +1,13 @@
 #include "engine/client/cl_app.h"
+#include "engine/client/client.h"
 #include "common/logsys.h"
 #include <stdlib.h>
 
 struct clientapp_t* cl_app = NULL;
+
+double accumulator = 0.0;
+double frequency;
+uint64_t previous_counter;
 
 void app_init(const char* app_name, int winw, int winh)
 {
@@ -18,6 +23,9 @@ void app_init(const char* app_name, int winw, int winh)
   VK_Initialise(cl_app->renderer, cl_app->window->window);
   vec3_t cam_pos = {0, 0, 5.0f};
   camera_init(&cl_app->camera, cam_pos, AXIS_ZN, winw/ (float)winh, 60.0f);
+
+  frequency = (double)SDL_GetPerformanceFrequency();
+  previous_counter = SDL_GetPerformanceCounter();
 
 }
 
@@ -43,10 +51,27 @@ static void window_resize(void){
 }
 
 
+
 void app_run(void)
 {
   while (!cl_app->window->should_close){
     app_pollevents();
+  
+    uint64_t current_counter = 
+      SDL_GetPerformanceCounter();
+    double ft = 
+      (double)(current_counter - previous_counter) / frequency;
+    previous_counter = current_counter;
+    if (ft > 0.25)
+      ft = 0.25;
+    accumulator += ft;
+
+    while(accumulator >= (1.0f / cl_updaterate)){
+      cl_think();
+      printf("Accum = %0.4f\n", accumulator);
+      accumulator -= (1.0f / cl_updaterate);
+    }
+    // Rendering
     if (cl_app->renderer->winresize_request){
       window_resize();
     }
@@ -63,4 +88,5 @@ void app_shutdown(void)
   VK_Shutdown(cl_app->renderer);
   platform_destroyinput(cl_app->input);
   platform_destroywindow(cl_app->window);
+  SDL_Quit();
 }

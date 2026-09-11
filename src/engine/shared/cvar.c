@@ -13,14 +13,6 @@ int cvar_numIndexes;
 static cvar_t *cvarHashTable[HASH_BUCKET_COUNT];
 
 // cvar.c — the real storage for these
-float sv_accelerate = 10.0f;
-float sv_airaccelerate = 10.0f;
-float sv_stopspeed = 250.0f;
-float sv_maxspeed = 250.0f;
-float sv_friction = 2.0f;
-float sv_gravity = 600.0f;
-
-float cl_sensitivity = 1.0f;
 
 static cvar_t *Cvar_Find(const char *name)
 {
@@ -180,6 +172,7 @@ void Cvar_InitAll()
 
 void Cvar_InitAll(void)
 {
+  /*
   Cvar_RegisterLinked("sensitivity", "1.0", CVAR_ARCHIVE | CVAR_CLIENT, &cl_sensitivity);
 
   Cvar_RegisterLinked("sv_accelerate", "10", CVAR_SERVER, &sv_accelerate);
@@ -191,5 +184,6 @@ void Cvar_InitAll(void)
 
   Cvar_Register("cl_updaterate", "20", CVAR_ARCHIVE | CVAR_CLIENT);
   Cvar_Register("cl_interp", "0.1", CVAR_ARCHIVE | CVAR_CLIENT);
+  */
 }
 

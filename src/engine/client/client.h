@@ -1,6 +1,8 @@
 #pragma once
 
 #include "network/net.h"
+#include "network/netchan.h"
+#include "network/protocol.h"
 #include "engine/player/player.h"
 
 
@@ -24,10 +26,16 @@ typedef struct {
 typedef struct{
   constate_t state;
   uint32_t ticks_elapsed;
-  netaddr_t server_addr;
-  cmdbuffer_t cmdbuffer;
+
+
+  netchan_t chan;
+  netsocket_t socket_udp;
+  netsocket_t socket_tcp;
+
   usercmd_t cmd;
+
   pmovevars_t pmvars; 
+  cmdbuffer_t cmdbuffer;
 } clientconn_t;
 
 
@@ -38,6 +46,12 @@ typedef struct
   clientconn_t conn;
 } client_t;
 
-extern client_t cl_client;
+extern client_t cl_main;
 
+// Cvars
+extern float cl_updaterate; // Updates per second
+extern float cl_interp;
+
+
+uint8_t cl_init(void);
 void cl_think(void);

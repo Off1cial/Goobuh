@@ -1,4 +1,5 @@
 #include "engine/player/player.h"
+#include "network/protocol.h"
 
 #define PM_HASMASK(flag, mask) ( (flag & mask) != 0 )
 
@@ -52,15 +53,12 @@ void pm_move(playerstate_t* state, usercmd_t* cmd, pmovevars_t* vars){
 
   vec3_t wishvel, wishdir;
   wishvel[0] = vars->maxspeed * (front[0] * cmd->mv_forward + right[0] * cmd->mv_side); 
-  wishvel[1] = (cmd->on_ground && PM_HASMASK(cmd->buttons, PM_JUMP)) ? vars->jumpvel : 0.0f;
+  wishvel[1] = 0;
   wishvel[2] = vars->maxspeed * (front[2] * cmd->mv_forward + right[2] * cmd->mv_side);
 
   VectorCopy(wishvel, wishdir);
   float wishspeed = VectorNormalise(wishdir);
   if (wishspeed > vars->maxspeed)
     wishspeed = vars->maxspeed;
-  if (cmd->on_ground)
-    pm_accelerate(state->velocity, wishdir, wishspeed, vars->accelerate, vars->dt);
-  else
-    pm_accelerate(state->velocity, wishdir, wishspeed, vars->airaccelerate, vars->dt);
+  pm_accelerate(state->velocity, wishdir, wishspeed, vars->accelerate, vars->dt);
 }

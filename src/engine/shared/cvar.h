@@ -33,19 +33,14 @@ typedef struct cvar_s
 } cvar_t;
 
 
-extern float cl_sensitivity;
 
-extern float sv_accelerate;
-extern float sv_airaccelerate;
-extern float sv_stopspeed;
-extern float sv_maxspeed;
-extern float sv_friction;
-extern float sv_gravity;
 
 
 const char* Cvar_ValueString(const char* name);
 float Cvar_ValueFloat(const char* name);
 int Cvar_ValueInteger(const char* name);
+
+void Cvar_RegisterLinked(const char *name, const char *defaultValue, uint64_t flags, float *linked);
 
 void Cvar_InitAll(void);
 

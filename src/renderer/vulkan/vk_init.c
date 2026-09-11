@@ -534,7 +534,7 @@ uint8_t VK_Initialise(VK_Renderer *engine, SDL_Window *window)
 
   engine->window = window;
   engine->winresize_request = 0;
-  engine->draw_scale =  1.0f;
+  engine->draw_scale =  0.5f;
   create_surface(engine, window);
   create_swapchain(engine, window);
   create_depth_attachment(engine, window);
@@ -546,7 +546,7 @@ uint8_t VK_Initialise(VK_Renderer *engine, SDL_Window *window)
   SDL_GetWindowSize(window, &w, &h);
 
   engine->mesh_data = malloc(sizeof(VKMesh));
-  VKMesh testmesh = VKMesh_load_gltf(engine, "resource/models/monkey.glb");
+  VKMesh testmesh = VKMesh_load_gltf(engine, "resource/models/cone.glb");
   *engine->mesh_data = testmesh;
 
   return 1;

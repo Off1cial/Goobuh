@@ -138,7 +138,7 @@ static vertex_t make_gltf_vertex(const fastgltf::math::fvec3& position, const fa
   vertex.pos[1] = position[1];
   vertex.pos[2] = position[2];
 
-  printf("Vertex loaded {%0.2f, %0.2f, %0.2f}\n", position[0], position[1], position[2]);
+  //printf("Vertex loaded {%0.2f, %0.2f, %0.2f}\n", position[0], position[1], position[2]);
 
   vertex.normal[0] = normal[0];
   vertex.normal[1] = normal[1];
