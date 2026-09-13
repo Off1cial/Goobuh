@@ -4,7 +4,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define NETMSG_USERCMD 1;
+#define NETMSG_USERCMD 1
+
+#define NETMSG_SHAKE_REQ 2
+#define NETMSG_SHAKE_ACK 3
+
+#define NET_MAX_STRING 256
 
 typedef struct usercmd_t {
   int8_t mv_forward;

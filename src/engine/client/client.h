@@ -8,6 +8,7 @@
 
 // Defintions available to just the client, the server defines its own interpretations
 
+
 // What the client gets to know about the server
 typedef struct {
   netaddr_t addr;
@@ -55,3 +56,4 @@ extern float cl_interp;
 
 uint8_t cl_init(void);
 void cl_think(void);
+uint8_t cl_connect(netaddr_t server_addr);

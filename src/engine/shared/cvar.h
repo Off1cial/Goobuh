@@ -3,6 +3,7 @@
 #include <stdint.h>
 
 #define CVAR_MAXCVARS 1024
+#define CVAR_MAXNAME 256
 
 #define CVAR_TEMP       1 // Can be changed by the user, but will reset upon restart
 #define CVAR_CHEAT      2 // Can only be changed when cheats are enabled
@@ -16,8 +17,8 @@
 
 typedef struct cvar_s
 {
-  char       *name;
-  char       *string;    // Cvar value as string
+  char      name[CVAR_MAXNAME];
+  char       string[CVAR_MAXNAME];    // Cvar value as string
   uint64_t    flags;
 
 

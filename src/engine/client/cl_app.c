@@ -27,6 +27,7 @@ void app_init(const char* app_name, int winw, int winh)
   frequency = (double)SDL_GetPerformanceFrequency();
   previous_counter = SDL_GetPerformanceCounter();
 
+  cl_init();
 }
 
 static void app_pollevents(void)
@@ -54,6 +55,13 @@ static void window_resize(void){
 
 void app_run(void)
 {
+
+  netaddr_t server_addr;
+  net_addr_from_string("127.0.1.1", 27015, &server_addr);
+  if (!cl_connect(server_addr)){
+    printf("Failed to connect\n");
+    exit(1);
+  }
   while (!cl_app->window->should_close){
     app_pollevents();
   
@@ -68,7 +76,6 @@ void app_run(void)
 
     while(accumulator >= (1.0f / cl_updaterate)){
       cl_think();
-      printf("Accum = %0.4f\n", accumulator);
       accumulator -= (1.0f / cl_updaterate);
     }
     // Rendering
