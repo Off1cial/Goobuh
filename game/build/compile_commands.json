@@ -1,0 +1,8 @@
+[
+{
+  "directory": "/home/redw0od0/proj/G00BUH/game/build",
+  "command": "/usr/bin/c++ -Dgame_EXPORTS -I/home/redw0od0/proj/G00BUH/game/../engine/src/public -I/home/redw0od0/proj/G00BUH/game/src -g -std=gnu++23 -fPIC -o CMakeFiles/game.dir/src/game.cpp.o -c /home/redw0od0/proj/G00BUH/game/src/game.cpp",
+  "file": "/home/redw0od0/proj/G00BUH/game/src/game.cpp",
+  "output": "/home/redw0od0/proj/G00BUH/game/build/CMakeFiles/game.dir/src/game.cpp.o"
+}
+]
