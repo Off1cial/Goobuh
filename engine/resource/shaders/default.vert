@@ -1,6 +1,8 @@
 #version 450
 #extension GL_EXT_buffer_reference : require
 
+
+
 layout (location = 0) out vec4 out_col;
 layout (location = 1) out vec2 out_uv;
 
@@ -23,12 +25,14 @@ layout( push_constant ) uniform constants
 	mat4 view;
   mat4 model;
 	VertexBuffer vertexBuffer;
+	uint tex_id;
 } PushConstants;
 
 void main() 
 {	
 	//load vertex data from device adress
 	Vertex v = PushConstants.vertexBuffer.vertices[gl_VertexIndex];
+
 
 	//output data
   //gl_Position = PushConstants.projection * PushConstants.view * PushConstants.model * vec4(v.position, 1.0f);

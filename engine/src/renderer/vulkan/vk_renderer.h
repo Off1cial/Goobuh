@@ -13,11 +13,12 @@
 #include "renderer/vulkan/vk_vma.h"
 #include "renderer/vulkan/vk_mesh.h"
 
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-
+#define MAX_TEXTURES 20
 #define MAX_FRAMES_IN_FLIGHT 2 
 
 typedef struct SDL_Window SDL_Window;
@@ -87,6 +88,12 @@ typedef struct VK_Renderer
   VkImageView depth_image_view;
   VkFormat depth_format;
   VmaAllocation depth_image_allocation;
+  // Textures
+  VKTexture default_texture;
+  VkSampler default_sampler;
+  VkDescriptorSetLayout texture_set_layout;
+  VkDescriptorPool descriptor_pool;
+  VkDescriptorSet texture_set;
 
   VkCommandPool command_pool;
   VmaAllocator allocator;

@@ -2,6 +2,7 @@
 #include "renderer/vulkan/vk_pipeline.h"
 #include "renderer/vulkan/vk_vma.h"
 #include "renderer/vulkan/vk_mesh.h"
+#include "renderer/vulkan/vk_types.h"
 
 #include "renderer/vulkan/vk_info.h"
 #include "renderer/vulkan/vk_mesh_loader.h"
@@ -184,6 +185,8 @@ static void create_logical_device(VK_Renderer *engine)
   v12_features.descriptorBindingVariableDescriptorCount = true;
   v12_features.runtimeDescriptorArray = true;
   v12_features.bufferDeviceAddress = true;
+  v12_features.descriptorBindingPartiallyBound = true;
+  v12_features.descriptorBindingSampledImageUpdateAfterBind = true; 
 
   v10_features.samplerAnisotropy = VK_TRUE;
 
@@ -442,6 +445,80 @@ static void create_frame_data(VK_Renderer *engine)
   }
 }
 
+
+static void create_texture_descriptors(VK_Renderer* engine)
+{
+  printf("Creating texture descriptors\n");
+
+  /* sampler */
+  VkPhysicalDeviceProperties props;
+  vkGetPhysicalDeviceProperties(active_device(engine), &props);
+
+  VkSamplerCreateInfo sampler_info = {
+    .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+    .magFilter = VK_FILTER_LINEAR,
+    .minFilter = VK_FILTER_LINEAR,
+    .mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
+    .addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+    .addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+    .addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+    .anisotropyEnable = VK_TRUE,
+    .maxAnisotropy = props.limits.maxSamplerAnisotropy,
+    .minLod = 0.0f,
+    .maxLod = VK_LOD_CLAMP_NONE,
+  };
+  vkcheck(vkCreateSampler(engine->device, &sampler_info, NULL, &engine->default_sampler));
+
+  /* layout: one binding, an array of MAX_TEXTURES combined image samplers */
+  VkDescriptorBindingFlags flags =
+      VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT |
+      VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT;
+
+  VkDescriptorSetLayoutBindingFlagsCreateInfo binding_flags = {
+    .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO,
+    .bindingCount = 1,
+    .pBindingFlags = &flags,
+  };
+  VkDescriptorSetLayoutBinding binding = {
+    .binding = 0,
+    .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+    .descriptorCount = MAX_TEXTURES,
+    .stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT,
+  };
+  VkDescriptorSetLayoutCreateInfo layout_info = {
+    .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+    .pNext = &binding_flags,
+    .flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT,
+    .bindingCount = 1,
+    .pBindings = &binding,
+  };
+  vkcheck(vkCreateDescriptorSetLayout(engine->device, &layout_info, NULL,
+                                      &engine->texture_set_layout));
+
+  /* pool */
+  VkDescriptorPoolSize pool_size = {
+    .type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+    .descriptorCount = MAX_TEXTURES,
+  };
+  VkDescriptorPoolCreateInfo pool_info = {
+    .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+    .flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT,
+    .maxSets = 1,
+    .poolSizeCount = 1,
+    .pPoolSizes = &pool_size,
+  };
+  vkcheck(vkCreateDescriptorPool(engine->device, &pool_info, NULL, &engine->descriptor_pool));
+
+  /* set */
+  VkDescriptorSetAllocateInfo alloc = {
+    .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+    .descriptorPool = engine->descriptor_pool,
+    .descriptorSetCount = 1,
+    .pSetLayouts = &engine->texture_set_layout,
+  };
+  vkcheck(vkAllocateDescriptorSets(engine->device, &alloc, &engine->texture_set));
+}
+
 void create_default_pipeline(VK_Renderer *engine)
 {
   VKPipelineSet pipeline_set = {0};
@@ -453,7 +530,7 @@ void create_default_pipeline(VK_Renderer *engine)
       ASSET_DIR "/shaders/spv/default.frag.spv");
 
   VkPushConstantRange push_constant = {
-    .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
+    .stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
     .offset = 0,
     .size = sizeof(PushConstants)
   };
@@ -462,8 +539,8 @@ void create_default_pipeline(VK_Renderer *engine)
       .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
       .pushConstantRangeCount = 1,
       .pPushConstantRanges = &push_constant,
-      .setLayoutCount = 0,
-      .pSetLayouts = NULL
+      .setLayoutCount = 1,
+      .pSetLayouts = &engine->texture_set_layout
 
   };
 
@@ -501,6 +578,14 @@ void create_default_pipeline(VK_Renderer *engine)
   engine->pipeline = VKPipeline_build(engine, &pipeline_set);
 }
 
+
+static void create_default_texture(VK_Renderer* engine)
+{
+  uint8_t cols[4] = {255, 0, 255, 255};
+  engine->default_texture = VKTexture_create( engine, cols, 1, 1, VK_FORMAT_R8G8B8A8_UNORM );
+  VKTexture_register( engine, &engine->default_texture, 0 );
+}
+
 uint8_t VK_Initialise(VK_Renderer *engine, SDL_Window *window)
 {
   memset(engine, 0, sizeof(VK_Renderer));
@@ -520,7 +605,9 @@ uint8_t VK_Initialise(VK_Renderer *engine, SDL_Window *window)
 
 
   create_frame_data(engine);
+  create_texture_descriptors(engine);
   create_default_pipeline(engine);
+  create_default_texture(engine);
   
   int w, h;
   SDL_GetWindowSize(window, &w, &h);

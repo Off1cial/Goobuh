@@ -107,6 +107,7 @@ bool CAssetManager::Load( IRenderer* renderer, AssetHandle handle )
     switch (asset->type)
     {
         case AssetType::Model:
+        {
             {
                 if (!renderer)
                     break;
@@ -117,13 +118,23 @@ bool CAssetManager::Load( IRenderer* renderer, AssetHandle handle )
                 asset->state = AssetState::Loaded;
                 return true;
             }
+        }
         case AssetType::Sound:
+        {
+            break;
+        }
         case AssetType::Image:
+        {
+            TextureData tex;
+            
             fprintf( stderr, "AssetManager: loading '%s' not implemented yet\n", asset->name.c_str() );
             break;
+        }
         case AssetType::None:
+        {
             fprintf( stderr, "AssetManager: unknown asset type for '%s'\n", asset->name.c_str() );
             break;
+        }
     }
 
     asset->state = AssetState::Failed;

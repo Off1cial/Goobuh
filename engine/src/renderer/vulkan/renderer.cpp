@@ -12,7 +12,8 @@ static PushConstants s_base_push_consts = {
     .projection = _MatIdentity_,
     .view = _MatIdentity_,
     .model = _MatIdentity_,
-    .vertex_addr = 0
+    .vertex_addr = 0,
+    .tex_id = 0,
 };
 
 CRendererVK::CRendererVK( SDL_Window* window ) : m_window( window )

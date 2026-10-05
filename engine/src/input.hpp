@@ -19,8 +19,8 @@ public:
     bool IsMouseLocked( void ) const override { return m_mouselocked; }
     void GetMousePosition( float* x, float* y ) const override;
 
-    camera_t* GetCamera( void ) const { return m_camera; }
-    void SetCamera( camera_t* camera ) { m_camera = camera; }
+    camera_t* GetCamera( void ) const override { return m_camera; }
+    void SetCamera( camera_t* camera ) override { m_camera = camera; }
     void AimCamera( void );
     void MoveCamera( vec3_t dir, float scale ); // For debugging purposes
 
