@@ -1,85 +1,97 @@
-#pragma once#
+#pragma once
 
+#include <cstddef>
+#include <cstdint>
+#include <deque>
 #include <filesystem>
-#include "common/common.h"
-#include "common/hash.h"
-
+#include <initializer_list>
+#include <string>
+#include <string_view>
+#include <unordered_map>
+#include <variant>
+#include <vector>
 
 #include "public/engine/iassetmanager.hpp"
+#include "public/engine/assethandle.hpp"
+#include "renderer/vulkan/vk_mesh_loader.h" // VKMesh must be a complete type (held by value)
 
-#define ASSETS_MAX_STR 512
-#define ASSETS_MAX_PATHS 5
+class IRenderer; // forward declared; irenderer.hpp is only needed in the .cpp
 
+constexpr size_t ASSETS_MAX_PATHS = 5;
 
-enum 
+enum class AssetType : uint8_t
 {
-    ASSET_TYPE_MODEL,
-    ASSET_TYPE_SOUND,
-    ASSET_TYPE_IMAGE,
+    None,   // Unknown extension
+    Model,
+    Sound,
+    Image,
 };
 
-enum 
+enum class AssetState : uint8_t
 {
-    ASSET_STATE_UNLOADED,
-    ASSET_STATE_LOADING,
-    ASSET_STATE_LOADED,
+    Unloaded,
+    Loading,
+    Loaded,
+    Failed,
 };
 
-struct assethandle_t
+struct ModelData { VKMesh vk_mesh{}; };
+struct SoundData { std::vector<uint8_t> data; float duration = 0.f; };
+struct TextureData { int w = 0, h = 0; std::vector<uint8_t> data; };
+
+// What the manager owns for each asset. Payload is a variant instead of a raw union,
+// so non-trivial members are constructed/destroyed correctly.
+struct Asset
 {
-    int state;
-    uint32_t hash;
-    union {
-        struct {
-            u32 hash_bucket;
-            int index; // index in bucket
-        }  loaded;
-        struct {
-            std::filesystem::path path; // O_O
-        } unloaded; // and loading
-    };
-    struct assethandle_t* next; // for directory list
-    assethandle_t( std::string name ){ hash = Hash_String(name.data()); state = ASSET_STATE_UNLOADED; }
+    std::string           name;   // normalized lookup key, e.g. "models/cone.glb"
+    std::filesystem::path path;   // resolved on-disk path
+    AssetType             type = AssetType::None;
+    AssetState            state = AssetState::Unloaded;
+
+    std::variant<std::monostate, ModelData, SoundData, TextureData> payload;
+
+    ModelData* Model() { return std::get_if<ModelData>( &payload ); }
+    const ModelData* Model()   const { return std::get_if<ModelData>( &payload ); }
+    const SoundData* Sound()   const { return std::get_if<SoundData>( &payload ); }
+    const TextureData* Texture() const { return std::get_if<TextureData>( &payload ); }
 };
-
-struct assetdir_t
-{
-    std::filesystem::path syspath;
-    assethandle_t* handle;
-};
-
-typedef struct asset_s
-{
-    std::string name;
-    assethandle_t handle; 
-    uint32_t hash;
-    int type;
-    struct asset_s* next;
-} asset_t;
-
 
 class CAssetManager : public IAssetManager
 {
 public:
-    CAssetManager( void ) = default;
-    bool Init(const char* first_path ... ); // Initialise with search paths
+    CAssetManager() = default;
+    CAssetManager( const CAssetManager& ) = delete;
+    CAssetManager& operator=( const CAssetManager& ) = delete;
+
+    // e.g. Init({ "assets", "mods/foo/assets" });
+    bool Init( std::initializer_list<const char*> search_paths );
+
     bool AddSearchPath( std::string relative_dir ) override;
     void RemoveSearchPath( std::string relative_dir ) override;
 
-    assethandle_t GetHandle( std::string name );
-    assethandle_t FindAsset( std::string name );
+    // Finds (or registers) an asset by name. Does not load it.
+    // Returns an invalid handle if the file can't be found in any search path.
+    AssetHandle GetHandle( std::string_view name );
+
+    // Loads the asset's data. Returns true if it is loaded on return.
+    bool Load( IRenderer* renderer, AssetHandle handle );
+    void Unload( AssetHandle handle );
+
+    // nullptr if the handle is invalid.
+    Asset* Get( AssetHandle handle );
+    const Asset* Get( AssetHandle handle ) const;
+
 private:
+    static AssetType TypeFromExtension( const std::filesystem::path& p );
+    static bool      IsSafeRelativeName( const std::filesystem::path& p );
 
-    static constexpr int ASSETS_MAX_BUCKETS = 40;
+    std::filesystem::path FindOnDisk( const std::filesystem::path& name ) const;
 
-    std::string m_paths[ASSETS_MAX_PATHS];
-    int m_numpaths = 0;
-    
-    asset_t* m_htable[ASSETS_MAX_BUCKETS];
+    std::vector<std::filesystem::path> m_paths;
 
-    asset_t* find_loaded_asset( const char* name );
-    std::filesystem::path find_unloaded_asset( const char* name );
-
-
-    asset_t* LoadAsset( assethandle_t handle );
+    // deque: growing never invalidates references to existing Assets.
+    std::deque<Asset>                          m_assets;
+    std::unordered_map<std::string, uint32_t>  m_lookup; // name -> index into m_assets
 };
+
+extern CAssetManager* g_AssetManager;

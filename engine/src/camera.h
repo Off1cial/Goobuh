@@ -17,7 +17,7 @@ typedef struct camera_t
   vec3_t front, right, up;
   // Extra
   float fov, aspect;
-  float far, near;
+  float zfar, znear;
 
 } camera_t; 
 

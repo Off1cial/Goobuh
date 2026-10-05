@@ -9,7 +9,7 @@ plt_window* platform_createwindow(
     )
 {
   SDL_Window* window = 
-    SDL_CreateWindow(name, width, height, SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE); 
+    SDL_CreateWindow(name, width, height, SDL_WINDOW_VULKAN); 
 
   if (!window)
   {

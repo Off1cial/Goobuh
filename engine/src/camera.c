@@ -7,8 +7,8 @@ void camera_init(camera_t* cam, vec3_t origin, vec3_t direction, float aspect, d
   
   cam->fov = (float)DEG2RAD(fov);
   cam->aspect = aspect;
-  cam->far = 1000.0f;
-  cam->near = 0.1f;
+  cam->zfar = 1000.0f;
+  cam->znear = 0.1f;
 
 
   VectorCopy(origin, cam->origin);
@@ -29,13 +29,13 @@ void camera_update(camera_t* cam){
   VectorCrossNorm(cam->front, AXIS_Y, cam->right);
   VectorCrossNorm(cam->right, cam->front, cam->up);
 
-  MatrixPerspective_VK(cam->fov, cam->aspect, cam->near, cam->far, cam->proj);
+  MatrixPerspective_VK(cam->fov, cam->aspect, cam->znear, cam->zfar, cam->proj);
 
   vec3_t centre;
   VectorAdd(cam->origin, cam->front, centre);
   MatrixLookAt(cam->origin, centre, AXIS_Y, cam->view);
 
-  printf("origin: %f %f %f\n", cam->origin[0], cam->origin[1], cam->origin[2]);
+  //printf("origin: %f %f %f\n", cam->origin[0], cam->origin[1], cam->origin[2]);
   /*
   printf("origin: %f %f %f\n",
     cam->origin[0], cam->origin[1], cam->origin[2]);

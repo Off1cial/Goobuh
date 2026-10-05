@@ -47,6 +47,43 @@ FORCEINLINE void MatrixTranslation(vec3_t position, mat4 out)
   out[14] = position[2];
 }
 
+
+FORCEINLINE void MatrixModel(
+    const vec3_t origin,
+    const qangle angles,
+    mat4 out )
+{
+    vec3_t forward;
+    vec3_t right;
+    vec3_t up;
+
+    AngleBasis( angles, forward, right, up );
+
+    // Local +X = right
+    out[0] = right[0];
+    out[1] = right[1];
+    out[2] = right[2];
+    out[3] = 0.0f;
+
+    // Local +Y = up
+    out[4] = up[0];
+    out[5] = up[1];
+    out[6] = up[2];
+    out[7] = 0.0f;
+
+    // Local +Z = forward
+    out[8] = forward[0];
+    out[9] = forward[1];
+    out[10] = forward[2];
+    out[11] = 0.0f;
+
+    // Translation
+    out[12] = origin[0];
+    out[13] = origin[1];
+    out[14] = origin[2];
+    out[15] = 1.0f;
+}
+
 FORCEINLINE void MatrixScale(vec3_t scale, mat4 out)
 {
   memset(out, 0, sizeof(mat4));

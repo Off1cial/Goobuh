@@ -98,12 +98,13 @@ typedef struct VK_Renderer
   Frames frames_in_flight; 
   uint32_t frame_count; // Number of total frames
   uint32_t frame_index; // Index of the frame to write to
+  VkCommandBuffer cmd_active; // Used outside of the struct, accessed by CVKRenderer
   
   VKMesh* mesh_data;
 
 } VK_Renderer;
 
-
+void create_depth_image( VK_Renderer* engine );
 
 void create_swapchain(VK_Renderer *engine, SDL_Window *window);
 uint8_t VK_Initialise(VK_Renderer* engine, SDL_Window* window);
@@ -112,7 +113,12 @@ void VK_WindowResize(VK_Renderer* engine);
 
 
 typedef struct camera_t camera_t;
-void VK_Draw(VK_Renderer* engine, camera_t* camera);
+//void VK_Draw(VK_Renderer* engine, camera_t* camera);
+
+bool VK_BeginRendering( VK_Renderer* engine, camera_t* camera );
+void VK_EndRendering( VK_Renderer* engine );
+
+
 
 #ifdef __cplusplus
 }

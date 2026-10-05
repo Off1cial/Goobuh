@@ -1,3 +1,10 @@
 # ninja log v7
-1	48	1790611383017803328	CMakeFiles/game.dir/src/game.cpp.o	5a2895c851997f98
-48	116	1790611383064788605	libgame.so	db6e3249c094ffb8
+22	103	8126751402122878	CMakeFiles/game.dir/src/game.cpp.obj	40c046e04c7da50d
+103	203	8126751403873109	libgame.dll	182665878ca3ebf2
+103	203	8126751403873109	libgame.dll.a	182665878ca3ebf2
+26	102	8126751402162868	CMakeFiles/game.dir/src/weapons/godgun.cpp.obj	d2172c723d08a8c5
+8	60	8126745238593304	CMakeFiles/game.dir/C_/Users/redw0od0/Documents/G00BUH/engine/src/public/engine/weapon.cpp.obj	9919de729fdce259
+27	99	8126775278592752	CMakeFiles/game.dir/src/weapons/godgun.cpp.obj	d2172c723d08a8c5
+23	100	8126775278562765	CMakeFiles/game.dir/src/game.cpp.obj	40c046e04c7da50d
+100	191	8126775280173364	libgame.dll	182665878ca3ebf2
+100	191	8126775280173364	libgame.dll.a	182665878ca3ebf2

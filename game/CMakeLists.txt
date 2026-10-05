@@ -4,8 +4,14 @@ project(game LANGUAGES CXX)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 
+file (GLOB_RECURSE SOURCE_ALL
+  src/*.c
+  src/*.cpp
+  src/weapons/*.c
+)
+
 add_library(game SHARED
-  src/game.cpp
+${SOURCE_ALL}
 )
 
 target_include_directories(game

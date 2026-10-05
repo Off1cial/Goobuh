@@ -1,3 +1,6 @@
 engine/build/
-game/build
+engine/.vs/
+engine/build-vs/
+engine/out/
+game/build/
 netlib/build

@@ -56,6 +56,62 @@ FORCEINLINE void AnglesVector(const qangle angles, vec3_t out){
   out[2] = sinf(yaw) * cosf(pitch);
 }
 
+FORCEINLINE void AngleBasis(
+    const qangle angles,
+    vec3_t forward,
+    vec3_t right,
+    vec3_t up )
+{
+    float pitch = angles[PITCH];
+    float yaw = angles[YAW];
+    float roll = angles[ROLL];
+
+    float sp = sinf( pitch );
+    float cp = cosf( pitch );
+
+    float sy = sinf( yaw );
+    float cy = cosf( yaw );
+
+    float sr = sinf( roll );
+    float cr = cosf( roll );
+
+    // Forward: local +Z
+    forward[0] = sy * cp;
+    forward[1] = sp;
+    forward[2] = cy * cp;
+
+    // Right: local +X
+    right[0] = cy;
+    right[1] = 0.0f;
+    right[2] = -sy;
+
+    // Up: local +Y
+    up[0] = -sy * sp;
+    up[1] = cp;
+    up[2] = -cy * sp;
+
+    // Apply roll around the forward axis
+    if (roll != 0.0f)
+    {
+        vec3_t r = {
+            right[0],
+            right[1],
+            right[2]
+        };
+
+        vec3_t u = {
+            up[0],
+            up[1],
+            up[2]
+        };
+
+        for (int i = 0; i < 3; i++)
+        {
+            right[i] = r[i] * cr + u[i] * sr;
+            up[i] = u[i] * cr - r[i] * sr;
+        }
+    }
+}
 
 #define DotProduct(a, b) (a[0]*b[0]+a[1]*b[1]+a[2]*b[2])
 

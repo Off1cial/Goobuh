@@ -36,6 +36,8 @@ VkBool32 debug_call_back(
 }
 */
 
+VK_Renderer* g_VKRenderer = NULL;
+
 static void create_instance(VK_Renderer *engine)
 {
   printf("Creating vulkan instance\n");
@@ -263,7 +265,7 @@ void create_swapchain(VK_Renderer *engine, SDL_Window *window)
           .width = swapchain_extent->width,
           .height = swapchain_extent->height},
       .imageArrayLayers = 1,
-      .imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+      .imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, 
       .preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR,
       .compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
       .presentMode = VK_PRESENT_MODE_MAILBOX_KHR};
@@ -341,67 +343,43 @@ void create_swapchain(VK_Renderer *engine, SDL_Window *window)
 
 }
 
-
-
-static void create_depth_attachment(VK_Renderer *engine, SDL_Window *window)
+void create_depth_image( VK_Renderer* engine )
 {
-  printf("Creating depth attachment\n");
+    engine->depth_format = VK_FORMAT_D32_SFLOAT;
 
-  VkFormat depth_formats[2] = {VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT};
-  engine->depth_format = VK_FORMAT_UNDEFINED;
-
-  for (int i = 0; i < 2; i++)
-  {
-    VkFormatProperties2 format_properties = {0};
-    format_properties.sType = VK_STRUCTURE_TYPE_FORMAT_PROPERTIES_2;
-    vkGetPhysicalDeviceFormatProperties2(active_device(engine), depth_formats[i], &format_properties);
-    if (format_properties.formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)
-    {
-      engine->depth_format = depth_formats[i];
-      break;
-    }
-  }
-
-  if (engine->depth_format == VK_FORMAT_UNDEFINED)
-  {
-    LOG_FATAL("No supported depth format found");
-    exit(1);
-  }
-
-  int w_width, w_height;
-  SDL_GetWindowSize(window, &w_width, &w_height);
-  VkImageCreateInfo image_info = {
+    VkImageCreateInfo img = {
       .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
       .imageType = VK_IMAGE_TYPE_2D,
       .format = engine->depth_format,
-      .extent = {
-          .width = (uint32_t)w_width,
-          .height = (uint32_t)w_height,
-          .depth = 1},
+      .extent = { engine->draw_extent.width, engine->draw_extent.height, 1 },
       .mipLevels = 1,
       .arrayLayers = 1,
       .samples = VK_SAMPLE_COUNT_1_BIT,
       .tiling = VK_IMAGE_TILING_OPTIMAL,
       .usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
       .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-  };
+    };
 
-  VmaAllocationCreateInfo alloc_info = {0};
-  alloc_info.usage = VMA_MEMORY_USAGE_AUTO;
-  alloc_info.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
+    VmaAllocationCreateInfo alloc = {
+      .usage = VMA_MEMORY_USAGE_GPU_ONLY,
+      .requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+    };
 
-  vkcheck(vmaCreateImage(engine->allocator, &image_info, &alloc_info, &engine->depth_image, &engine->depth_image_allocation, NULL));
+    vkcheck( vmaCreateImage( engine->allocator, &img, &alloc,
+             &engine->depth_image, &engine->depth_image_allocation, NULL ) );
 
-  VkImageViewCreateInfo view_info = {0};
-  view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-  view_info.image = engine->depth_image;
-  view_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
-  view_info.format = engine->depth_format;
-  view_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-  view_info.subresourceRange.layerCount = 1;
-  view_info.subresourceRange.levelCount = 1;
-
-  vkcheck(vkCreateImageView(engine->device, &view_info, NULL, &engine->depth_image_view));
+    VkImageViewCreateInfo view = {
+      .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+      .image = engine->depth_image,
+      .viewType = VK_IMAGE_VIEW_TYPE_2D,
+      .format = engine->depth_format,
+      .subresourceRange = {
+        .aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT,
+        .levelCount = 1,
+        .layerCount = 1,
+      },
+    };
+    vkcheck( vkCreateImageView( engine->device, &view, NULL, &engine->depth_image_view ) );
 }
 
 static void create_frame_data(VK_Renderer *engine)
@@ -471,8 +449,8 @@ void create_default_pipeline(VK_Renderer *engine)
 
   VKShader shader = VKShader_create(
       engine->device,
-      "resource/shaders/spv/default.vert.spv",
-      "resource/shaders/spv/default.frag.spv");
+      ASSET_DIR "/shaders/spv/default.vert.spv",
+      ASSET_DIR "/shaders/spv/default.frag.spv");
 
   VkPushConstantRange push_constant = {
     .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
@@ -516,6 +494,7 @@ void create_default_pipeline(VK_Renderer *engine)
       VK_FRONT_FACE_COUNTER_CLOCKWISE);
 
   VKPipeline_enable_blending(&pipeline_set);
+  VKPipeline_enable_depthtest( &pipeline_set, true, VK_COMPARE_OP_LESS );
 
   pipeline_set.layout = engine->pipeline_layout;
 
@@ -534,10 +513,11 @@ uint8_t VK_Initialise(VK_Renderer *engine, SDL_Window *window)
 
   engine->window = window;
   engine->winresize_request = 0;
-  engine->draw_scale =  0.5f;
+  engine->draw_scale =  1.0f;
   create_surface(engine, window);
   create_swapchain(engine, window);
-  create_depth_attachment(engine, window);
+  create_depth_image(engine);
+
 
   create_frame_data(engine);
   create_default_pipeline(engine);
@@ -546,7 +526,7 @@ uint8_t VK_Initialise(VK_Renderer *engine, SDL_Window *window)
   SDL_GetWindowSize(window, &w, &h);
 
   engine->mesh_data = malloc(sizeof(VKMesh));
-  VKMesh testmesh = VKMesh_load_gltf(engine, "resource/models/monkey.glb");
+  VKMesh testmesh = VKMesh_load_gltf(engine, ASSET_DIR "/models/cone.glb");
   *engine->mesh_data = testmesh;
 
   return 1;

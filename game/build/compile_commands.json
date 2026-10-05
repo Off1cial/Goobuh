@@ -1,8 +1,14 @@
 [
 {
-  "directory": "/home/redw0od0/proj/G00BUH/game/build",
-  "command": "/usr/bin/c++ -Dgame_EXPORTS -I/home/redw0od0/proj/G00BUH/game/../engine/src/public -I/home/redw0od0/proj/G00BUH/game/src -g -std=gnu++23 -fPIC -o CMakeFiles/game.dir/src/game.cpp.o -c /home/redw0od0/proj/G00BUH/game/src/game.cpp",
-  "file": "/home/redw0od0/proj/G00BUH/game/src/game.cpp",
-  "output": "/home/redw0od0/proj/G00BUH/game/build/CMakeFiles/game.dir/src/game.cpp.o"
+  "directory": "C:/Users/redw0od0/Documents/G00BUH/game/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\c++.exe -Dgame_EXPORTS -IC:/Users/redw0od0/Documents/G00BUH/game/../engine/src/public -IC:/Users/redw0od0/Documents/G00BUH/game/src -g -std=gnu++23 -o CMakeFiles\\game.dir\\src\\game.cpp.obj -c C:\\Users\\redw0od0\\Documents\\G00BUH\\game\\src\\game.cpp",
+  "file": "C:/Users/redw0od0/Documents/G00BUH/game/src/game.cpp",
+  "output": "C:/Users/redw0od0/Documents/G00BUH/game/build/CMakeFiles/game.dir/src/game.cpp.obj"
+},
+{
+  "directory": "C:/Users/redw0od0/Documents/G00BUH/game/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\c++.exe -Dgame_EXPORTS -IC:/Users/redw0od0/Documents/G00BUH/game/../engine/src/public -IC:/Users/redw0od0/Documents/G00BUH/game/src -g -std=gnu++23 -o CMakeFiles\\game.dir\\src\\weapons\\godgun.cpp.obj -c C:\\Users\\redw0od0\\Documents\\G00BUH\\game\\src\\weapons\\godgun.cpp",
+  "file": "C:/Users/redw0od0/Documents/G00BUH/game/src/weapons/godgun.cpp",
+  "output": "C:/Users/redw0od0/Documents/G00BUH/game/build/CMakeFiles/game.dir/src/weapons/godgun.cpp.obj"
 }
 ]

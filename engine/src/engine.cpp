@@ -3,17 +3,42 @@
 #include "platform/plt_time.h"
 #include "platform/window.h"
 #include "renderer/vulkan/vk_renderer.h"
+
+#include "assetmanager.hpp"
+#include "entity.h"
+
+
 #include <SDL3/SDL.h>
 #include "camera.h"
 
+AssetHandle cone_model;
+AssetHandle monkey_model;
+AssetHandle testmap_model;
 
 Engine::Engine() {
     m_window = platform_createwindow("G00BUH", 800, 600);
-    m_input = platform_createinput();
-    m_renderer = new VK_Renderer();
-    VK_Initialise(m_renderer, m_window->window);   
-}
+    //m_input = platform_createinput();
+    m_input = new CInput();
+    m_vkrenderer = new CRendererVK( m_window->window );
+    //m_renderer = new VK_Renderer();
+    //VK_Initialise(m_renderer, m_window->window); 
+    g_AssetManager->Init({ASSET_DIR "/models", ASSET_DIR "/levels"});
+    
 
+    for (int i = 0; i < MAX_ENTITIES; i++)
+    {
+        g_Entities[i].free = true;
+    }
+
+    testmap_model = g_AssetManager->GetHandle("test.glb");
+    cone_model = g_AssetManager->GetHandle("cone.glb");
+    monkey_model = g_AssetManager->GetHandle("monkey.glb");
+    m_vkrenderer->LoadModel(cone_model);
+    m_vkrenderer->LoadModel(monkey_model);
+    m_vkrenderer->LoadModel(testmap_model);
+
+    entity_t* ent_monkey = ED_NEW( VEC_ZERO, VEC_ZERO, VEC_ZERO, testmap_model );
+}
 
 void Engine::Poll() {
     // Poll for events
@@ -24,15 +49,26 @@ void Engine::Poll() {
         }
         // Handle other events (keyboard, mouse, etc.)
     }
-    input_update(m_input);
+    m_input->Poll();
 }
+
+
+
+
 
 double now = 0.0;
 double previous = 0.0;
+vec3_t pos = { 0,1,0 };
+qangle angles = { 0.2,0.45,0.1 };
+
+
+
+
 void Engine::Run() {
 
     camera_t camera;
     camera_init(&camera, (vec3_t){0.0f, 0.0f, 5.0f}, (vec3_t){0.0f, 0.0f, -1.0f}, 800.0f / 600.0f, 60.0);
+    m_input->SetCamera(&camera);
 
     while (!m_window->should_close) {
         double now = plt_timemillis();
@@ -40,12 +76,41 @@ void Engine::Run() {
         previous = now;
 
         g_NetworkManager->Update();
-        
         Poll();
+
+
+        if (m_input->KeyDown(KEY_W)){
+            m_input->MoveCamera(camera.front, 0.1f);
+        }
+
         // Do stuff
         m_game->update(m_frametime);
+        m_input->AimCamera();
+        camera_update(&camera);
+        m_vkrenderer->StartRendering( &camera );
+        mat4 testm;
+        angles[YAW] += 0.01f;
+        angles[PITCH] += 0.2;
+        MatrixModel(pos, angles, testm);
+        m_vkrenderer->DrawModel( cone_model, testm );
 
-        VK_Draw(m_renderer, &camera);
-        SDL_Delay(16); // Simulate a frame delay (for demonstration purposes)
+        DrawEntities();
+
+
+        m_vkrenderer->EndRendering();
+
+        //VK_Draw(m_renderer, &camera);
+        SDL_Delay(8); // Simulate a frame delay (for demonstration purposes)
+    }
+}
+
+void Engine::DrawEntities( void )
+{
+    for (int i = 0; i < MAX_ENTITIES; i++)
+    {
+        entity_t* e = &g_Entities[i];
+        if (e->free) continue;
+        m_vkrenderer->DrawEntity( e->state.origin, e->state.angles, e->state.model );
+       
     }
 }

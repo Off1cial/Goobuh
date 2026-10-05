@@ -1,0 +1,35 @@
+{
+  "version": 6,
+  "configurePresets": [
+    {
+      "name": "msys2",
+      "displayName": "MSYS2 UCRT64",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build-vs",
+      "architecture": {
+        "value": "x64",
+        "strategy": "external"
+      },
+      "toolset": { "strategy": "external" },
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "C:/msys64/ucrt64/bin/gcc.exe",
+        "CMAKE_CXX_COMPILER": "C:/msys64/ucrt64/bin/g++.exe",
+        "CMAKE_MAKE_PROGRAM": "C:/msys64/ucrt64/bin/ninja.exe",
+        "CMAKE_C_COMPILER_TARGET": "x86_64-w64-windows-gnu",
+        "CMAKE_CXX_COMPILER_TARGET": "x86_64-w64-windows-gnu",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_PREFIX_PATH": "C:/msys64/ucrt64",
+        "PKG_CONFIG_EXECUTABLE": "C:/msys64/ucrt64/bin/pkg-config.exe"
+      },
+      "environment": {
+        "PATH": "C:/msys64/ucrt64/bin;$penv{PATH}"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "msys2-debug",
+      "configurePreset": "msys2"
+    }
+  ]
+}

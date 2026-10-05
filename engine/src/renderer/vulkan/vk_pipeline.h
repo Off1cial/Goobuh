@@ -2,6 +2,7 @@
 #define VULKAN_PIPELINE_H
 
 #include "volk/volk.h"
+#include <stdbool.h>
 
 enum ShaderStages
 {
@@ -40,6 +41,10 @@ void VKPipeline_set_cull_mode(VKPipelineSet* set, VkCullModeFlags mode, VkFrontF
   
 void VKPipeline_disable_blending(VKPipelineSet* set);
 void VKPipeline_enable_blending(VKPipelineSet* set);
+
+
+void VKPipeline_enable_depthtest( VKPipelineSet* set, bool write, VkCompareOp op );
+
 
 VkPipeline VKPipeline_build(VK_Renderer* engine, VKPipelineSet* set);
 void VKPipeline_clear(VKPipelineSet* set);

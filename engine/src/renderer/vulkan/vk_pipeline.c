@@ -130,6 +130,14 @@ void VKPipeline_enable_blending(VKPipelineSet* set){
     set->colblend_attachment_state.alphaBlendOp =  VK_BLEND_OP_ADD;
 }
 
+void VKPipeline_enable_depthtest( VKPipelineSet* set, bool write, VkCompareOp op )
+{
+    set->depth_stencil.depthTestEnable = VK_TRUE;
+    set->depth_stencil.depthWriteEnable = write ? VK_TRUE : VK_FALSE;
+    set->depth_stencil.depthCompareOp = op;
+    set->depth_stencil.depthBoundsTestEnable = VK_FALSE;
+    set->depth_stencil.stencilTestEnable = VK_FALSE;
+}
 
 VkPipeline VKPipeline_build(
     VK_Renderer *engine,
@@ -198,7 +206,7 @@ VkPipeline VKPipeline_build(
     .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
     .logicOpEnable = VK_FALSE,
     .attachmentCount = 1,
-    .pAttachments = &color_blend_attachment
+    .pAttachments = &set->colblend_attachment_state
   };
 
   VkDynamicState dynamic_states[] = {
@@ -215,8 +223,8 @@ VkPipeline VKPipeline_build(
   VkPipelineRenderingCreateInfo rendering = {
     .sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO,
     .colorAttachmentCount = 1,
-    .pColorAttachmentFormats = &engine->swapchain_data.format,
-    .depthAttachmentFormat = VK_FORMAT_UNDEFINED,
+    .pColorAttachmentFormats = &engine->draw_image.format,
+    .depthAttachmentFormat = engine->depth_format,
     .stencilAttachmentFormat = VK_FORMAT_UNDEFINED
   };
 

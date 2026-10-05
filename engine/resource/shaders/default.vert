@@ -34,7 +34,10 @@ void main()
   //gl_Position = PushConstants.projection * PushConstants.view * PushConstants.model * vec4(v.position, 1.0f);
   gl_Position = PushConstants.projection * PushConstants.view * PushConstants.model * vec4(v.position, 1.0f);
 	//out_col = v.col;
-  out_col = vec4(v.normal, 1.0f);
+  //out_col = abs( vec4(v.normal, 1.0f) );
+  float scale = 2.0 / max(length(v.position), 0.001);
+  out_col = vec4(abs(v.normal) * scale, 1.0);
+  //out_col = ( 1.0f / length(v.position) * 2)  * abs( vec4(v.normal, 1.0f) );
   out_uv.x = v.uv.x;
 	out_uv.y = v.uv.y;
 }

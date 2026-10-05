@@ -3,7 +3,13 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <arpa/inet.h>
+#ifdef _WIN32
+    #include <winsock2.h>
+    #include <ws2tcpip.h>
+#else
+    #include <arpa/inet.h>
+    #include <sys/socket.h>
+#endif
 #include "common/common.h"
 
 using byte = unsigned char;
@@ -13,6 +19,11 @@ using netres_t = ssize_t;
 #define NET_SERVER_DEFAULT_PORT 27015
 #define NET_CLIENT_DEFAULT_PORT 27005
 
+#ifdef _WIN32
+typedef SOCKET netsockhandle_t;
+#else
+typedef int netsockhandle_t;
+#endif
 
 
 struct NetAddress
@@ -118,7 +129,7 @@ class NetSocket
 
         bool IsValid( void ) const { return m_handle != NETSOCK_INVALID; }
     private:
-        int m_handle = -1;
+        netsockhandle_t m_handle = -1;
         int m_type = -1;
 };
 
@@ -171,3 +182,6 @@ public:
 };
 
 void UDP_ProcessSocket( NetSocket* socket, INetLookup* lookup );
+
+
+bool NET_Init( void );

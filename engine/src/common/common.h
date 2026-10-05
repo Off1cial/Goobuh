@@ -14,16 +14,33 @@ typedef int32_t  i32;
 typedef int16_t  i16;
 typedef int8_t   i8;
 
+// Cross-platform
+#ifdef _MSC_VER
 
+    #ifdef FORCEINLINE
+        #undef FORCEINLINE
+    #endif
 
-// Cross-platform (common)
-#ifdef _MSC_VER // Windows C/C++ Compiler
-#define FORCEINLINE __forceinline
+    #define FORCEINLINE __forceinline
+
 #elif defined(__GNUC__) || defined(__clang__)
-#define FORCEINLINE __attribute__((always_inline)) inline
+
+    #ifdef FORCEINLINE
+        #undef FORCEINLINE
+    #endif
+
+    #define FORCEINLINE inline __attribute__((always_inline))
+
 #else
-#define FORCEINLINE inline
+
+    #ifdef FORCEINLINE
+        #undef FORCEINLINE
+    #endif
+
+    #define FORCEINLINE inline
+
 #endif
+
 
 // #define COMPILETIME_MAX and COMPILETIME_MIN for max/min in constant expressions
 #define COMPILETIME_MIN(a, b) (((a) < (b)) ? (a) : (b))

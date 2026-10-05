@@ -1,11 +1,11 @@
 .PHONY: build run clean
 
-
 build:
-	./build.sh
+	cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
+	cmake --build build
 
 run: build
-	LSAN_OPTIONS="suppressions=$(CURDIR)/lsan.supp" ./build/engine
+	.\build\engine.exe
 
 clean:
-	rm -rf build
+	cmake --build build --target clean

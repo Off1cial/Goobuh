@@ -1,7 +1,7 @@
 {
 	"InstallScripts" : 
 	[
-		"/home/redw0od0/proj/G00BUH/game/build/cmake_install.cmake"
+		"C:/Users/redw0od0/Documents/G00BUH/game/build/cmake_install.cmake"
 	],
 	"Parallel" : false
 }
