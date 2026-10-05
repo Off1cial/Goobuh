@@ -139,6 +139,9 @@ sudo dnf install cmake vulkan-tools vulkan-devel SDL3-devel SDL3_image-devel SDL
 sudo pacman -S cmake vulkan-icd-loader vulkan-headers vulkan-validation-layers sdl3 sdl3_image sdl3_ttf
 ```
 
+### Building for Windows
+Good luck, I used Msys2 UCRT64 to install the arch packages and added the ucrt64 bin folder to PATH
+
 ## Building
 
 1. Ensure all dependencies are installed
