@@ -42,8 +42,10 @@ Engine::Engine() {
     m_vkrenderer->LoadModel(cube_model);
 
     //entity_t* ent_world = ED_NEW( VEC_ZERO, VEC_ZERO, VEC_ZERO, VEC_HALF, testmap_model, 1, false, 0.0f );
-
-    entity_t* ent_cube = ED_NEW( VEC_ZERO, (vec3_t){0.0f, 0.001f, -5.5f}, VEC_ZERO, VEC_HALF, cube_model, 0, true, 1.0f );
+    vec3_t cube_halfs;
+    cube_halfs[0] = 1.5f; cube_halfs[1] = cube_halfs[0]; cube_halfs[2] = cube_halfs[0];
+    entity_t* ent_cube = ED_NEW( VEC_ZERO, (vec3_t){0.0f, 0.001f, -2.0f}, VEC_ZERO, cube_halfs, cube_model, 0, true, 1.0f );
+    entity_t* ent_cube2 = ED_NEW( (vec3_t){5.0F, 1.0F, 0.0F}, (vec3_t){-5.0f, 0.0f, 0.0f}, VEC_ZERO, cube_halfs, cube_model, 0, true, 1.0f );
 }
 
 void Engine::Poll() {

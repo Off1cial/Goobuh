@@ -9,121 +9,7 @@
 
 CPhysicsManager* g_PhysicsManager = new CPhysicsManager();
 
-static FORCEINLINE void body_setflag( CBodyblock* block, bodyid_t id, char flag ){
-    block->state_flags[id] |= flag;
-}
 
-static FORCEINLINE void body_clearflag( CBodyblock* block, bodyid_t id, char flag ){
-    block->state_flags[id] &= ~flag;
-}
-
-static FORCEINLINE bool body_hasflag( CBodyblock* block, bodyid_t id, char flag ){
-    return (block->state_flags[id] & flag) != 0;
-}
-
-bool CBodyblock::Init( void )
-{
-    allocation = calloc(1, ALLOCATION_SIZE);
-    if (!allocation) return false;
-
-    x = (float*)allocation;
-    y = (float*)((uintptr_t)x + sizeof(float) * BODY_COUNT);
-    z = (float*)((uintptr_t)y + sizeof(float) * BODY_COUNT);
-
-    vx = (float*)((uintptr_t)z + sizeof(float) * BODY_COUNT);
-    vy = (float*)((uintptr_t)vx + sizeof(float) * BODY_COUNT);
-    vz = (float*)((uintptr_t)vy + sizeof(float) * BODY_COUNT);
-
-    mass = (float*)((uintptr_t)vz + sizeof(float) * BODY_COUNT);
-
-    hx = (float*)((uintptr_t)mass + sizeof(float) * BODY_COUNT);
-    hy = (float*)((uintptr_t)hx + sizeof(float) * BODY_COUNT);
-    hz = (float*)((uintptr_t)hy + sizeof(float) * BODY_COUNT);
-
-    return true;
-}
-
-bodyid_t CBodyblock::AddBody( const vec3_t position, const vec3_t velocity, const float mass_value, const vec3_t halfs )
-{
-    if (m_body_count >= BODY_COUNT) return INVALID_BODY_ID; // Block is full
-
-    x[m_body_count] = position[0];
-    y[m_body_count] = position[1];
-    z[m_body_count] = position[2];
-
-    vx[m_body_count] = velocity[0];
-    vy[m_body_count] = velocity[1];
-    vz[m_body_count] = velocity[2];
-
-    mass[m_body_count] = mass_value;
-
-    hx[m_body_count] = halfs[0];
-    hy[m_body_count] = halfs[1];
-    hz[m_body_count] = halfs[2];
-
-    m_body_count++;
-    return (bodyid_t)(m_body_count - 1);
-}
-
-void CBodyblock::Clear( void )
-{
-    if (allocation)
-    {
-        free(allocation);
-    }
-    allocation = nullptr;
-    x = y = z = nullptr;
-    vx = vy = vz = nullptr;
-    mass = nullptr;
-    hx = hy = hz = nullptr;
-}
-
-void CBodyblock::Reset( void )
-{
-    if (allocation) memset(allocation, 0, ALLOCATION_SIZE);
-}
-
-void CBodyblockManager::Shutdown( void )
-{
-    for (auto& block : m_blocks)
-    {
-        block.Clear();
-    }
-    m_blocks.clear();
-    m_block_count = 0;
-}
-
-blockid_t CBodyblockManager::CreateBlock( void )
-{
-    CBodyblock new_block;
-    if (!new_block.Init()) return INVALID_BLOCK_ID;
-    new_block.m_block_id = (blockid_t)m_block_count;
-
-    m_blocks.push_back(std::move(new_block));
-    m_block_count++;
-    return (blockid_t)(m_block_count - 1);
-}
-
-blockid_t CBodyblockManager::FindBlock( void )
-{
-    for (size_t i = 0; i < m_block_count; ++i)
-    {
-        if (m_blocks[i].GetBodyCount() < CBodyblock::BODY_COUNT)
-        {
-            return (blockid_t)i;
-        }
-    }
-    return CreateBlock(); // No available block, create a new one
-}
-
-
-physobjid_t CBodyblockManager::AddBodyToBlock( blockid_t block, const vec3_t position, const vec3_t velocity, const float mass, const vec3_t halfs )
-{
-    if (block < 0 || block >= (blockid_t)m_block_count) return INVALID_PHYSOBJ_ID; // Invalid block ID
-    bodyid_t body_id = m_blocks[block].AddBody(position, velocity, mass, halfs);
-    if (body_id == INVALID_BODY_ID) return INVALID_PHYSOBJ_ID; // Block is full, cannot add body
-    return (physobjid_t)((block << 16) | body_id); // Combine block and body IDs into a single physobjid_t
-}
 
 physobjid_t CPhysicsManager::CreatePhysicsObject( 
     const vec3_t origin,
@@ -156,7 +42,9 @@ void CPhysicsManager::SimulateBody( const physobjid_t& obj, float delta_time )
     block.x[body_id] += block.vx[body_id] * delta_time;
     block.y[body_id] += block.vy[body_id] * delta_time;
     block.z[body_id] += block.vz[body_id] * delta_time;
+    #ifdef PHYS_PRINTS
     printf("Simulating body %d in block %d: New position = (%f, %f, %f)\n", body_id, block_id, block.x[body_id], block.y[body_id], block.z[body_id]);
+    #endif
 
     // Apply gravity if enabled
     // This is a placeholder; actual gravity application would depend on the physics system's design
@@ -167,13 +55,27 @@ void CPhysicsManager::Simulate( float delta_time )
 {
     // Placeholder for physics simulation logic
     // This would typically involve updating positions and velocities of all bodies based on forces, collisions, etc.
-    for (size_t block_index = 0; block_index < m_block_count; ++block_index)
+    for (blockid_t block_index = 0; block_index < m_block_count; ++block_index)
     {
         CBodyblock& block = m_blocks[block_index];
-        for (size_t body_index = 0; body_index < block.GetBodyCount(); ++body_index)
+        for (bodyid_t body_index = 0; body_index < block.GetBodyCount(); ++body_index)
         {
             physobjid_t obj_id = (physobjid_t)((block_index << 16) | body_index);
             SimulateBody(obj_id, delta_time);
+        }
+    }
+    for (blockid_t block_index = 0; block_index < m_block_count; ++block_index)
+    {
+        CBodyblock& block = m_blocks[block_index];
+        bodyid_t block_size = block.GetBodyCount();
+        for (bodyid_t body_index = 0; body_index < block_size; ++body_index)
+        {
+            physobjid_t obj_id = (physobjid_t)((block_index << 16) | body_index);
+            for (bodyid_t other_body = 0; other_body < block_size; ++other_body ){
+                if (body_index == other_body) continue;
+                collision_event_t coll_event;
+                TestCollision( *this, obj_id, other_body, coll_event );
+            }
         }
     }
 

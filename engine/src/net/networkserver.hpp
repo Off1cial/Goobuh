@@ -35,6 +35,7 @@ class CNetServer : public INetLookup
         void SetTickrate( u32 tick) { m_tickrate = tick; };
     
         u32 m_tickrate;
+        float m_tickrate_interval;
         challenge_t m_challenge;
 
         NetSocket m_sockudp;

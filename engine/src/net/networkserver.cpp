@@ -5,6 +5,7 @@ bool CNetServer::Init( u16 port ){
     if (!m_sockudp.Open(port, NETSOCK_UDP)) return false;
     // For now
     m_tickrate = 32;
+    m_tickrate_interval = 1.0f / m_tickrate;
     m_challenge = {.dest = NetAddress(), .challenge = 69, .duration = 3.0f};
     return true;
 }

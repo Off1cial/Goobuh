@@ -3,6 +3,7 @@
 
 #include "math/vector.h"
 
+// Do I even use this?
 typedef int32_t physobjid_t;
 
 class  IPhysicsObject
