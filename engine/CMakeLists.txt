@@ -178,11 +178,11 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     # Sanitizers on Linux only for now
     if(NOT WIN32)
         target_compile_options(engine_lib PRIVATE
-            -fsanitize=address,undefined
+        $<$<COMPILE_LANGUAGE:C,CXX>:-fsanitize=address,undefined>
         )
 
         target_compile_options(engine PRIVATE
-            -fsanitize=address,undefined
+        -fsanitize=address,undefined
         )
 
         target_link_options(engine PRIVATE

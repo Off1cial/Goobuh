@@ -10,10 +10,10 @@ public:
     CInput() { Init(); }
     ~CInput() = default;
 
-    bool KeyDown( key_t key ) const override { return m_keysCurrent[key]; }
-    bool KeyUp( key_t key ) const override   { return !m_keysCurrent[key]; }
-    bool KeyTap( key_t key ) const override  { return m_keysCurrent[key] && !m_keysPrevious[key]; }
-    bool KeyRelease( key_t key ) const override { return !m_keysCurrent[key] && m_keysPrevious[key]; }
+    bool KeyDown( keycode_t key ) const override { return m_keysCurrent[key]; }
+    bool KeyUp( keycode_t key ) const override   { return !m_keysCurrent[key]; }
+    bool KeyTap( keycode_t key ) const override  { return m_keysCurrent[key] && !m_keysPrevious[key]; }
+    bool KeyRelease( keycode_t key ) const override { return !m_keysCurrent[key] && m_keysPrevious[key]; }
 
 
     bool IsMouseLocked( void ) const override { return m_mouselocked; }

@@ -4,6 +4,7 @@
 #include "assetmanager.hpp"
 #include "math/matrix.h"
 #include "camera.h"
+#include "entity.h"
 
 #include <cstring>
 
@@ -65,14 +66,14 @@ VKMesh* CRendererVK::GetModel( AssetHandle handle )
     return mdl ? &mdl->vk_mesh : nullptr;
 }
 
-void CRendererVK::DrawEntity( vec3_t origin, qangle angles, AssetHandle model )
+void CRendererVK::DrawEntity( entity_state_t estate )
 {
     mat4 transform;
-    MatrixModel( origin, angles, transform );
-    DrawModel( model, transform );
+    MatrixModel( estate.origin, estate.angles, transform );
+    DrawModel( estate.model, transform, estate.tex_index );
 }
 
-void CRendererVK::DrawModel( AssetHandle model, mat4 transform )
+void CRendererVK::DrawModel( AssetHandle model, mat4 transform, uint32_t texture_index )
 {
     // Not loaded (or not a model): skip. Load assets outside the render pass with LoadModel().
     VKMesh* mesh = GetModel( model );
@@ -83,6 +84,7 @@ void CRendererVK::DrawModel( AssetHandle model, mat4 transform )
         
 
     PushConstants push = s_base_push_consts;
+    push.tex_id = texture_index;
     memcpy( &push.model, transform, sizeof( push.model ) ); // previously the transform was ignored
 
     VKMesh_draw(

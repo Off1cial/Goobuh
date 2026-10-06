@@ -581,14 +581,18 @@ void create_default_pipeline(VK_Renderer *engine)
 
 static void create_default_texture(VK_Renderer* engine)
 {
-  uint8_t cols[4] = {255, 0, 255, 255};
-  engine->default_texture = VKTexture_create( engine, cols, 1, 1, VK_FORMAT_R8G8B8A8_UNORM );
-  VKTexture_register( engine, &engine->default_texture, 0 );
+    uint8_t cols[4] = {255, 255, 255, 255};
+    engine->default_texture = VKTexture_create( engine, cols, 1, 1, VK_FORMAT_R8G8B8A8_UNORM );
+    VKTexture_register( engine, &engine->default_texture, 0 );
+
+    VKTexture* tex = VKTexture_CreateFromFile(engine, ASSET_DIR "/textures/default.png");
+    free(tex);
 }
 
 uint8_t VK_Initialise(VK_Renderer *engine, SDL_Window *window)
 {
   memset(engine, 0, sizeof(VK_Renderer));
+  engine->texture_next = 1;
 
   create_instance(engine);
   select_device(engine);
@@ -612,9 +616,6 @@ uint8_t VK_Initialise(VK_Renderer *engine, SDL_Window *window)
   int w, h;
   SDL_GetWindowSize(window, &w, &h);
 
-  engine->mesh_data = malloc(sizeof(VKMesh));
-  VKMesh testmesh = VKMesh_load_gltf(engine, ASSET_DIR "/models/cone.glb");
-  *engine->mesh_data = testmesh;
 
   return 1;
 }

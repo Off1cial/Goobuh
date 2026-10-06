@@ -94,6 +94,7 @@ typedef struct VK_Renderer
   VkDescriptorSetLayout texture_set_layout;
   VkDescriptorPool descriptor_pool;
   VkDescriptorSet texture_set;
+  uint32_t texture_next;
 
   VkCommandPool command_pool;
   VmaAllocator allocator;

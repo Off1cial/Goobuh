@@ -3,6 +3,7 @@
 #include "platform/plt_time.h"
 #include "platform/window.h"
 #include "renderer/vulkan/vk_renderer.h"
+#include "physics/physmanager.hpp"
 
 #include "assetmanager.hpp"
 #include "entity.h"
@@ -14,6 +15,7 @@
 AssetHandle cone_model;
 AssetHandle monkey_model;
 AssetHandle testmap_model;
+AssetHandle cube_model;
 
 Engine::Engine() {
     m_window = platform_createwindow("G00BUH", 800, 600);
@@ -33,11 +35,15 @@ Engine::Engine() {
     testmap_model = g_AssetManager->GetHandle("test.glb");
     cone_model = g_AssetManager->GetHandle("cone.glb");
     monkey_model = g_AssetManager->GetHandle("monkey.glb");
+    cube_model = g_AssetManager->GetHandle("cube.glb");
     m_vkrenderer->LoadModel(cone_model);
     m_vkrenderer->LoadModel(monkey_model);
     m_vkrenderer->LoadModel(testmap_model);
+    m_vkrenderer->LoadModel(cube_model);
 
-    entity_t* ent_monkey = ED_NEW( VEC_ZERO, VEC_ZERO, VEC_ZERO, testmap_model );
+    //entity_t* ent_world = ED_NEW( VEC_ZERO, VEC_ZERO, VEC_ZERO, VEC_HALF, testmap_model, 1, false, 0.0f );
+
+    entity_t* ent_cube = ED_NEW( VEC_ZERO, (vec3_t){0.0f, 0.001f, -5.5f}, VEC_ZERO, VEC_HALF, cube_model, 0, true, 1.0f );
 }
 
 void Engine::Poll() {
@@ -92,8 +98,9 @@ void Engine::Run() {
         angles[YAW] += 0.01f;
         angles[PITCH] += 0.2;
         MatrixModel(pos, angles, testm);
-        m_vkrenderer->DrawModel( cone_model, testm );
-
+        //m_vkrenderer->DrawModel( cone_model, testm, 0 );
+        g_PhysicsManager->Simulate(  0.01f );
+        UpdateEntites();
         DrawEntities();
 
 
@@ -104,13 +111,24 @@ void Engine::Run() {
     }
 }
 
+void Engine::UpdateEntites( void )
+{
+    for (int i = 0; i < MAX_ENTITIES; i++)
+    {
+        entity_t* e = &g_Entities[i];
+        if (e->free) continue;
+        if (!e->simulated) continue;
+        g_PhysicsManager->GetObjectPosition( e->physobj_id, e->state.origin );
+    }
+}
+
 void Engine::DrawEntities( void )
 {
     for (int i = 0; i < MAX_ENTITIES; i++)
     {
         entity_t* e = &g_Entities[i];
         if (e->free) continue;
-        m_vkrenderer->DrawEntity( e->state.origin, e->state.angles, e->state.model );
+        m_vkrenderer->DrawEntity( e->state );
        
     }
 }

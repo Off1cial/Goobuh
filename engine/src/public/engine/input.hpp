@@ -22,7 +22,7 @@ struct kbutton_t
     keystate_t state[2];
 };
 
-typedef enum key_t
+typedef enum keycode_t
 {
     KEY_A = SDL_SCANCODE_A,
     KEY_B = SDL_SCANCODE_B,
@@ -140,7 +140,7 @@ typedef enum key_t
     KEY_RALT = SDL_SCANCODE_RALT,
     KEY_RGUI = SDL_SCANCODE_RGUI,
     KEY_COUNT = 133,
-} key_t;
+} keycode_t;
 
 class IInput
 {
@@ -151,10 +151,10 @@ public:
     virtual void GetMousePosition( float* x, float* y ) const = 0;
 
 
-    virtual bool KeyDown( key_t key ) const = 0;
-    virtual bool KeyUp( key_t key ) const = 0;
-    virtual bool KeyTap( key_t key ) const = 0;
-    virtual bool KeyRelease( key_t key ) const = 0;
+    virtual bool KeyDown( keycode_t key ) const = 0;
+    virtual bool KeyUp( keycode_t key ) const = 0;
+    virtual bool KeyTap( keycode_t key ) const = 0;
+    virtual bool KeyRelease( keycode_t key ) const = 0;
 
     virtual camera_t* GetCamera( void ) const = 0;
     virtual void SetCamera( camera_t* camera ) = 0;

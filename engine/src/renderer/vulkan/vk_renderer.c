@@ -676,6 +676,19 @@ void VKTexture_register(VK_Renderer* engine, VKTexture* tex, uint32_t index)
 }
 
 typedef struct { uint8_t* pixels; int w, h; } DecodedImage;
+static DecodedImage decode_memory(const void* data, size_t size);
+static DecodedImage decode_file(const char* path);
+
+
+VKTexture* VKTexture_CreateFromFile( VK_Renderer* engine, const char* path )
+{
+    VKTexture* tex = malloc(sizeof(VKTexture));
+    DecodedImage data = decode_file(path);
+    VKTexture temp = VKTexture_create(engine, data.pixels, data.w, data.h, VK_FORMAT_R8G8B8A8_UNORM);
+    *tex = temp;
+    VKTexture_register(engine, tex, 0);
+    return tex;
+}
 
 static DecodedImage decode_memory(const void* data, size_t size)
 {

@@ -25,7 +25,7 @@ class Engine : public IEngine {
     private:
         void Poll();
 
-
+        void UpdateEntites( void );
         void DrawEntities( void );
 
 

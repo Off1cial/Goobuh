@@ -18,8 +18,8 @@ public:
     CRendererVK( const CRendererVK& ) = delete;
     CRendererVK& operator=( const CRendererVK& ) = delete;
 
-    void DrawModel( AssetHandle model, mat4 transform ) override;
-    void DrawEntity( vec3_t origin, qangle angles, AssetHandle model ) override;
+    void DrawModel( AssetHandle model, mat4 transform, uint32_t texture_index ) override;
+    void DrawEntity( entity_state_t state ) override;
 
     void ResizeWindow( void ) override;
 

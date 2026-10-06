@@ -62,6 +62,9 @@ typedef int8_t   i8;
 #define RAG2DEG(theta) (theta * 180.0/M_PI)
 
 
+#define DECLARE( original, new ) typedef original new;
+
+
 // Null-terminating strncpy from Quake III
 static inline void Q_strncpy(char* dst, const char* src, size_t dstsize)
 {

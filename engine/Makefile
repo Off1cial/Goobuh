@@ -5,7 +5,11 @@ build:
 	cmake --build build
 
 run: build
+ifeq ($(OS),Windows_NT)
 	.\build\engine.exe
+else
+	./build/engine
+endif
 
 clean:
 	cmake --build build --target clean
