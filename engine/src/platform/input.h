@@ -1,3 +1,5 @@
+
+/*
 #ifndef INPUT_H
 #define INPUT_H
 
@@ -8,6 +10,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 
 typedef enum mbutton_t
 {
@@ -69,3 +72,5 @@ void input_update(plt_input* state);
 #endif
 
 #endif
+
+*/

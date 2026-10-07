@@ -166,13 +166,14 @@ target_compile_options(engine PRIVATE
 # Debug
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_options(engine_lib PRIVATE
-        $<$<COMPILE_LANGUAGE:C,CXX>:-g;-O0;-fno-omit-frame-pointer>
+        $<$<COMPILE_LANGUAGE:C,CXX>:-g;-O0;-fno-omit-frame-pointer -Wno-unused-variable>
     )
 
     target_compile_options(engine PRIVATE
         -g
         -O0
         -fno-omit-frame-pointer
+		-Wno-unused-variable
     )
 
     # Sanitizers on Linux only for now

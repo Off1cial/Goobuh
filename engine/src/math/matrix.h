@@ -84,6 +84,39 @@ FORCEINLINE void MatrixModel(
     out[15] = 1.0f;
 }
 
+// Rotation only, column-major like the rest of matrix.h (columns = local X/Y/Z axes in world space).
+FORCEINLINE void QuatToMatrix( const quat_t q, mat4 out )
+{
+    float x = q[0], y = q[1], z = q[2], w = q[3];
+
+    float xx = x * x, yy = y * y, zz = z * z;
+    float xy = x * y, xz = x * z, yz = y * z;
+    float wx = w * x, wy = w * y, wz = w * z;
+
+    MatrixIdentity( out );
+
+    out[0] = 1.0f - 2.0f * (yy + zz);
+    out[1] = 2.0f * (xy + wz);
+    out[2] = 2.0f * (xz - wy);
+
+    out[4] = 2.0f * (xy - wz);
+    out[5] = 1.0f - 2.0f * (xx + zz);
+    out[6] = 2.0f * (yz + wx);
+
+    out[8] = 2.0f * (xz + wy);
+    out[9] = 2.0f * (yz - wx);
+    out[10] = 1.0f - 2.0f * (xx + yy);
+}
+
+
+FORCEINLINE void MatrixModelQuat( const vec3_t origin, const quat_t rot, mat4 out )
+{
+    QuatToMatrix( rot, out );   // calls MatrixIdentity, fills the 3x3
+    out[12] = origin[0];
+    out[13] = origin[1];
+    out[14] = origin[2];
+}
+
 FORCEINLINE void MatrixScale(vec3_t scale, mat4 out)
 {
   memset(out, 0, sizeof(mat4));

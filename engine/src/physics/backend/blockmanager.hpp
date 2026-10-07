@@ -10,6 +10,7 @@
 #define BODYSTATE_FLAG_GRAVITY_DISABLED 0x02 // This body is not affected by gravity
 #define BODYSTATE_FLAG_COLLISION_DISABLED 0x04 // This body does not collide with other bodies
 #define BODYSTATE_FLAG_SLEEP 0x08 // This body is asleep and does not need to be simulated until woken up
+#define BODYSTATE_FLAG_ROTATION_LOCKED 0x10
 
 
 struct aabb_t
@@ -26,7 +27,8 @@ class CBodyblock
 public:
     CBodyblock( void ) { Clear(); }
     ~CBodyblock( void ) = default;
-
+    //CBodyblock( const CBodyblock& ) = delete;
+    CBodyblock& operator=( const CBodyblock& ) = delete;
     bool Init( void );
     void Clear( void );
     void Reset( void );
@@ -37,8 +39,10 @@ public:
 
     blockid_t m_block_id = INVALID_BLOCK_ID; // The ID of this block
 
-    bodyid_t AddBody( const vec3_t position, const vec3_t velocity, const float mass, const vec3_t halfs );
+    bool AddBody( bodyid_t& id_out, const vec3_t position, const vec3_t velocity, const float mass, const vec3_t halfs, const qangle angles );
     void RemoveBody( bodyid_t body_id ); // Mark the spot as free, wont be simulated
+
+    void GetMass( bodyid_t body, float& out );
 
     void GetPos( bodyid_t body_id, vec3_t out );
     void SetPos( bodyid_t body_id, vec3_t pos );
@@ -49,13 +53,20 @@ public:
     void GetHalfs( bodyid_t body_id, vec3_t out );
     void SetHalfs( bodyid_t body_id, vec3_t halfs );
 
-    void GetAABB( bodyid_t body_id, aabb_t& out );
+    void GetRotation( bodyid_t body_id, vec3_t rotation );
+
+    void GetAABB( bodyid_t body_id, vec3_t pos, vec3_t halfs );
 
     void SleepBody( bodyid_t body_id );
     void WakeBody( bodyid_t body_id );
+private:
+
+    bool FindSlot( bodyid_t& out );
+
+public:
 
     constexpr static size_t BODY_COUNT = 64; // Number of bodies per block
-    constexpr static size_t BODY_SIZE = sizeof(float) * 10 + sizeof(char); // Size of each body in bytes (3 for position, 3 for velocity, 1 for mass, 3 for half extents, 1 for state flags)
+    constexpr static size_t BODY_SIZE = sizeof(float) * 17 + sizeof(char); // Size of each body in bytes (3 for position, 3 for velocity, 1 for mass, 3 for half extents, 1 for state flags)
     constexpr static size_t ALLOCATION_SIZE = BODY_COUNT * BODY_SIZE; // Total size of the allocation in bytes
 
 
@@ -65,19 +76,28 @@ public:
     char* state_flags;
     float* x, *y, *z; // Position data
     float *vx, *vy, *vz; // Velocity data
-    float *mass; // Mass data
+    float *wx, *wy, *wz;
+    float *inv_mass; // Mass data
     float *hx, *hy, *hz; // Half extents data
+    float *qx, *qy, *qz, *qw;
 
-
+ 
 };
 
 class CBodyblockManager
 {
 public:
+
+    bool GetMass( physobjid_t obj, float& out );
     bool GetHalfs( physobjid_t obj, vec3_t out );
     bool GetPosition( physobjid_t obj, vec3_t out );
+    bool GetVelocity( physobjid_t obj, vec3_t out );
+    bool GetAngularVelocity( physobjid_t obj, vec3_t out );
+    bool GetRotation( physobjid_t obj, vec3_t out );
 
-    void GetAABB( physobjid_t obj, aabb_t& out );
+    bool SetVelocity( physobjid_t obj, vec3_t velocity );
+
+    bool GetAABB( physobjid_t obj, vec3_t pos, vec3_t halfs );
 
     std::vector<CBodyblock> m_blocks; // devious, direct access by the collision tester
 protected:
@@ -89,7 +109,7 @@ protected:
     blockid_t CreateBlock( void );
     blockid_t FindBlock( void ); // Find a block with space for a new body, or create a new one if none exist
 
-    physobjid_t AddBodyToBlock( blockid_t block, const vec3_t position, const vec3_t velocity, const float mass, const vec3_t halfs );
+    physobjid_t AddBodyToBlock( blockid_t block, const vec3_t position, const vec3_t velocity, const float mass, const vec3_t halfs, const qangle angles );
     void RemoveBodyFromBlock( physobjid_t obj );
 
 

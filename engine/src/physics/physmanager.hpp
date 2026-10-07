@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <vector>
 #include "math/vector.h"
+#include "math/quat.h"
 
 #include "physics/backend/blockmanager.hpp"
 #include "physics/shared.h"
@@ -26,11 +27,16 @@ public:
     void SetObjectVelocity( const physobjid_t& obj, const vec3_t velocity );
     void GetObjectVelocity( const physobjid_t& obj, vec3_t out );
 
+    void GetObjectAngularVelocity( const physobjid_t& obj, vec3_t out );
+
+
     void SetObjectMass( const physobjid_t& obj, const float mass );
     void GetObjectMass( const physobjid_t& obj, float& out );
 
     void SetObjectHalfExtents( const physobjid_t& obj, const vec3_t halfs );
     void GetObjectHalfExtents( const physobjid_t& obj, vec3_t out );
+
+    void GetObjectRotation( const physobjid_t& obj, quat_t out );
 
     void AddForceCentre( const physobjid_t& obj, const vec3_t force );
     void AddForceOffset( const physobjid_t& obj, const vec3_t force, const vec3_t offset );
@@ -42,14 +48,16 @@ public:
         const vec3_t origin,
         const vec3_t velocity,
         const vec3_t halfs,
+        const qangle angles,
         const float mass
     );
 
-    void DestroyPhysicsObject( CPhysicsObject& obj );
+    void DestroyPhysicsObject( physobjid_t& obj );
 
     void Simulate( float delta_time );
 
 private:
+    void PrepareTick( void ); // At the start of each simulation tick
     void SimulateBody( const physobjid_t& obj, float delta_time );
 };
 

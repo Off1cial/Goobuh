@@ -50,6 +50,7 @@ void CAssetManager::RemoveSearchPath( std::string relative_dir )
 // Lookup
 // ---------------------------------------------------------------------------
 
+/*/
 AssetHandle CAssetManager::GetHandle( std::string_view name )
 {
     const fs::path rel = fs::path( name ).lexically_normal();
@@ -76,6 +77,42 @@ AssetHandle CAssetManager::GetHandle( std::string_view name )
     m_lookup.emplace( key, index );
     return { index };
 }
+*/
+
+
+
+AssetHandle CAssetManager::GetHandle( std::string_view name )
+{
+    const fs::path rel = fs::path( name ).lexically_normal();
+    if (!IsSafeRelativeName( rel ))
+    {
+        fprintf( stderr, "GetHandle: unsafe/empty name '%.*s'\n", (int)name.size(), name.data() );
+        return {};
+    }
+
+    const std::string key = rel.generic_string();
+    if (auto it = m_lookup.find( key ); it != m_lookup.end())
+        return { it->second };
+
+    fs::path found = FindOnDisk( rel );
+    if (found.empty())
+    {
+        fprintf( stderr, "GetHandle: '%s' not found. cwd=%s, %zu search paths:\n",
+                 key.c_str(), fs::current_path().string().c_str(), m_paths.size() );
+        for (const fs::path& p : m_paths)
+            fprintf( stderr, "  %s\n", p.string().c_str() );
+        return {};
+    }
+    Asset asset;
+    asset.name = key;
+    asset.path = std::move( found );
+    asset.type = TypeFromExtension( asset.path );
+
+    const uint32_t index = static_cast<uint32_t>(m_assets.size());
+    m_assets.push_back( std::move( asset ) );
+    m_lookup.emplace( key, index );
+    return { index };
+}
 
 Asset* CAssetManager::Get( AssetHandle h )
 {
@@ -85,6 +122,14 @@ Asset* CAssetManager::Get( AssetHandle h )
 const Asset* CAssetManager::Get( AssetHandle h ) const
 {
     return (h.IsValid() && h.index < m_assets.size()) ? &m_assets[h.index] : nullptr;
+}
+
+bool CAssetManager::GetModelData( AssetHandle h, ModelData& data_out )
+{
+    if (!(h.IsValid() && h.index < m_assets.size())) return false;
+
+    data_out = m_assets[h.index].ModelByValue();
+    return true;
 }
 
 // ---------------------------------------------------------------------------
@@ -113,7 +158,7 @@ bool CAssetManager::Load( IRenderer* renderer, AssetHandle handle )
                     break;
 
                 ModelData mdl;
-                mdl.vk_mesh = VKMesh_load_gltf( renderer->vk_renderer, asset->path.string().c_str() );
+                mdl.vk_mesh = VKMesh_load_gltf( renderer->vk_renderer, asset->path.string().c_str(), mdl.halfs );
                 asset->payload = std::move( mdl );
                 asset->state = AssetState::Loaded;
                 return true;

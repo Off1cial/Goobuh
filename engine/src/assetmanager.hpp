@@ -35,7 +35,7 @@ enum class AssetState : uint8_t
     Failed,
 };
 
-struct ModelData { VKMesh vk_mesh{}; };
+struct ModelData { VKMesh vk_mesh{}; vec3_t halfs; };
 struct SoundData { std::vector<uint8_t> data; float duration = 0.f; };
 struct TextureData { int w = 0, h = 0; std::vector<uint8_t> data; };
 
@@ -49,6 +49,8 @@ struct Asset
     AssetState            state = AssetState::Unloaded;
 
     std::variant<std::monostate, ModelData, SoundData, TextureData> payload;
+
+    ModelData ModelByValue() { return std::get<ModelData>( payload ); }
 
     ModelData* Model() { return std::get_if<ModelData>( &payload ); }
     const ModelData* Model()   const { return std::get_if<ModelData>( &payload ); }
@@ -80,6 +82,9 @@ public:
     // nullptr if the handle is invalid.
     Asset* Get( AssetHandle handle );
     const Asset* Get( AssetHandle handle ) const;
+
+    // Specific asset getters
+    bool GetModelData(  AssetHandle h, ModelData& data_out );
 
 private:
     static AssetType TypeFromExtension( const std::filesystem::path& p );

@@ -55,7 +55,7 @@ bool CRendererVK::LoadModel( AssetHandle handle )
 {
     return g_AssetManager->Load( this, handle );
 }
-
+/*
 VKMesh* CRendererVK::GetModel( AssetHandle handle )
 {
     Asset* asset = g_AssetManager->Get( handle );
@@ -65,11 +65,34 @@ VKMesh* CRendererVK::GetModel( AssetHandle handle )
     ModelData* mdl = asset->Model();
     return mdl ? &mdl->vk_mesh : nullptr;
 }
+*/
+
+VKMesh* CRendererVK::GetModel( AssetHandle handle )
+{
+    Asset* asset = g_AssetManager->Get( handle );
+    if (!asset)
+    {
+        printf( "GetModel: invalid handle (index %u)\n", handle.index );
+        return nullptr;
+    }
+    if (asset->state != AssetState::Loaded)
+    {
+        printf( "GetModel: '%s' state=%d (not Loaded)\n", asset->name.c_str(), (int)asset->state );
+        return nullptr;
+    }
+    ModelData* mdl = asset->Model();
+    if (!mdl)
+    {
+        printf( "GetModel: '%s' loaded but payload isn't ModelData\n", asset->name.c_str() );
+        return nullptr;
+    }
+    return &mdl->vk_mesh;
+}
 
 void CRendererVK::DrawEntity( entity_state_t estate )
 {
     mat4 transform;
-    MatrixModel( estate.origin, estate.angles, transform );
+    MatrixModelQuat( estate.origin, estate.rotation, transform );
     DrawModel( estate.model, transform, estate.tex_index );
 }
 

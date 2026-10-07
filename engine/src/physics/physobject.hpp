@@ -24,6 +24,7 @@ CPhysicsObject CreatePhysicsObject(
     const vec3_t& origin,
     const vec3_t& velocity,
     const vec3_t& halfs,
+    const qangle angles,
     const float mass
 );
 

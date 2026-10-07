@@ -2,7 +2,7 @@
 #include "common//logsys.h"
 #include <stdlib.h>
 #include <stdio.h>
-
+/*
 
 plt_input* platform_createinput(void)
 {
@@ -41,3 +41,6 @@ void input_update(plt_input* state)
 
 }
 
+
+
+*/

@@ -4,6 +4,9 @@
 typedef float vec3_t[3];
 typedef struct camera_t camera_t;
 
+
+#define MOUSE_BUTTON_FLAG(b) (1u << ((b)-1))
+
 class CInput : public IInput 
 {
 public:
@@ -15,6 +18,22 @@ public:
     bool KeyTap( keycode_t key ) const override  { return m_keysCurrent[key] && !m_keysPrevious[key]; }
     bool KeyRelease( keycode_t key ) const override { return !m_keysCurrent[key] && m_keysPrevious[key]; }
 
+    bool MouseDown( mbutton_t button ) const override
+    {
+        return (m_mouseCurrent & MOUSE_BUTTON_FLAG( button )) != 0;
+    }
+
+    bool MouseClick( mbutton_t button ) const override
+    {
+        return (m_mouseCurrent & MOUSE_BUTTON_FLAG( button )) != 0 &&
+            (m_mousePrevious & MOUSE_BUTTON_FLAG( button )) == 0;
+    }
+
+    bool MouseRelease( mbutton_t button ) const override
+    {
+        return (m_mouseCurrent & MOUSE_BUTTON_FLAG( button )) == 0 &&
+            (m_mousePrevious & MOUSE_BUTTON_FLAG( button )) != 0;
+    }
 
     bool IsMouseLocked( void ) const override { return m_mouselocked; }
     void GetMousePosition( float* x, float* y ) const override;

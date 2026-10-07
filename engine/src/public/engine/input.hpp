@@ -142,6 +142,15 @@ typedef enum keycode_t
     KEY_COUNT = 133,
 } keycode_t;
 
+typedef enum mbutton_t
+{
+    MOUSE_LEFT = SDL_BUTTON_LEFT,
+    MOUSE_RIGHT = SDL_BUTTON_RIGHT,
+    MOUSE_MIDDLE = SDL_BUTTON_MIDDLE,
+    MOUSE_FORWARD = SDL_BUTTON_X1, // I think, either x1 or x2, find out and fix
+    MOUSE_BACKWARD = SDL_BUTTON_X2,
+} mbutton_t;
+
 class IInput
 {
 public:
@@ -155,6 +164,10 @@ public:
     virtual bool KeyUp( keycode_t key ) const = 0;
     virtual bool KeyTap( keycode_t key ) const = 0;
     virtual bool KeyRelease( keycode_t key ) const = 0;
+
+    virtual bool MouseDown( mbutton_t button ) const = 0;
+    virtual bool MouseClick( mbutton_t button ) const = 0;
+    virtual bool MouseRelease( mbutton_t release ) const = 0;
 
     virtual camera_t* GetCamera( void ) const = 0;
     virtual void SetCamera( camera_t* camera ) = 0;

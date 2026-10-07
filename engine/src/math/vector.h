@@ -31,6 +31,8 @@ static vec3_t AXIS_XN = {-1, 0, 0};
 static vec3_t AXIS_YN = {0, -1, 0};
 static vec3_t AXIS_ZN = {0, 0, -1};
 
+#define VectorNew(x, y, z) (vec3_t){(x), (y), (z)}
+
 #define PITCH 0
 #define YAW 1
 #define ROLL 2
@@ -114,6 +116,7 @@ FORCEINLINE void AngleBasis(
         }
     }
 }
+
 
 #define DotProduct(a, b) (a[0]*b[0]+a[1]*b[1]+a[2]*b[2])
 
@@ -211,6 +214,7 @@ FORCEINLINE vec_t VectorNormalise(
 
     return length;
 }
+
 
 
 FORCEINLINE void VectorCrossNorm(const vec3_t a, const vec3_t b, vec3_t out)

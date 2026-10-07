@@ -13,7 +13,7 @@
 #include "camera.h"
 
 AssetHandle cone_model;
-AssetHandle monkey_model;
+AssetHandle shell_model;
 AssetHandle testmap_model;
 AssetHandle cube_model;
 
@@ -28,24 +28,26 @@ Engine::Engine() {
     
 
     for (int i = 0; i < MAX_ENTITIES; i++)
-    {
         g_Entities[i].free = true;
-    }
 
     testmap_model = g_AssetManager->GetHandle("test.glb");
     cone_model = g_AssetManager->GetHandle("cone.glb");
-    monkey_model = g_AssetManager->GetHandle("monkey.glb");
+    shell_model = g_AssetManager->GetHandle("shell.glb");
     cube_model = g_AssetManager->GetHandle("cube.glb");
     m_vkrenderer->LoadModel(cone_model);
-    m_vkrenderer->LoadModel(monkey_model);
+    m_vkrenderer->LoadModel(shell_model);
     m_vkrenderer->LoadModel(testmap_model);
     m_vkrenderer->LoadModel(cube_model);
 
     //entity_t* ent_world = ED_NEW( VEC_ZERO, VEC_ZERO, VEC_ZERO, VEC_HALF, testmap_model, 1, false, 0.0f );
     vec3_t cube_halfs;
     cube_halfs[0] = 1.5f; cube_halfs[1] = cube_halfs[0]; cube_halfs[2] = cube_halfs[0];
-    entity_t* ent_cube = ED_NEW( VEC_ZERO, (vec3_t){0.0f, 0.001f, -2.0f}, VEC_ZERO, cube_halfs, cube_model, 0, true, 1.0f );
-    entity_t* ent_cube2 = ED_NEW( (vec3_t){5.0F, 1.0F, 0.0F}, (vec3_t){-5.0f, 0.0f, 0.0f}, VEC_ZERO, cube_halfs, cube_model, 0, true, 1.0f );
+    //entity_t* ent_cube = ED_NEW( VEC_ZERO, VEC_ZERO, VEC_ZERO, cube_halfs, cube_model, 0, true, 0.2f );
+    //entity_t* ent_cube1 = ED_NEW( (vec3_t){0, 5, 0}, VEC_ZERO, VEC_ZERO, cube_halfs, cube_model, 0, true, 0.2f );
+    qangle angles = { -M_PI / 2.0f, 0.0f, 0.0f };
+    //entity_t* ent_cube2 = ED_NEW( (vec3_t){0, 10, 0}, VEC_ZERO, angles, cube_halfs, shell_model, 0, true, 0.2f );
+    CEntity *ent_cube = SpawnEntity( VEC_ZERO, VEC_ZERO, angles, 55.0F, cube_model ); 
+    CEntity* ent_cube1 = SpawnEntity( (vec3_t){0, 10, 0}, VEC_ZERO, angles, 40.0F, cube_model );
 }
 
 void Engine::Poll() {
@@ -75,7 +77,7 @@ qangle angles = { 0.2,0.45,0.1 };
 void Engine::Run() {
 
     camera_t camera;
-    camera_init(&camera, (vec3_t){0.0f, 0.0f, 5.0f}, (vec3_t){0.0f, 0.0f, -1.0f}, 800.0f / 600.0f, 60.0);
+    camera_init(&camera, (vec3_t){0.0f, 0.0f, 5.0f}, (vec3_t){0.0f, 0.0f, -1.0f}, 800.0f / 600.0f, 90.0);
     m_input->SetCamera(&camera);
 
     while (!m_window->should_close) {
@@ -91,6 +93,11 @@ void Engine::Run() {
             m_input->MoveCamera(camera.front, 0.1f);
         }
 
+        if (m_input->MouseDown( MOUSE_RIGHT ))
+        {
+            g_PhysicsManager->AddForceCentre( 0, VectorNew(0.0, 50, 0.0f ));
+        }
+
         // Do stuff
         m_game->update(m_frametime);
         m_input->AimCamera();
@@ -101,7 +108,7 @@ void Engine::Run() {
         angles[PITCH] += 0.2;
         MatrixModel(pos, angles, testm);
         //m_vkrenderer->DrawModel( cone_model, testm, 0 );
-        g_PhysicsManager->Simulate(  0.01f );
+        g_PhysicsManager->Simulate(  0.006f );
         UpdateEntites();
         DrawEntities();
 
@@ -115,22 +122,22 @@ void Engine::Run() {
 
 void Engine::UpdateEntites( void )
 {
-    for (int i = 0; i < MAX_ENTITIES; i++)
+    for (CEntity& e : g_Entities)
     {
-        entity_t* e = &g_Entities[i];
-        if (e->free) continue;
-        if (!e->simulated) continue;
-        g_PhysicsManager->GetObjectPosition( e->physobj_id, e->state.origin );
+        if (e.free) continue;
+        if (!e.HasPhysics()) continue;
+        physobjid_t physobj = e.GetPhysobj();
+        g_PhysicsManager->GetObjectPosition( physobj, e.state.origin );
+        g_PhysicsManager->GetObjectRotation( physobj, e.state.rotation );
+
     }
 }
 
 void Engine::DrawEntities( void )
 {
-    for (int i = 0; i < MAX_ENTITIES; i++)
+    for (CEntity& e : g_Entities)
     {
-        entity_t* e = &g_Entities[i];
-        if (e->free) continue;
-        m_vkrenderer->DrawEntity( e->state );
-       
+        if (e.free) continue;
+        m_vkrenderer->DrawEntity(e.state);
     }
 }

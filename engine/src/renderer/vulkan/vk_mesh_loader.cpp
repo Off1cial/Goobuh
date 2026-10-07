@@ -20,6 +20,7 @@
 #include <filesystem>
 #include <cstring>
 #include <cstdio>
+#include <cfloat>
 
 struct VertexKey
 {
@@ -78,7 +79,7 @@ static vertex_t make_obj_vertex(const tinyobj::attrib_t& attrib, const tinyobj::
   return vertex;
 }
 
-VKMesh VKMesh_load_obj(VK_Renderer* engine, const char* path)
+VKMesh VKMesh_load_obj(VK_Renderer* engine, const char* path, vec3_t halfs_out)
 {
   VKMesh mesh = {};
 
@@ -155,7 +156,7 @@ static vertex_t make_gltf_vertex(const fastgltf::math::fvec3& position, const fa
 
   return vertex;
 }
-
+/*
 VKMesh VKMesh_load_gltf(VK_Renderer* engine, const char* path)
 {
   VKMesh mesh = {};
@@ -259,4 +260,135 @@ VKMesh VKMesh_load_gltf(VK_Renderer* engine, const char* path)
     return mesh;
 
   return VKMesh_create(engine, vertices.data(), indices.data(), (uint32_t)vertices.size(), (uint32_t)indices.size());
+}
+
+*/
+
+
+VKMesh VKMesh_load_gltf( VK_Renderer* engine, const char* path, vec3_t halfs_out )
+{
+    VKMesh mesh = {};
+    std::filesystem::path filepath( path );
+    fastgltf::Parser parser;
+
+
+    auto data = fastgltf::GltfDataBuffer::FromPath( filepath );
+
+    if (!data)
+    {
+        printf( "Failed to read glTF: %s\n", path );
+        return mesh;
+    }
+
+    auto asset = parser.loadGltf( data.get(), filepath.parent_path(), fastgltf::Options::LoadExternalBuffers );
+
+    if (!asset)
+    {
+        printf( "Failed to parse glTF: %s\n", path );
+        return mesh;
+    }
+
+    fastgltf::Asset& gltf = asset.get();
+
+    std::vector<vertex_t> vertices;
+    std::vector<uint32_t> indices;
+
+    vec3_t bounds_min = {
+        FLT_MAX,
+        FLT_MAX,
+        FLT_MAX
+    };
+
+    vec3_t bounds_max = {
+        -FLT_MAX,
+        -FLT_MAX,
+        -FLT_MAX
+    };
+
+    for (fastgltf::Mesh& gltf_mesh : gltf.meshes)
+    {
+        for (fastgltf::Primitive& primitive : gltf_mesh.primitives)
+        {
+            if (primitive.type != fastgltf::PrimitiveType::Triangles)
+            {
+                printf( "Skipping non-triangle glTF primitive\n" );
+                continue;
+            }
+
+            auto position_attribute = primitive.findAttribute( "POSITION" );
+
+            if (position_attribute == primitive.attributes.end())
+            {
+                printf( "glTF primitive has no POSITION attribute\n" );
+                continue;
+            }
+
+            fastgltf::Accessor& position_accessor = gltf.accessors[position_attribute->accessorIndex];
+            size_t vertex_start = vertices.size();
+
+            vertices.resize( vertex_start + position_accessor.count );
+
+            fastgltf::iterateAccessorWithIndex<fastgltf::math::fvec3>( gltf, position_accessor, [&]( fastgltf::math::fvec3 position, size_t index )
+                                                                       {
+                                                                           vertices[vertex_start + index] = make_gltf_vertex( position, fastgltf::math::fvec3(), fastgltf::math::fvec2() );
+
+                                                                           for (int axis = 0; axis < 3; ++axis)
+                                                                           {
+                                                                               bounds_min[axis] = fminf( bounds_min[axis], position[axis] );
+                                                                               bounds_max[axis] = fmaxf( bounds_max[axis], position[axis] );
+                                                                           }
+                                                                       } );
+
+            auto normal_attribute = primitive.findAttribute( "NORMAL" );
+
+            if (normal_attribute != primitive.attributes.end())
+            {
+                fastgltf::Accessor& normal_accessor = gltf.accessors[normal_attribute->accessorIndex];
+
+                fastgltf::iterateAccessorWithIndex<fastgltf::math::fvec3>( gltf, normal_accessor, [&]( fastgltf::math::fvec3 normal, size_t index )
+                                                                           {
+                                                                               vertices[vertex_start + index].normal[0] = normal[0];
+                                                                               vertices[vertex_start + index].normal[1] = normal[1];
+                                                                               vertices[vertex_start + index].normal[2] = normal[2];
+                                                                           } );
+            }
+
+            auto uv_attribute = primitive.findAttribute( "TEXCOORD_0" );
+
+            if (uv_attribute != primitive.attributes.end())
+            {
+                fastgltf::Accessor& uv_accessor = gltf.accessors[uv_attribute->accessorIndex];
+
+                fastgltf::iterateAccessorWithIndex<fastgltf::math::fvec2>( gltf, uv_accessor, [&]( fastgltf::math::fvec2 uv, size_t index )
+                                                                           {
+                                                                               vertices[vertex_start + index].uv[0] = uv[0];
+                                                                               vertices[vertex_start + index].uv[1] = uv[1];
+                                                                           } );
+            }
+
+            if (primitive.indicesAccessor.has_value())
+            {
+                fastgltf::Accessor& index_accessor = gltf.accessors[primitive.indicesAccessor.value()];
+
+                fastgltf::iterateAccessor<uint32_t>( gltf, index_accessor, [&]( uint32_t index )
+                                                     {
+                                                         indices.push_back( (uint32_t)vertex_start + index );
+                                                     } );
+            }
+            else
+            {
+                for (uint32_t i = 0; i < position_accessor.count; i++)
+                    indices.push_back( (uint32_t)vertex_start + i );
+            }
+        }
+    }
+
+    if (vertices.empty() || indices.empty())
+        return mesh;
+
+    halfs_out[0] = (bounds_max[0] - bounds_min[0]) * 0.5f;
+    halfs_out[1] = (bounds_max[1] - bounds_min[1]) * 0.5f;
+    halfs_out[2] = (bounds_max[2] - bounds_min[2]) * 0.5f;
+
+    return VKMesh_create( engine, vertices.data(), indices.data(), (uint32_t)vertices.size(), (uint32_t)indices.size() );
 }
