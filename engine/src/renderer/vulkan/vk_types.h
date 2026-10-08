@@ -64,13 +64,19 @@ typedef struct PushConstants
   uint32_t tex_id;
 } PushConstants;
 
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 VKShader VKShader_create(VkDevice device, const char*  vertexpath, const char* fragmentpath);
 VKTexture VKTexture_create(VK_Renderer* engine, const void* pixels, uint32_t w, uint32_t h, VkFormat format );
 
-VKTexture* VKTexture_CreateFromFile( VK_Renderer* engine, const char* path );
+VKTexture* VKTexture_CreateFromFile( VK_Renderer* engine, const char* path, int* index_out );
 
 void VKTexture_destroy(VK_Renderer* engine, VKTexture* tex);
 void VKTexture_register(VK_Renderer* engine, VKTexture* tex, uint32_t index);
+
+#ifdef __cplusplus
+}
+#endif
 #endif

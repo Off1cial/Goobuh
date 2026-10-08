@@ -99,7 +99,7 @@ bool CBodyblock::AddBody( bodyid_t& id_out, const vec3_t position, const vec3_t 
     vy[slot] = velocity[1];
     vz[slot] = velocity[2];
 
-    inv_mass[slot] = 1.0f / mass_value;
+    inv_mass[slot] = mass_value > 0 ? 1.0f / mass_value : 0.0f;
 
     hx[slot] = halfs[0];
     hy[slot] = halfs[1];
@@ -210,6 +210,16 @@ void CBodyblock::GetRotation( bodyid_t body_id, vec3_t out )
     BODY_GETVEC3( body_id, qx, qy, qz, out );
 }
 
+void CBodyblock::EnableGravity( bodyid_t body_id )
+{
+    body_clearflag( this, body_id, BODYSTATE_FLAG_GRAVITY_DISABLED);
+}
+
+void CBodyblock::DisableGravity( bodyid_t body_id )
+{
+    body_setflag( this, body_id, BODYSTATE_FLAG_GRAVITY_DISABLED );
+}
+
 #undef BODY_IDCHECK
 
 void CBodyblockManager::Shutdown( void )
@@ -301,7 +311,25 @@ void CBodyblockManager::WakeBodyInBlock( physobjid_t obj )
     m_blocks[block].WakeBody( body );
 }
 
+void CBodyblockManager::DisableGravity( physobjid_t obj )
+{
+    blockid_t block;
+    bodyid_t body;
+    OBJ_ID_SEPARATE( obj, body, block );
+    if (block < 0 || block >= (blockid_t)m_block_count) return; // Invalid block ID
 
+    m_blocks[block].DisableGravity( body );
+}
+
+void CBodyblockManager::EnableGravity( physobjid_t obj )
+{
+    blockid_t block;
+    bodyid_t body;
+    OBJ_ID_SEPARATE( obj, body, block );
+    if (block < 0 || block >= (blockid_t)m_block_count) return; // Invalid block ID
+
+    m_blocks[block].EnableGravity( body );
+}
 
 bool CBodyblockManager::GetMass( physobjid_t obj, float& out )
 {
@@ -360,6 +388,24 @@ bool CBodyblockManager::GetAABB( physobjid_t obj, vec3_t pos, vec3_t halfs )
     printf( "GetAABB obj=%u block=%d body=%d count=%d\n", obj, (int)block, (int)body, (int)m_blocks[block].GetBodyCount() );
     #endif
     m_blocks[block].GetAABB( body, pos, halfs );
+    return true;
+}
+
+// blockmanager.cpp
+bool CBodyblockManager::GetOBB( physobjid_t obj, vec3_t pos, vec3_t halfs, vec3_t axes[3] )
+{
+    blockid_t block; bodyid_t body;
+    OBJ_ID_SEPARATE( obj, body, block );
+    if (block < 0 || block >= (blockid_t)m_block_count) return false;
+
+    CBodyblock& b = m_blocks[block];
+    b.GetAABB( body, pos, halfs );
+
+    quat_t q = { b.qx[body], b.qy[body], b.qz[body], b.qw[body] };
+    mat4 m;
+    QuatToMatrix( q, m );               // column-major: axis i = column i
+    for (int i = 0; i < 3; i++)
+        VectorSet( axes[i], m[4 * i], m[4 * i + 1], m[4 * i + 2] );
     return true;
 }
 

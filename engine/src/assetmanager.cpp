@@ -1,6 +1,10 @@
 #include "assetmanager.hpp"
 
 #include "renderer/irenderer.hpp"
+#include "renderer/vulkan/vk_types.h"
+
+
+#include "stb_image.h"
 
 #include <algorithm>
 #include <cctype>
@@ -132,9 +136,26 @@ bool CAssetManager::GetModelData( AssetHandle h, ModelData& data_out )
     return true;
 }
 
+bool CAssetManager::GetTextureData( AssetHandle h, TextureData& data_out )
+{
+    if (!(h.IsValid() && h.index < m_assets.size())) return false;
+
+    data_out = m_assets[h.index].TextureByValue();
+    return true;
+}
+
 // ---------------------------------------------------------------------------
 // Loading
 // ---------------------------------------------------------------------------
+
+typedef struct { uint8_t* pixels; int w, h; } DecodedImage;
+static DecodedImage decode_file( const char* path )
+{
+    DecodedImage out = { 0 };
+    int channels;
+    out.pixels = stbi_load( path, &out.w, &out.h, &channels, 4 );
+    return out;
+}
 
 bool CAssetManager::Load( IRenderer* renderer, AssetHandle handle )
 {
@@ -171,7 +192,16 @@ bool CAssetManager::Load( IRenderer* renderer, AssetHandle handle )
         case AssetType::Image:
         {
             TextureData tex;
-            
+            DecodedImage decimg = decode_file( asset->path.string().c_str() );
+            tex.w = decimg.w; tex.h = decimg.h;
+            tex.data.resize(tex.w * tex.h);
+            memcpy(tex.data.data(), decimg.pixels, decimg.w * decimg.h );
+            tex.vk_index = -1;
+            VKTexture* vktex = VKTexture_CreateFromFile( renderer->vk_renderer, asset->path.string().c_str(), &tex.vk_index );
+
+            asset->payload = std::move( tex );
+            asset->state = AssetState::Loaded;
+            return true;
             fprintf( stderr, "AssetManager: loading '%s' not implemented yet\n", asset->name.c_str() );
             break;
         }

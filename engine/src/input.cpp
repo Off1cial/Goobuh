@@ -32,7 +32,7 @@ void CInput::GetMousePosition( float* x, float* y ) const
 
 
 
-void CInput::AimCamera( void )
+void CInput::CameraLook( void )
 {
     camera_look( m_camera, m_mxrel, m_myrel, m_camerasens );
 }

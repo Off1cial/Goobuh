@@ -264,6 +264,7 @@ VKMesh VKMesh_load_gltf(VK_Renderer* engine, const char* path)
 
 */
 
+/*
 
 VKMesh VKMesh_load_gltf( VK_Renderer* engine, const char* path, vec3_t halfs_out )
 {
@@ -391,4 +392,176 @@ VKMesh VKMesh_load_gltf( VK_Renderer* engine, const char* path, vec3_t halfs_out
     halfs_out[2] = (bounds_max[2] - bounds_min[2]) * 0.5f;
 
     return VKMesh_create( engine, vertices.data(), indices.data(), (uint32_t)vertices.size(), (uint32_t)indices.size() );
+}
+*/
+
+
+VKMesh VKMesh_load_gltf( VK_Renderer* engine, const char* path, vec3_t halfs_out )
+{
+    VKMesh mesh = {};
+    std::filesystem::path filepath( path );
+
+    constexpr auto extensions =
+        fastgltf::Extensions::KHR_mesh_quantization |
+        fastgltf::Extensions::EXT_meshopt_compression |
+        fastgltf::Extensions::KHR_texture_transform |
+        fastgltf::Extensions::KHR_materials_emissive_strength;
+
+    fastgltf::Parser parser( extensions );
+
+    auto data = fastgltf::GltfDataBuffer::FromPath( filepath );
+    if (data.error() != fastgltf::Error::None)
+    {
+        printf( "Failed to read glTF %s: %s\n", path,
+                fastgltf::getErrorMessage( data.error() ).data() );
+        return mesh;
+    }
+
+    constexpr auto options =
+        fastgltf::Options::LoadExternalBuffers |
+        fastgltf::Options::DecomposeNodeMatrices; // not required, harmless
+
+    auto asset = parser.loadGltf( data.get(), filepath.parent_path(), options );
+    if (asset.error() != fastgltf::Error::None)
+    {
+        printf( "Failed to parse glTF %s: %s\n", path,
+                fastgltf::getErrorMessage( asset.error() ).data() );
+        return mesh;
+    }
+
+    fastgltf::Asset& gltf = asset.get();
+
+    std::vector<vertex_t> vertices;
+    std::vector<uint32_t> indices;
+
+    vec3_t bounds_min = { FLT_MAX, FLT_MAX, FLT_MAX };
+    vec3_t bounds_max = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
+
+    auto add_mesh = [&]( size_t mesh_index, const fastgltf::math::fmat4x4& m )
+        {
+            // Normal matrix = transpose(inverse(M)); winding flips if det < 0
+            fastgltf::math::fmat4x4 inv = fastgltf::math::invert( m );
+
+            float det =
+                m[0][0] * (m[1][1] * m[2][2] - m[2][1] * m[1][2]) -
+                m[1][0] * (m[0][1] * m[2][2] - m[2][1] * m[0][2]) +
+                m[2][0] * (m[0][1] * m[1][2] - m[1][1] * m[0][2]);
+            bool flip = det < 0.0f;
+
+            for (fastgltf::Primitive& primitive : gltf.meshes[mesh_index].primitives)
+            {
+                if (primitive.type != fastgltf::PrimitiveType::Triangles)
+                {
+                    printf( "Skipping non-triangle glTF primitive\n" );
+                    continue;
+                }
+
+                auto pos_attr = primitive.findAttribute( "POSITION" );
+                if (pos_attr == primitive.attributes.end())
+                    continue;
+
+                fastgltf::Accessor& pos_acc = gltf.accessors[pos_attr->accessorIndex];
+                size_t base = vertices.size();
+                vertices.resize( base + pos_acc.count );
+
+                fastgltf::iterateAccessorWithIndex<fastgltf::math::fvec3>( gltf, pos_acc,
+                                                                           [&]( fastgltf::math::fvec3 p, size_t i )
+                                                                           {
+                                                                               float w[3];
+                                                                               for (int r = 0; r < 3; ++r)
+                                                                                   w[r] = m[0][r] * p[0] + m[1][r] * p[1] + m[2][r] * p[2] + m[3][r];
+
+                                                                               vertices[base + i] = make_gltf_vertex(
+                                                                                   fastgltf::math::fvec3( w[0], w[1], w[2] ),
+                                                                                   fastgltf::math::fvec3( 0.f, 0.f, 1.f ),
+                                                                                   fastgltf::math::fvec2() );
+
+                                                                               for (int a = 0; a < 3; ++a)
+                                                                               {
+                                                                                   bounds_min[a] = fminf( bounds_min[a], w[a] );
+                                                                                   bounds_max[a] = fmaxf( bounds_max[a], w[a] );
+                                                                               }
+                                                                           } );
+
+                auto nrm_attr = primitive.findAttribute( "NORMAL" );
+                if (nrm_attr != primitive.attributes.end())
+                {
+                    fastgltf::Accessor& acc = gltf.accessors[nrm_attr->accessorIndex];
+                    fastgltf::iterateAccessorWithIndex<fastgltf::math::fvec3>( gltf, acc,
+                                                                               [&]( fastgltf::math::fvec3 n, size_t i )
+                                                                               {
+                                                                                   float o[3];
+                                                                                   for (int r = 0; r < 3; ++r)
+                                                                                       o[r] = inv[r][0] * n[0] + inv[r][1] * n[1] + inv[r][2] * n[2];
+
+                                                                                   float len = sqrtf( o[0] * o[0] + o[1] * o[1] + o[2] * o[2] );
+                                                                                   if (len > 0.0f) { o[0] /= len; o[1] /= len; o[2] /= len; }
+
+                                                                                   vertices[base + i].normal[0] = o[0];
+                                                                                   vertices[base + i].normal[1] = o[1];
+                                                                                   vertices[base + i].normal[2] = o[2];
+                                                                               } );
+                }
+
+                auto uv_attr = primitive.findAttribute( "TEXCOORD_0" );
+                if (uv_attr != primitive.attributes.end())
+                {
+                    fastgltf::Accessor& acc = gltf.accessors[uv_attr->accessorIndex];
+                    fastgltf::iterateAccessorWithIndex<fastgltf::math::fvec2>( gltf, acc,
+                                                                               [&]( fastgltf::math::fvec2 uv, size_t i )
+                                                                               {
+                                                                                   vertices[base + i].uv[0] = uv[0];
+                                                                                   vertices[base + i].uv[1] = uv[1];
+                                                                               } );
+                }
+
+                size_t idx_start = indices.size();
+
+                if (primitive.indicesAccessor.has_value())
+                {
+                    fastgltf::Accessor& acc = gltf.accessors[primitive.indicesAccessor.value()];
+                    fastgltf::iterateAccessor<uint32_t>( gltf, acc,
+                                                         [&]( uint32_t idx ) { indices.push_back( (uint32_t)base + idx ); } );
+                }
+                else
+                {
+                    for (uint32_t i = 0; i < pos_acc.count; ++i)
+                        indices.push_back( (uint32_t)base + i );
+                }
+
+                if (flip)
+                    for (size_t i = idx_start; i + 2 < indices.size(); i += 3)
+                        std::swap( indices[i + 1], indices[i + 2] );
+            }
+        };
+
+        // Walk the scene graph so every node instance gets its world transform
+    size_t scene_index = gltf.defaultScene.value_or( 0 );
+    if (scene_index < gltf.scenes.size())
+    {
+        fastgltf::iterateSceneNodes( gltf, scene_index, fastgltf::math::fmat4x4(),
+                                     [&]( fastgltf::Node& node, fastgltf::math::fmat4x4 matrix )
+                                     {
+                                         if (node.meshIndex.has_value())
+                                             add_mesh( node.meshIndex.value(), matrix );
+                                     } );
+    }
+    else
+    {
+        // No scenes: fall back to raw meshes
+        for (size_t i = 0; i < gltf.meshes.size(); ++i)
+            add_mesh( i, fastgltf::math::fmat4x4() );
+    }
+
+    if (vertices.empty() || indices.empty())
+    {
+        printf( "glTF %s produced no geometry\n", path );
+        return mesh;
+    }
+
+    for (int a = 0; a < 3; ++a)
+        halfs_out[a] = (bounds_max[a] - bounds_min[a]) * 0.5f;
+
+    return VKMesh_create( engine, vertices.data(), indices.data(),
+                          (uint32_t)vertices.size(), (uint32_t)indices.size() );
 }

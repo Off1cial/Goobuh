@@ -64,11 +64,12 @@ class CPhysicsCollisionSolver
 public:
     // --- Narrowphase. Return true/false and, on true, push a manifold to m_collisionEvents.
     bool TestCollisionAABBvsAABB( CBodyblockManager& BlockManager, const physobjid_t& a, const physobjid_t& b, collision_event_t& event_out );
-
+    bool TestCollisionOBBvsOBB( CBodyblockManager& BM,
+                                                         const physobjid_t& a, const physobjid_t& b, collision_event_t& ev );
     // Plane is  dot(pnorm, p) = pdist, pnorm points away from the solid side.
     // The plane is body A (PHYSOBJ_WORLD), so event.normal == pnorm with no flip.
     bool TestCollisionAABBvsPlane( CBodyblockManager& BlockManager, const physobjid_t& body, const vec3_t pnorm, float pdist, collision_event_t& event_out );
-
+    bool TestCollisionOBBvsPlane( CBodyblockManager& BlockManager, const physobjid_t& body, const vec3_t pnorm, float pdist, collision_event_t& event_out );
     // --- Solve every manifold in m_collisionEvents. Velocity-level only: positions are integrated by the manager.
     void SolveContacts( CBodyblockManager& BlockManager, float delta_time );
 

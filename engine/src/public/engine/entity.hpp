@@ -8,7 +8,7 @@ typedef struct AssetHandle AssetHandle;
 
 class IEntity
 {
-public:
+protected:
     virtual bool Spawn( vec3_t origin, vec3_t velocity, vec3_t angles, float mass ) = 0;
     virtual void EnablePhysics( float mass ) = 0;
     virtual void DisablePhysics( void ) = 0;

@@ -59,6 +59,9 @@ public:
 
     void SleepBody( bodyid_t body_id );
     void WakeBody( bodyid_t body_id );
+
+    void DisableGravity( bodyid_t body_id );
+    void EnableGravity( bodyid_t body_id );
 private:
 
     bool FindSlot( bodyid_t& out );
@@ -96,8 +99,12 @@ public:
     bool GetRotation( physobjid_t obj, vec3_t out );
 
     bool SetVelocity( physobjid_t obj, vec3_t velocity );
-
     bool GetAABB( physobjid_t obj, vec3_t pos, vec3_t halfs );
+    bool GetOBB( physobjid_t obj, vec3_t pos, vec3_t halfs, vec3_t axes[3] );
+
+
+    void EnableGravity( physobjid_t obj );
+    void DisableGravity( physobjid_t obj );
 
     std::vector<CBodyblock> m_blocks; // devious, direct access by the collision tester
 protected:

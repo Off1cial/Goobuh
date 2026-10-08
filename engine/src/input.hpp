@@ -39,8 +39,9 @@ public:
     void GetMousePosition( float* x, float* y ) const override;
 
     camera_t* GetCamera( void ) const override { return m_camera; }
+    void CameraLook( void );
     void SetCamera( camera_t* camera ) override { m_camera = camera; }
-    void AimCamera( void );
+
     void MoveCamera( vec3_t dir, float scale ); // For debugging purposes
 
     void Poll( void );

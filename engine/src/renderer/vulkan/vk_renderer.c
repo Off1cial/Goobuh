@@ -228,7 +228,7 @@ bool VK_BeginRendering(VK_Renderer *engine, camera_t *camera)
     transition_image(cmd, engine->depth_image,
                      VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
 
-    VkClearValue clear_color = {{{0.02f, 0.1f, 0.1f, 1.0f}}};
+    VkClearValue clear_color = {{{0.01f, 0.01f, 0.01f, 1.0f}}};
 
     VkRenderingAttachmentInfo color_attachment = {0};
     color_attachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
@@ -680,13 +680,14 @@ static DecodedImage decode_memory(const void* data, size_t size);
 static DecodedImage decode_file(const char* path);
 
 
-VKTexture* VKTexture_CreateFromFile( VK_Renderer* engine, const char* path )
+VKTexture* VKTexture_CreateFromFile( VK_Renderer* engine, const char* path, int* index_out )
 {
     VKTexture* tex = malloc(sizeof(VKTexture));
     DecodedImage data = decode_file(path);
     VKTexture temp = VKTexture_create(engine, data.pixels, data.w, data.h, VK_FORMAT_R8G8B8A8_UNORM);
     *tex = temp;
-    VKTexture_register(engine, tex, 0);
+    if(index_out)*index_out = engine->texture_next;
+    VKTexture_register(engine, tex, engine->texture_next++);
     return tex;
 }
 

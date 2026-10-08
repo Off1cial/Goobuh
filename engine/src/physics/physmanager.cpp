@@ -10,7 +10,20 @@
 
 CPhysicsManager* g_PhysicsManager = new CPhysicsManager();
 
+static FORCEINLINE void body_setflag( CBodyblock* block, bodyid_t id, char flag )
+{
+    block->state_flags[id] |= flag;
+}
 
+static FORCEINLINE void body_clearflag( CBodyblock* block, bodyid_t id, char flag )
+{
+    block->state_flags[id] &= ~flag;
+}
+
+static FORCEINLINE bool body_hasflag( CBodyblock* block, bodyid_t id, char flag )
+{
+    return (block->state_flags[id] & flag) != 0;
+}
 
 physobjid_t CPhysicsManager::CreatePhysicsObject( 
     const vec3_t origin,
@@ -64,13 +77,24 @@ void CPhysicsManager::SimulateBody( const physobjid_t& obj, float delta_time )
     block.x[body_id] += block.vx[body_id] * delta_time;
     block.y[body_id] += block.vy[body_id] * delta_time;
     block.z[body_id] += block.vz[body_id] * delta_time;
+    // q' = q + 0.5 * dt * (0, w) * q, then normalise
+    float wx = block.wx[body_id], wy = block.wy[body_id], wz = block.wz[body_id];
+    float qx = block.qx[body_id], qy = block.qy[body_id], qz = block.qz[body_id], qw = block.qw[body_id];
+    float h = 0.5f * delta_time;
+    block.qx[body_id] += h * (wx * qw + wy * qz - wz * qy);
+    block.qy[body_id] += h * (-wx * qz + wy * qw + wz * qx);
+    block.qz[body_id] += h * (wx * qy - wy * qx + wz * qw);
+    block.qw[body_id] += h * (-wx * qx - wy * qy - wz * qz);
+    float inv = 1.0f / sqrtf( block.qx[body_id] * block.qx[body_id] + block.qy[body_id] * block.qy[body_id] + block.qz[body_id] * block.qz[body_id] + block.qw[body_id] * block.qw[body_id] );
+    block.qx[body_id] *= inv; block.qy[body_id] *= inv; block.qz[body_id] *= inv; block.qw[body_id] *= inv;
+
     #ifdef PHYS_PRINTS
     printf("Simulating body %d in block %d: New position = (%f, %f, %f)\n", body_id, block_id, block.x[body_id], block.y[body_id], block.z[body_id]);
     #endif
 
     // Apply gravity if enabled
     // This is a placeholder; actual gravity application would depend on the physics system's design
-    block.vy[body_id] -= PHYS_DEFAULT_GRAVITY * delta_time; // Simple gravity effect
+    if (!body_hasflag( &block, body_id, BODYSTATE_FLAG_GRAVITY_DISABLED)) block.vy[body_id] -= PHYS_DEFAULT_GRAVITY * delta_time; // Simple gravity effect
 }
 
 void CPhysicsManager::Simulate( float delta_time )
@@ -140,12 +164,12 @@ void CPhysicsManager::Simulate( float delta_time )
         {
             physobjid_t obj_id = (physobjid_t)((block_index << 16) | body_index);
             collision_event_t world_collision;
-            TestCollisionAABBvsPlane( *this, obj_id, AXIS_Y, -4.0f, world_collision );
+            TestCollisionOBBvsPlane( *this, obj_id, AXIS_Y, -4.0f, world_collision );
             for (bodyid_t other = body_index + 1; other < block_size; ++other)
             {
                 physobjid_t other_id = (physobjid_t)((block_index << 16) | other);
                 collision_event_t ev;
-                TestCollisionAABBvsAABB( *this, obj_id, other_id, ev );
+                TestCollisionOBBvsOBB( *this, obj_id, other_id, ev );
             }
         }
     }

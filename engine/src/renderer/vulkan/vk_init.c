@@ -585,7 +585,7 @@ static void create_default_texture(VK_Renderer* engine)
     engine->default_texture = VKTexture_create( engine, cols, 1, 1, VK_FORMAT_R8G8B8A8_UNORM );
     VKTexture_register( engine, &engine->default_texture, 0 );
 
-    VKTexture* tex = VKTexture_CreateFromFile(engine, ASSET_DIR "/textures/default.png");
+    VKTexture* tex = VKTexture_CreateFromFile(engine, ASSET_DIR "/textures/default.png", NULL);
     free(tex);
 }
 

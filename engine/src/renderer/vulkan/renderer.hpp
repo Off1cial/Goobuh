@@ -28,9 +28,12 @@ public:
 
     // Loads the model's GPU data via the asset manager (call this outside StartRendering/EndRendering).
     bool LoadModel( AssetHandle handle );
-
+    bool LoadTexture( AssetHandle handle );
     // Returns the GPU mesh for a handle, or nullptr if it isn't a loaded model. Never loads.
     VKMesh* GetModel( AssetHandle handle );
+    int GetTexture( AssetHandle handle );
+    
+
 
 private:
     SDL_Window* m_window;

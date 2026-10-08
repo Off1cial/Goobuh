@@ -117,6 +117,16 @@ FORCEINLINE void MatrixModelQuat( const vec3_t origin, const quat_t rot, mat4 ou
     out[14] = origin[2];
 }
 
+FORCEINLINE void MatrixModelQuatScale( const vec3_t origin, const quat_t rot, const vec3_t scale,  mat4 out )
+{
+    MatrixModelQuat( origin, rot, out );
+    for (int c = 0; c < 3; ++c)
+        for (int r = 0; r < 3; ++r)
+            out[c * 4 + r] *= scale[c];
+}
+
+
+
 FORCEINLINE void MatrixScale(vec3_t scale, mat4 out)
 {
   memset(out, 0, sizeof(mat4));

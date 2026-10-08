@@ -55,6 +55,12 @@ bool CRendererVK::LoadModel( AssetHandle handle )
 {
     return g_AssetManager->Load( this, handle );
 }
+
+bool CRendererVK::LoadTexture( AssetHandle handle )
+{
+    return g_AssetManager->Load( this, handle );
+}
+
 /*
 VKMesh* CRendererVK::GetModel( AssetHandle handle )
 {
@@ -89,10 +95,33 @@ VKMesh* CRendererVK::GetModel( AssetHandle handle )
     return &mdl->vk_mesh;
 }
 
+int CRendererVK::GetTexture( AssetHandle handle )
+{
+    Asset* asset = g_AssetManager->Get( handle );
+    if (!asset)
+    {
+        printf( "GetModel: invalid handle (index %u)\n", handle.index );
+        return -1;
+    }
+    if (asset->state != AssetState::Loaded)
+    {
+        printf( "GetModel: '%s' state=%d (not Loaded)\n", asset->name.c_str(), (int)asset->state );
+        return -1;
+    }
+    const TextureData* tex = asset->Texture();
+    if (!tex)
+    {
+        printf( "GetTexture: '%s' loaded but payload isn't TextureData\n", asset->name.c_str() );
+        return -1;
+    }
+    return tex->vk_index;
+}
+
 void CRendererVK::DrawEntity( entity_state_t estate )
 {
     mat4 transform;
-    MatrixModelQuat( estate.origin, estate.rotation, transform );
+    //MatrixModelQuat( estate.origin, estate.rotation, transform );
+    MatrixModelQuatScale( estate.origin, estate.rotation, estate.draw_scale, transform );
     DrawModel( estate.model, transform, estate.tex_index );
 }
 

@@ -42,6 +42,9 @@ typedef int8_t   i8;
 #endif
 
 
+#define UNITS2CM(units) ( (units) * 2 ) // 1 unit = 2cm
+#define CM2UNITS(cm) ( (cm) * 0.5F ) // 1 cm = 0.5 units
+
 // #define COMPILETIME_MAX and COMPILETIME_MIN for max/min in constant expressions
 #define COMPILETIME_MIN(a, b) (((a) < (b)) ? (a) : (b))
 #define COMPILETIME_MAX(a, b) (((a) > (b)) ? (a) : (b))

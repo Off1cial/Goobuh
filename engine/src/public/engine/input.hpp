@@ -171,5 +171,6 @@ public:
 
     virtual camera_t* GetCamera( void ) const = 0;
     virtual void SetCamera( camera_t* camera ) = 0;
+    virtual void CameraLook( void ) = 0;
 
 };

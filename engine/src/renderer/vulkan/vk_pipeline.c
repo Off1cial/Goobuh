@@ -96,7 +96,7 @@ void VKPipeline_set_cull_mode(
 }
 
 
-void VK_Pipeline_disable_blending(VKPipelineSet* set){
+void VKPipeline_disable_blending(VKPipelineSet* set){
   set->colblend_attachment_state.colorWriteMask = 
     VK_COLOR_COMPONENT_R_BIT | 
     VK_COLOR_COMPONENT_G_BIT |

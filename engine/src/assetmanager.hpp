@@ -10,6 +10,8 @@
 #include <unordered_map>
 #include <variant>
 #include <vector>
+#include <SDL3/SDL_audio.h>
+
 
 #include "public/engine/iassetmanager.hpp"
 #include "public/engine/assethandle.hpp"
@@ -36,8 +38,8 @@ enum class AssetState : uint8_t
 };
 
 struct ModelData { VKMesh vk_mesh{}; vec3_t halfs; };
-struct SoundData { std::vector<uint8_t> data; float duration = 0.f; };
-struct TextureData { int w = 0, h = 0; std::vector<uint8_t> data; };
+struct SoundData { SDL_AudioSpec spec{}; std::vector<uint8_t> data; };
+struct TextureData { int w = 0, h = 0; std::vector<uint8_t> data; int vk_index; };
 
 // What the manager owns for each asset. Payload is a variant instead of a raw union,
 // so non-trivial members are constructed/destroyed correctly.
@@ -51,6 +53,8 @@ struct Asset
     std::variant<std::monostate, ModelData, SoundData, TextureData> payload;
 
     ModelData ModelByValue() { return std::get<ModelData>( payload ); }
+    TextureData TextureByValue() { return std::get<TextureData>( payload ); }
+    SoundData SoundByValue() { return std::get<SoundData>( payload ); }
 
     ModelData* Model() { return std::get_if<ModelData>( &payload ); }
     const ModelData* Model()   const { return std::get_if<ModelData>( &payload ); }
@@ -85,6 +89,7 @@ public:
 
     // Specific asset getters
     bool GetModelData(  AssetHandle h, ModelData& data_out );
+    bool GetTextureData( AssetHandle h, TextureData& data_out );
 
 private:
     static AssetType TypeFromExtension( const std::filesystem::path& p );

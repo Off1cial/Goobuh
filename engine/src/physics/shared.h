@@ -18,7 +18,7 @@ typedef int32_t physobjid_t;
 #define PHYSOBJ_BLOCK_MASK 0xFFFF0000
 #define PHYSOBJ_BODY_MASK 0x0000FFFF
 
-#define PHYS_DEFAULT_GRAVITY 80.0F
+#define PHYS_DEFAULT_GRAVITY ( CM2UNITS( 981 ) * 2 )
 
 //#define PHYS_PRINTS
 
