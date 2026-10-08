@@ -1,4 +1,5 @@
 #include "engine.hpp"
+#include "math/vector.h"
 #include "platform/input.h"
 #include "platform/plt_time.h"
 #include "platform/window.h"
@@ -32,7 +33,7 @@ Engine::Engine() {
 
     testmap_model = g_AssetManager->GetHandle("test.glb");
     cone_model = g_AssetManager->GetHandle("cone.glb");
-    shell_model = g_AssetManager->GetHandle("shell.glb");
+    shell_model = g_AssetManager->GetHandle("bomb.glb");
     cube_model = g_AssetManager->GetHandle("cube.glb");
     m_vkrenderer->LoadModel(cone_model);
     m_vkrenderer->LoadModel(shell_model);
@@ -42,12 +43,8 @@ Engine::Engine() {
     //entity_t* ent_world = ED_NEW( VEC_ZERO, VEC_ZERO, VEC_ZERO, VEC_HALF, testmap_model, 1, false, 0.0f );
     vec3_t cube_halfs;
     cube_halfs[0] = 1.5f; cube_halfs[1] = cube_halfs[0]; cube_halfs[2] = cube_halfs[0];
-    //entity_t* ent_cube = ED_NEW( VEC_ZERO, VEC_ZERO, VEC_ZERO, cube_halfs, cube_model, 0, true, 0.2f );
-    //entity_t* ent_cube1 = ED_NEW( (vec3_t){0, 5, 0}, VEC_ZERO, VEC_ZERO, cube_halfs, cube_model, 0, true, 0.2f );
-    qangle angles = { -M_PI / 2.0f, 0.0f, 0.0f };
-    //entity_t* ent_cube2 = ED_NEW( (vec3_t){0, 10, 0}, VEC_ZERO, angles, cube_halfs, shell_model, 0, true, 0.2f );
-    CEntity *ent_cube = SpawnEntity( VEC_ZERO, VEC_ZERO, angles, 55.0F, cube_model ); 
-    CEntity* ent_cube1 = SpawnEntity( (vec3_t){0, 10, 0}, VEC_ZERO, angles, 40.0F, cube_model );
+    CEntity *ent_cube = SpawnEntity( VEC_ZERO, VEC_ZERO, VEC_ZERO, 55.0F, cube_model ); 
+    CEntity* ent_cube1 = SpawnEntity( (vec3_t){0, 10, 0}, VEC_ZERO, VEC_ZERO , 40.0F, cube_model );
 }
 
 void Engine::Poll() {
