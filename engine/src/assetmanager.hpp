@@ -69,6 +69,7 @@ public:
     CAssetManager( const CAssetManager& ) = delete;
     CAssetManager& operator=( const CAssetManager& ) = delete;
 
+    ~CAssetManager() { Shutdown(); }
     // e.g. Init({ "assets", "mods/foo/assets" });
     bool Init( std::initializer_list<const char*> search_paths );
 
@@ -77,11 +78,11 @@ public:
 
     // Finds (or registers) an asset by name. Does not load it.
     // Returns an invalid handle if the file can't be found in any search path.
-    AssetHandle GetHandle( std::string_view name );
+    AssetHandle GetHandle( std::string_view name ) override;
 
     // Loads the asset's data. Returns true if it is loaded on return.
-    bool Load( IRenderer* renderer, AssetHandle handle );
-    void Unload( AssetHandle handle );
+    bool Load( IRenderer* renderer, AssetHandle handle ) override;
+    void Unload( AssetHandle handle ) override;
 
     // nullptr if the handle is invalid.
     Asset* Get( AssetHandle handle );
@@ -92,6 +93,10 @@ public:
     bool GetTextureData( AssetHandle h, TextureData& data_out );
 
 private:
+
+    void Shutdown( void );
+    void UnloadAsset( Asset* asset );
+
     static AssetType TypeFromExtension( const std::filesystem::path& p );
     static bool      IsSafeRelativeName( const std::filesystem::path& p );
 

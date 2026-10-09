@@ -29,6 +29,15 @@ bool CAssetManager::Init( std::initializer_list<const char*> search_paths )
     return !m_paths.empty();
 }
 
+void CAssetManager::Shutdown(void)
+{
+    for(Asset& asset : m_assets)
+    {
+        if (asset.state == AssetState::Loaded)
+            UnloadAsset(&asset);
+    }
+}
+
 bool CAssetManager::AddSearchPath( std::string relative_dir )
 {
     if (m_paths.size() >= ASSETS_MAX_PATHS)
@@ -227,6 +236,15 @@ void CAssetManager::Unload( AssetHandle handle )
     asset->state = AssetState::Unloaded;
 }
 
+void CAssetManager::UnloadAsset( Asset* asset )
+{
+    if (!asset || asset->state != AssetState::Loaded)
+        return;
+
+    // Destory GPU resources first (e.g. VKMesh_destroy) before dropping the payload.
+    asset->payload = std::monostate{};
+    asset->state = AssetState::Unloaded;
+}
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------

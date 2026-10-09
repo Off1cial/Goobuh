@@ -1,5 +1,8 @@
 #include "engine.hpp"
+#include "common/common.h"
 #include "math/vector.h"
+#include "physics/backend/blockmanager.hpp"
+#include "physics/physobject.hpp"
 #include "platform/input.h"
 #include "platform/plt_time.h"
 #include "platform/window.h"
@@ -13,6 +16,7 @@
 
 
 #include <SDL3/SDL.h>
+#include <simdjson.h>
 #include "camera.h"
 
 AssetHandle cone_model;
@@ -33,6 +37,13 @@ Engine::Engine() {
     //VK_Initialise(m_renderer, m_window->window); 
     g_AssetManager->Init({ASSET_DIR "/models", ASSET_DIR "/levels", ASSET_DIR "/textures"});
 
+    g_NetworkManager = new CNetworkManager;
+    g_NetworkManager->Init();
+
+
+
+
+
     for (int i = 0; i < MAX_ENTITIES; i++)
         g_Entities[i].free = true;
 
@@ -41,7 +52,7 @@ Engine::Engine() {
     shell_model = g_AssetManager->GetHandle("bomb.glb");
     cube_model = g_AssetManager->GetHandle("cube.glb");
 
-    metal_texture = g_AssetManager->GetHandle("metal005.png");
+    metal_texture = g_AssetManager->GetHandle("default.png");
     m_vkrenderer->LoadTexture(metal_texture);
 
     m_vkrenderer->LoadModel(cone_model);
@@ -57,6 +68,8 @@ Engine::Engine() {
     CEntity* ent_cube2 = SpawnEntity( (vec3_t) { 0, 10 + cube_size[2] * 5, 0 }, VEC_ZERO, VEC_ZERO, 40.0F, true, cube_model, metal_texture, cube_size );
     CEntity* ent_cube3 = SpawnEntity( (vec3_t) { 0, 15 + cube_size[2] * 10, 0 }, VEC_ZERO, VEC_ZERO, 40.0F, true, cube_model, metal_texture, cube_size );
     
+
+
     SDL_AudioSpec wav_spec{};
     Uint8* data = nullptr;
     Uint32 len = 0;
@@ -71,52 +84,6 @@ Engine::Engine() {
     else {
         SDL_Log("Failed to load WAV: %s", SDL_GetError());
     }
-
-    /*
-    SDL_AudioSpec wav_spec;
-    Uint8* data = nullptr;
-    Uint32 len = 0;
-
-    if (!SDL_LoadWAV(
-        ASSET_DIR "/sounds/hitsound.wav",
-        &wav_spec, &data, &len ))
-    {
-        SDL_Log( "Failed to load WAV: %s", SDL_GetError() );
-        return;
-    }
-
-    SDL_AudioStream* stream = SDL_OpenAudioDeviceStream(
-        SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK,
-        &wav_spec,
-        nullptr,
-        nullptr
-    );
-
-    if (!stream)
-    {
-        SDL_Log( "Failed to open audio stream: %s", SDL_GetError() );
-        SDL_free( data );
-        return;
-    }
-
-    if (!SDL_PutAudioStreamData( stream, data, (int)len ))
-    {
-        SDL_Log( "Failed to queue audio: %s", SDL_GetError() );
-        SDL_DestroyAudioStream( stream );
-        SDL_free( data );
-        return;
-    }
-
-    SDL_free( data );
-
-    if (!SDL_ResumeAudioStreamDevice( stream ))
-    {
-        SDL_Log( "Failed to resume audio stream: %s", SDL_GetError() );
-        SDL_DestroyAudioStream( stream );
-        return;
-    }
-    
-    */
 }
 
 void Engine::Poll() {
@@ -149,6 +116,11 @@ void Engine::Run() {
     camera_init(&camera, (vec3_t){0.0f, CM2UNITS(180), 400.0f}, (vec3_t){0.0f, 0.0f, -1.0f}, 800.0f / 600.0f, 90.0);
     m_input->SetCamera(&camera);
 
+    CEntity* aabb_ent = SpawnEntity(
+            camera.origin, VEC_ZERO, VEC_ZERO, 80.0f, true, cube_model, metal_texture, (vec3_t){CM2UNITS(30), CM2UNITS(180), CM2UNITS(30)}
+            );
+    g_PhysicsManager->EnableFlag( aabb_ent->GetPhysobj(), BODYSTATE_FLAG_ROTATION_LOCKED);
+    physobjid_t physobjaabb = aabb_ent->GetPhysobj();
     while (!m_window->should_close) {
         double now = plt_timemillis();
         m_frametime = (now - previous) / 1000.0; // Convert to seconds
@@ -166,7 +138,7 @@ void Engine::Run() {
         {
             g_PhysicsManager->AddForceCentre( 0, VectorNew(0.0, 50, 0.0f ));
             vec3_t vel; VectorScale(camera.front, 800.0f, vel);
-            CEntity* projectile = SpawnEntity( camera.origin, vel, camera.front, 200.0F, false, cube_model, metal_texture, (vec3_t){CM2UNITS(40), CM2UNITS( 40 ), CM2UNITS( 40 )} );
+            CEntity* projectile = SpawnEntity( camera.origin, vel, camera.front, 5.0F, true, cube_model, metal_texture, (vec3_t){CM2UNITS(40), CM2UNITS( 40 ), CM2UNITS( 40 )} );
         }
 
         // Do stuff
@@ -187,7 +159,7 @@ void Engine::Run() {
         m_vkrenderer->EndRendering();
 
         //VK_Draw(m_renderer, &camera);
-        SDL_Delay(8); // Simulate a frame delay (for demonstration purposes)
+        SDL_Delay(8);
     }
 }
 

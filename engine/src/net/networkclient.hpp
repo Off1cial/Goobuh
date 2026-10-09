@@ -3,28 +3,28 @@
 
 
 
-class CNetClient : public INetLookup
+class INetClient : public INetLookup
 {
 public:
-    CNetClient() = default;
-    ~CNetClient() = default;
-    bool Init( u16 port = NET_CLIENT_DEFAULT_PORT );
-    void Shutdown();
+    INetClient() = default;
+    virtual ~INetClient() = default;
+    virtual bool Init( u16 port = NET_CLIENT_DEFAULT_PORT );
+    virtual void Shutdown();
 
-    NetChannel* FindNetChannel( const NetAddress& addr);
-
-
-    void Connect( const char* ip, u16 port );
-    void Disconnect( void );
-
-    bool SendPacket( PacketType type, const char* data, size_t datalen );
-    void ReadPackets( void );
-
-    bool SendConnectionReq( void );
+    virtual NetChannel* FindNetChannel( const NetAddress& addr);
 
 
-    u32 GetTickrate( void ) const {return m_tickrate; };
-    void SetTickrate( u32 tick) { m_tickrate = tick; };
+    virtual void Connect( const char* ip, u16 port );
+    virtual void Disconnect( const char* reason, ... );
+
+    virtual bool SendPacket( PacketType type, const char* data, size_t datalen );
+    virtual void ReadPackets( void );
+
+    virtual bool SendConnectionReq( void );
+
+
+    virtual u32 GetTickrate( void ) const {return m_tickrate; };
+    virtual void SetTickrate( u32 tick) { m_tickrate = tick; };
 
     challenge_t m_challenge;
     u32 m_tickrate;

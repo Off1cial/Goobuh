@@ -6,6 +6,7 @@
 #include "public/engine/assethandle.hpp"
 #define AUDIO_SAMPLE_RATE 48000
 #define AUDIO_CHANNELS    2
+#define AUDIO_FORMAT_STR "Signed 16-bit PCM"
 
 class ISoundManager
 {

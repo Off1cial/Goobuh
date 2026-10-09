@@ -1,6 +1,7 @@
 #include "physics/backend/blockmanager.hpp"
 #include "common/common.h"
 #include "math/quat.h"
+#include "physics/shared.h"
 #include <stdio.h>
 
 static FORCEINLINE void body_setflag( CBodyblock* block, bodyid_t id, char flag ){
@@ -14,6 +15,9 @@ static FORCEINLINE void body_clearflag( CBodyblock* block, bodyid_t id, char fla
 static FORCEINLINE bool body_hasflag( CBodyblock* block, bodyid_t id, char flag ){
     return (block->state_flags[id] & flag) != 0;
 }
+
+
+
 /*
 bool CBodyblock::Init( void )
 {
@@ -80,6 +84,7 @@ void CBodyblock::WakeBody( bodyid_t body )
 {
     body_clearflag( this, body, BODYSTATE_FLAG_SLEEP );
 }
+
 
 bool CBodyblock::AddBody( bodyid_t& id_out, const vec3_t position, const vec3_t velocity, const float mass_value, const vec3_t halfs, const qangle angles )
 {
@@ -288,6 +293,28 @@ void CBodyblockManager::RemoveBodyFromBlock( physobjid_t obj )
     if (block < 0 || block >= (blockid_t)m_block_count) return; // Invalid block ID
 
     m_blocks[block].RemoveBody(body);
+}
+
+
+void CBodyblockManager::EnableFlag(physobjid_t obj, char flag)
+{
+    blockid_t block;
+    bodyid_t body;
+    OBJ_ID_SEPARATE( obj, body, block);
+    if (block < 0 || block >= (blockid_t)m_block_count) return; // Invalid block ID
+   
+    m_blocks[block].EnableFlag( body, flag );
+
+}
+void CBodyblockManager::DisableFlag(physobjid_t obj, char flag)
+{
+    blockid_t block;
+    bodyid_t body;
+    OBJ_ID_SEPARATE( obj, body, block);
+    if (block < 0 || block >= (blockid_t)m_block_count) return; // Invalid block ID
+   
+    m_blocks[block].DisableFlag( body, flag );
+
 }
 
 void CBodyblockManager::SleepBodyInBlock( physobjid_t obj )

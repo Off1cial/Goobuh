@@ -148,6 +148,8 @@ class NetChannel
         const NetAddress& GetRemoteAddress( void ) const { return m_remote; };
         void SetRemoteAddress( const NetAddress& adr) { m_remote = adr; };
 
+        u16 GetQPort( void ) const { return m_qport; }
+
         void SetConnectionState( ConnectionState state ) {m_state = state; };
         ConnectionState GetConnectionState( void ) const { return m_state; };
 
@@ -156,6 +158,9 @@ class NetChannel
         bool SendMessage( const char* data, size_t len );
         bool IsConnected( void ) const { return m_state == ConnectionState::Connected; }
         void ProcessPacket( NetPacket* packet );
+
+        bool operator==( const NetChannel& other ) const 
+        { return (m_remote == other.GetRemoteAddress()) && (m_qport == other.GetQPort()); }
     private:
 
         ConnectionState m_state;

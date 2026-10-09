@@ -147,29 +147,29 @@ void CNetworkManager::Update()
 }
 
 
-bool CNetworkManager::StartServer(u16 port)
+INetServer* CNetworkManager::StartServer(u16 port)
 {
-    m_server = new CNetServer;
+    m_server = new INetServer;
 
     m_isServer = m_server->Init(port);
 
     m_serverport = port;
     m_servertickrate = m_server->GetTickrate();
 
-    return m_isServer;
+    return (m_isServer) ? m_server : NULL;
 }
 
 
-bool CNetworkManager::StartClient(u16 port)
+INetClient* CNetworkManager::StartClient(u16 port)
 {
-    m_client = new CNetClient;
+    m_client = new INetClient;
 
     m_isClient = m_client->Init(port);
 
     m_clientport = port;
     m_clienttickrate = m_client->GetTickrate();
 
-    return m_isClient;
+    return (m_isClient) ? m_client : NULL;
 }
 
 
@@ -324,7 +324,7 @@ void CNetworkManager::ProcessConnectionlessPacket(
 
             if (m_isServer) {
 
-                CNetServerClient* cl =
+                INetServerClient* cl =
                     m_server->FindClientByAddress(
                         pack.pack->from
                     );
@@ -375,6 +375,7 @@ void CNetworkManager::ProcessConnectionlessPacket(
                     m_server->m_challenge.challenge) {
 
                     printf("Approved\n");
+                    
                 }
             }
 

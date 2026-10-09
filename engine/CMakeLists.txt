@@ -174,6 +174,9 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         -O0
         -fno-omit-frame-pointer
 		-Wno-unused-variable
+        -save-temps=obj
+        -masm=intel
+        -fverbose-asm       # <-- Adds variable names and source code hints as comments
     )
 
     # Sanitizers on Linux only for now

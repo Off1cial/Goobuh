@@ -9,8 +9,8 @@
 #define NET_MAX_STRING 256
 #endif
 
-class CNetServer;
-class CNetClient;
+class INetServer;
+class INetClient;
 
 // Manages a client/server, or both
 class CNetworkManager 
@@ -27,13 +27,13 @@ public:
     bool IsServer( void ) const { return m_isServer; };
     bool IsClient( void ) const { return m_isClient; };
     
-    bool StartServer( u16 port = NET_SERVER_DEFAULT_PORT); 
+    INetServer* StartServer( u16 port = NET_SERVER_DEFAULT_PORT); 
     void ShutdownServer( void );
     bool SendServerMessage( const char* data, size_t len, PacketType type, NetChannel* pChan );
     bool SendServerUnconnectedMessage( const char* data, size_t len, PacketType type, NetChannel* chan);
     bool SendServerChallenge( NetChannel* pChan );
 
-    bool StartClient( u16 port = NET_CLIENT_DEFAULT_PORT);
+    INetClient* StartClient( u16 port = NET_CLIENT_DEFAULT_PORT);
     void ShutdownClient( void );
     void ConnectClient( const char* ip, u16 port );
     bool SendClientMessage( const char* data, size_t len, PacketType type );
@@ -75,8 +75,8 @@ private:
     bool m_isClient;
     bool m_isServer;
 
-    CNetServer* m_server;
-    CNetClient* m_client;
+    INetServer* m_server;
+    INetClient* m_client;
 
     u16 m_serverport;
     u16 m_clientport;

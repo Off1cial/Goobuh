@@ -3,33 +3,33 @@
 #include "net/net.hpp"
 #include <vector>
 // A client, seen from the server
-class CNetServerClient;
+class INetServerClient;
 
-class CNetServer : public INetLookup
+class INetServer : public INetLookup
 {
     public:
         // Non-virtual, guaranteed behaviour
-        virtual ~CNetServer() = default;
-        bool Init( u16 port = NET_SERVER_DEFAULT_PORT );
-        void Shutdown( void );
+        virtual ~INetServer() = default;
+        virtual bool Init( u16 port = NET_SERVER_DEFAULT_PORT );
+        virtual void Shutdown( void );
         
-        void AcceptConnection( const NetAddress& remote );
-        void ChallengeConnection ( const NetAddress& remote ); // Sends the challenge
+        virtual void ChallengeConnection ( const NetAddress& remote ); // Sends the challenge
+        virtual void AcceptConnection( INetServerClient* client );
         virtual void OnConnectionClose( const NetChannel& chan, const char* reason);
 
-        void ReadPackets( void );
+        virtual void ReadPackets( void );
 
         // Used to initiate a channel for sending back a challenge
-        CNetServerClient* TempClient( const NetAddress& remote );
+        virtual INetServerClient* TempClient( const NetAddress& remote );
         // We recieved a correct challenge in response, let them join
-        void AuthoriseClient( CNetServerClient* client );
+        virtual void AuthoriseClient( INetServerClient* client );
 
 
-        CNetServerClient* FindClientByAddress( const NetAddress& addr );
-        CNetServerClient* FindClientByChannel( const NetChannel& channel );
+        virtual INetServerClient* FindClientByAddress( const NetAddress& addr );
+        virtual INetServerClient* FindClientByChannel( const NetChannel& channel );
         
         // INetLookup
-        NetChannel* FindNetChannel( const NetAddress& addr ) override;
+        virtual NetChannel* FindNetChannel( const NetAddress& addr ) override;
 
         u32 GetTickrate( void ) const {return m_tickrate; };
         void SetTickrate( u32 tick) { m_tickrate = tick; };
@@ -39,15 +39,15 @@ class CNetServer : public INetLookup
         challenge_t m_challenge;
 
         NetSocket m_sockudp;
-        std::vector<CNetServerClient*> m_clients;
+        std::vector<INetServerClient*> m_clients;
 
 };
 
 
-class CNetServerClient
+class INetServerClient
 {
     public:
-        virtual ~CNetServerClient() = default;
+        virtual ~INetServerClient() = default;
         virtual void SendUpdate( void ) {};
         virtual const char* GetName( void ) { return "GoonLord"; };
 

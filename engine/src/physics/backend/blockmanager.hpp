@@ -62,6 +62,9 @@ public:
 
     void DisableGravity( bodyid_t body_id );
     void EnableGravity( bodyid_t body_id );
+
+    void FORCEINLINE EnableFlag( bodyid_t body_id, char flag ) { state_flags[body_id] |= flag; };
+    void FORCEINLINE DisableFlag( bodyid_t body_id, char flag ) { state_flags[body_id] &= ~flag; }; 
 private:
 
     bool FindSlot( bodyid_t& out );
@@ -105,6 +108,9 @@ public:
 
     void EnableGravity( physobjid_t obj );
     void DisableGravity( physobjid_t obj );
+
+    void EnableFlag( physobjid_t obj, char flag );
+    void DisableFlag( physobjid_t obj, char flag );
 
     std::vector<CBodyblock> m_blocks; // devious, direct access by the collision tester
 protected:

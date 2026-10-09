@@ -62,22 +62,6 @@ int main()
 
     Engine* engine = new Engine();
 
-    g_NetworkManager = new CNetworkManager;
-    g_NetworkManager->Init();
-
-    if (g_NetworkManager->StartServer()) {
-        printf("Server\n");
-    }
-
-    if (g_NetworkManager->StartClient()) {
-        printf("Client\n");
-    }
-
-    g_NetworkManager->ConnectClient(
-        "10.32.82.230",
-        NET_SERVER_DEFAULT_PORT
-    );
-
 
 
     IGame* game = game_entry();
