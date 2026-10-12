@@ -106,3 +106,32 @@ void NET_GetLocalAddress( void )
     if (address.sin_addr.s_addr != htonl(INADDR_ANY))
         net_localaddr.ip = ntohl(address.sin_addr.s_addr);
 }
+
+
+
+
+void NET_SendData( const byte *data, int len, netsock_t sock, netaddr_t to )
+{
+    sockaddr_t sockaddr = netaddr_sockaddr(to);
+
+    int res = sendto( 
+            sock.handle, 
+            data, 
+            len, 
+            0, 
+            ADRCST(sockaddr), 
+            sizeof(sockaddr) );
+}
+
+int NET_ReceiveData( byte *out, int len, netsock_t sock, netaddr_t *from )
+{
+    sockaddr_t sockaddr = netaddr_sockaddr(*from);
+    socklen_t socklen = sizeof(sockaddr);
+
+    int res = recvfrom( sock.handle, out, len,  0, &sockaddr, &socklen );
+    if (res > 0 )
+    {
+       *from = sockaddr_netaddr( sockaddr ); 
+    }
+    return res;
+}

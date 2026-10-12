@@ -10,4 +10,6 @@ void CL_Frame( void );
 void CL_Think( void );
 
 
+// Communication
+
 #endif

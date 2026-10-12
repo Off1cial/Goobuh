@@ -17,4 +17,13 @@ void SZ_Clear( sizebuf_t *buf )
 }
 
 // Return a pointer to a region of a buffer that has space for 'bytes' bytes
-byte *SZ_GetSpace( sizebuf_t *buf, int bytes );
+byte *SZ_GetSpace( sizebuf_t *buf, int bytes )
+{
+    int  i;
+    for (i = buf->cursize; i < buf->maxsize; i++)
+    {
+        if (buf->maxsize - i >= bytes)
+            return &buf->data[i];
+    }
+    return NULL;
+}
