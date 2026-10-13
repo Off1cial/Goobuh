@@ -4,6 +4,9 @@
 #include "engine/system/window.h"
 #include "engine/system/allocator.h"
 
+// Temporary
+#include "rendering/renderer.h"
+
 #include "engine.h"
 
 #include "engine/net/net.h"
@@ -26,20 +29,21 @@ int main( void )
     printf("Plan and plan, write and write some more until your head bleeds...\n");
 
     NET_Init();
+
+    R_Init();
     engine->game_table.game_init();
     while(1){
         
         KeyUpdate();
+        R_Start();
 
+        R_Present();
 
         engine->game_table.game_update( NULL, 2.0f );
-        glClearColor( 0.1f, 0.2f, 0.4f, 1.0f );
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
-        SDL_GL_SwapWindow( gSys_window->window );
     }
     engine->game_table.game_shutdown();
 
+    R_Destroy();
     Sys_WindowDestroy();
     Sys_ArenaDestroy( &LifeArena );
 

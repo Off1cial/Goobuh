@@ -67,7 +67,7 @@ void  NET_GetLocalAddress( void );
 char* NET_AddrToString( netaddr_t addr );
 bool  NET_StringToAddr( const char *s, unsigned short port, netaddr_t *a );
 
-bool FORCEINLINE NET_CompareAddreses( const netaddr_t a, const netaddr_t b )
+FORCEINLINE bool NET_CompareAddreses( const netaddr_t a, const netaddr_t b )
 {
     return (a.ip == b.ip) && (a.port == b.port);
 }
@@ -75,9 +75,9 @@ bool FORCEINLINE NET_CompareAddreses( const netaddr_t a, const netaddr_t b )
 void NET_SendData( const byte *data, int len, netsock_t sock, netaddr_t to );
 int NET_ReceiveData( byte *out, int len, netsock_t sock, netaddr_t *from );
 
-void Netchan_transmit( netchan_t *chan, netsock_t sock, int len, const byte *data );
+void Netchan_Transmit( netchan_t *chan, netsock_t sock, int len, const byte *data );
 
-void Netchan_Process( netchan_t *chan, netsock_t sock, packet_t *out );
+void Netchan_GetPacket( netchan_t *chan, netsock_t sock, packet_t *out );
 
 bool netsock_open( netsock_t* sock, unsigned short port );
 void netsock_close( netsock_t* sock );

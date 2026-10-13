@@ -8,7 +8,7 @@
 #include "common/common.h"
 
 
-void Netchan_transmit( 
+void Netchan_Transmit( 
         netchan_t* chan,
         netsock_t sock,
         int len,
@@ -19,7 +19,7 @@ void Netchan_transmit(
 
 
 
-void Netchan_Process( netchan_t *chan, netsock_t sock, packet_t *out )
+void Netchan_GetPacket( netchan_t *chan, netsock_t sock, packet_t *out )
 {
     byte buff[MAX_NETMSG + PACKET_HEADER];
     netaddr_t from;

@@ -71,6 +71,7 @@ typedef unsigned char byte;
 
 #define DECLARE( original, new ) typedef original new;
 
+#define MAX_PATH 256
 
 // Null-terminating strncpy from Quake III
 static inline void Q_strncpy(char* dst, const char* src, size_t dstsize)
@@ -120,6 +121,7 @@ int Q_stricmp(const char* s1, const char* s2);
 #endif
 
 #define OFFSETOF(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))
+
 
 
 // Global control
@@ -187,6 +189,9 @@ void Sys_Error( char* fmt, ... );
 [[noreturn]] void Sys_Crash( const char* fmt, ... );
 
 void Con_printf( char* fmt, ... );
+
+
+void Sys_Assert( bool condition, char *fmt, ... );
 
 
 

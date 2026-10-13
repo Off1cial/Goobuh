@@ -32,7 +32,9 @@ set(PUBLIC_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/engine/public")
 # (sanitizers, LTO, definitions), or the boundary between them breaks.
 # ---------------------------------------------------------------------------
 add_library(build_flags INTERFACE)
-
+if(UNIX)
+    target_link_libraries(build_flags INTERFACE m)
+endif()
 target_compile_options(build_flags INTERFACE
     $<$<COMPILE_LANGUAGE:C>:-Wall;-Wextra>
 )
@@ -98,6 +100,8 @@ file(GLOB ENGINE_TOP_SOURCES CONFIGURE_DEPENDS    # e.g. src/main.c, if it lives
 file(GLOB_RECURSE ENGINE_SOURCES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/src/engine/*.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/engine/*.asm"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/common/*.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/common/*.asm"
 )
 
 add_executable(CEngine ${ENGINE_TOP_SOURCES} ${ENGINE_SOURCES})

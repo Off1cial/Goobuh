@@ -33,7 +33,7 @@ bool Sys_WindowCreate( sysarena_t* engine_arena )
     gSys_window->height = 480;
 
 
-    gSys_window->window = SDL_CreateWindow( "Client", WIN_WIDTH, WIN_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE );
+    gSys_window->window = SDL_CreateWindow( "Client", WIN_WIDTH, WIN_HEIGHT, SDL_WINDOW_OPENGL );
 
     if (!gSys_window->window){
         Sys_Crash( "Failed to create the SDL window" );

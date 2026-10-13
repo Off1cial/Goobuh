@@ -54,5 +54,9 @@ int Q_stricmp (const char *s1, const char *s2) {
 
 void *Hunk_Alloc( size_t size )
 {
-	return Sys_ArenaAlloc( &LifeArena, size );
+	void* data = Sys_ArenaAlloc( &LifeArena, size );
+    if (!data)
+        Sys_Crash("Failed to allocte %d bytes from global arena\n", size);
+
+    return data;
 }
