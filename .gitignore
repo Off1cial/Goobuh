@@ -1,3 +1,7 @@
 .vs/
 build/
 build-vs/
+.idea/
+.cache/
+cmake-build-debug/
+

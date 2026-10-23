@@ -11,6 +11,9 @@
 #endif
 
 
+typedef struct edict_t edict_t;
+typedef struct model_t model_t;
+
 // What does an engine mean to the game?
 typedef struct engine_api_t
 {
@@ -25,7 +28,7 @@ typedef struct engine_api_t
 
 
     int (*sound_index)( char* file );
-    int (*model_index)( char* file );
+    model_t* (*model_fetch)( const char* name );
 
 } engine_api_t;
 
@@ -41,6 +44,8 @@ typedef struct game_api_t
 
     void (*client_think)(void);
 
+    edict_t* entites;
+    int num_entites;
 
 } game_api_t;
 

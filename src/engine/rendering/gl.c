@@ -36,7 +36,7 @@ int GL_UpdateBuffer(
         GLsizeiptr size, 
         const void *data )
 {
-   if (size + offset >= buff->size) return 0; 
+   if (size + offset > buff->size) return 0; 
 
    
     glBindBuffer( buff->type, buff->handle );
@@ -52,7 +52,7 @@ void GL_BindBuffer( const glbuff_t *buff )
     Sys_Assert( buff, "GL_BindBuffer: Attempted to bind invalid buffer\n");
 #endif
 
-    glBindBuffer( buff->usage, buff->handle );
+    glBindBuffer( buff->type, buff->handle );
 }
 
 
@@ -61,7 +61,7 @@ void GL_BindUniformBuffer( const glbuff_t *buff, GLuint binding )
 #ifdef PARANOID
     Sys_Assert ( buff, "GL_BindUniformBuffer: Attempted to bind null buffer\n" );
 #endif
-    glBindBufferBase( buff->usage, binding, buff->handle );
+    glBindBufferBase( buff->type, binding, buff->handle );
 }
 
 void GL_DestroyBuffer( glbuff_t *buff )

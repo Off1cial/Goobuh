@@ -1,14 +1,16 @@
 #include "engine/system/message.h"
 #include "engine/system/allocator.h"
 #include "engine/system/window.h"
+#include "engine/shared/cvar.h"
 
 #include "common/common.h"
 #include <stdio.h>
 
 
 
-void Sys_Exit( void )
+[[noreturn]] void Sys_Exit( void )
 {
+    Cvar_Cleanup();
     Sys_WindowDestroy();
     Sys_ArenaShutdownAll();
 

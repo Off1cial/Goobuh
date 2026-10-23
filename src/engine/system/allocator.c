@@ -80,8 +80,7 @@ void Sys_ArenaDestroy( sysarena_t* arena )
 
 void Sys_ResetTag( memtag_t tag )
 {
-    size_t      i;
-    for ( i = 0; i < arena_cap; i++ )
+    for ( size_t i = 0; i < arena_cap; i++ )
     {
         if ( (arenas[i]) && (arenas[i]->tag == (int)tag) )
         {
@@ -104,7 +103,7 @@ void Sys_FreeTag( memtag_t tag )
 }
 
 
-void* Sys_ArenaAllocAligned( sysarena_t* arena, size_t size, size_t alignment )
+static void* Sys_ArenaAllocAligned( sysarena_t* arena, size_t size, size_t alignment )
 {
     uintptr_t current = (uintptr_t)arena->offset + (uintptr_t)arena->base;
     uintptr_t aligned = ( current + (alignment - 1 ) ) & ~(alignment - 1);
@@ -143,6 +142,6 @@ void Sys_ArenaMark( sysarena_t *arena )
 void Sys_ArenaFreeToMark( sysarena_t *arena )
 {
     arena->offset = arena->mark;
-    uintptr_t size = (uintptr_t)arena->offset - (uintptr_t)arena->base;
+    const uintptr_t size = (uintptr_t)arena->offset - (uintptr_t)arena->base;
     memset((uintptr_t*)&arena->offset, 0, size );
 }

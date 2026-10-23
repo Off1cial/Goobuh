@@ -1,5 +1,7 @@
 #include "engine/system/message.h"
 
+#include "common/common.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -20,14 +22,14 @@ void Sys_MessageBox( const char* fmt, ... )
     va_end( args );
 }
 
-void Sys_Crash( const char* fmt, ... )
+[[noreturn]] void Sys_Crash( const char* fmt, ... )
 {
     va_list args;
     va_start( args, fmt );
     Sys_MessageBoxV( fmt, args );
     va_end( args );
 
-    exit( 1 );
+    Sys_Exit();
 }
 
 void Sys_Printf( const char* fmt, ... )

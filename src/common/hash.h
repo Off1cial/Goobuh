@@ -6,6 +6,7 @@
 #define FNV_PRIME 16777619u
 #define INT_BYTE(number, nth) (( (number) >> (8*   (nth) )) & 0xff);
 
+typedef uint32_t hash_t;
 
 
 static inline uint32_t Hash_String(const char* str)

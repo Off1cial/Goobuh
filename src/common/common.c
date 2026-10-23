@@ -60,3 +60,13 @@ void *Hunk_Alloc( size_t size )
 
     return data;
 }
+
+void Hunk_Mark( void )
+{
+    Sys_ArenaMark( &LifeArena );
+}
+
+void Hunk_FreeToMark( void )
+{
+    Sys_ArenaFreeToMark( &LifeArena );
+}

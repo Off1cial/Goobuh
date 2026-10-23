@@ -106,6 +106,10 @@ file(GLOB_RECURSE ENGINE_SOURCES CONFIGURE_DEPENDS
 
 add_executable(CEngine ${ENGINE_TOP_SOURCES} ${ENGINE_SOURCES})
 
+target_compile_definitions( CEngine PUBLIC
+    ASSET_DIR="${CMAKE_CURRENT_SOURCE_DIR}/resource/"
+)
+
 target_include_directories(CEngine PRIVATE
     ${SHARED_INCLUDE_DIR}
     "${CMAKE_CURRENT_SOURCE_DIR}/src"

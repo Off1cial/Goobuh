@@ -44,7 +44,8 @@ FORCEINLINE void VectorAngles(const vec3_t v, qangle out){
       v[1],
       sqrtf(v[0] * v[0] + v[2] * v[2]));
 
-  float yaw = atan2f(v[2], v[0]);
+  //float yaw = atan2f(v[2], v[0]);
+  float yaw = atan2f(v[0], v[2]);
 
   out[PITCH] = pitch;
   out[YAW] = yaw;
@@ -58,6 +59,10 @@ FORCEINLINE void AnglesVector(const qangle angles, vec3_t out){
   out[0] = cosf(yaw) * cosf(pitch);
   out[1] = sinf(pitch);
   out[2] = sinf(yaw) * cosf(pitch);
+
+  out[0] = sinf(yaw) * cosf(pitch);
+  out[1] = sinf(pitch);
+  out[2] = cosf(yaw) * cosf(pitch);
 }
 
 FORCEINLINE void AngleBasis(
@@ -121,7 +126,7 @@ FORCEINLINE void AngleBasis(
 #define DotProduct(a, b) (a[0]*b[0]+a[1]*b[1]+a[2]*b[2])
 
 
-#define VectorCopy(src, dst) dst[0]=src[0];dst[1]=src[1];dst[2]=src[2]
+#define VectorCopy(src, dst) (dst)[0]=(src)[0];(dst)[1]=(src)[1];(dst)[2]=(src)[2]
 
 
 
@@ -266,5 +271,7 @@ FORCEINLINE int VectorCompare(
 #ifdef __cplusplus
 }   
 #endif
+
+#define VectorString(v) "(%0.2f, %0.2f, %0.2f)\n", (v)[0], (v)[1], (v)[2]
 
 #endif

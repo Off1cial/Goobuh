@@ -5,7 +5,7 @@
 #include "public/game.h"
 #include "common/common.h"
 
-
+#include "engine/exports.h"
 
 bool Engine_LoadGameLib( engine_t* engine )
 {
@@ -19,6 +19,8 @@ bool Engine_LoadGameLib( engine_t* engine )
 
     engine_api_t engine_api;
     engine_api.version = GAME_API_VERSION;
+    engine_api.model_fetch = MDL_FetchByName;
+    engine_api.cprintf = Con_printf;
 
     GetGameAPI_fn get_fn = (GetGameAPI_fn)Sys_LibraryFunction( &engine->lib_game, GAME_API_ENTRY_NAME );
     if (!get_fn) 

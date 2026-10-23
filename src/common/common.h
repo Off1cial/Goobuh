@@ -16,6 +16,9 @@ typedef int8_t   i8;
 
 typedef unsigned char byte;
 
+typedef i32 qhandle_t;
+#define QHANDLE_NONE -1
+
 // Cross-platform
 #ifdef _MSC_VER
 
@@ -65,13 +68,18 @@ typedef unsigned char byte;
 #endif
 
 
+
 #define DEG2RAD(theta) (theta * M_PI/180.0)
 #define RAG2DEG(theta) (theta * 180.0/M_PI)
+
+#define RAD 0.017453292519943295F
+#define DEG 57.29577951308232F
 
 
 #define DECLARE( original, new ) typedef original new;
 
-#define MAX_PATH 256
+#define MAX_PATH 512
+#define ASSET_LEN sizeof ASSET_DIR
 
 // Null-terminating strncpy from Quake III
 static inline void Q_strncpy(char* dst, const char* src, size_t dstsize)
@@ -148,6 +156,7 @@ typedef enum memtag_t
     MEMTAG_CLIENT, // Exists for the lifespan of the networking client
     MEMTAG_SERVER, // Exists for the lifespan of the networking server
     MEMTAG_LEVEL, // Exists for the lifespan of the current level, wiped of level change
+    MEMTAG_CUSTOM, // Custom allocation and destruction
 } memtag_t;  
 
 
@@ -165,6 +174,9 @@ typedef struct sysarena_t
 extern sysarena_t LifeArena;
 
 void *Hunk_Alloc( size_t size );
+// Think about threads...
+void Hunk_Mark( void );
+void Hunk_FreeToMark( void );
 
 void *Sys_ArenaAlloc( sysarena_t* arena, size_t size );
 
@@ -183,7 +195,7 @@ void Sys_ResetTag( memtag_t tag );
 
 
 
-void Sys_Exit( void );
+[[noreturn]] void Sys_Exit( void );
 void Sys_Error( char* fmt, ... );
 // Something critical failed, provides a message box and closes the program
 [[noreturn]] void Sys_Crash( const char* fmt, ... );

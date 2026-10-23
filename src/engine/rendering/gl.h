@@ -11,7 +11,7 @@ typedef struct image_t image_t;
 
 typedef enum 
 {
-    GLBUFF_VAO = GL_ARRAY_BUFFER,
+    GLBUFF_VBO = GL_ARRAY_BUFFER,
     GLBUFF_EBO = GL_ELEMENT_ARRAY_BUFFER,
     GLBUFF_UBO = GL_UNIFORM_BUFFER,
 } glbufftype_t;
@@ -39,7 +39,15 @@ typedef struct
 
 // Keep updated!
 #define UBO_SIZE (sizeof(float) * 32)
+#define STATIC_VBO_SIZE (16 * 1024 * 1024)
+#define STATIC_EBO_SIZE (16 * 1024 * 1024)
 extern glbuff_t *gUniformbuff;
+
+extern GLuint r_vao;
+extern glbuff_t r_vbo;
+extern glbuff_t r_ebo;
+extern GLsizeiptr r_vbo_bytes;
+extern unsigned int r_ebo_offset;
 
 void GL_SetTexture( image_t* image );
 void GL_BindTexture( image_t* image ); // Use bindless textures?
@@ -49,7 +57,7 @@ void GL_CreateBuffer( glbuff_t *buff, glbufftype_t type, GLsizeiptr size, const 
 
 void GL_BindBuffer( const glbuff_t *buff );
 
-void GL_DestoryBuffer( glbuff_t *buff );
+void GL_DestroyBuffer( glbuff_t *buff );
 
 int GL_UpdateBuffer( glbuff_t *buff, GLintptr offset, GLsizeiptr size, const void *data );
 

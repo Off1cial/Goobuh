@@ -1,9 +1,28 @@
 #include "game.h"
 #include <stdio.h>
 
+void Game_Shutdown( void );
+void Game_Init( void );
+void Game_Update( void* state, float dt );
+
+
+
+static engine_api_t gi;
+static const game_api_t game_api = {.version = GAME_API_VERSION, .game_init = Game_Init, .game_shutdown = Game_Shutdown, .game_update = Game_Update };
+
+
+
+typedef struct game_state_t { int ticks; } game_state_t;
+
+
+GAME_EXPORT void GetGameAPI( const engine_api_t* engine, game_api_t* out )
+{
+  gi = *engine;
+  *out = game_api;
+}
 void Game_Init( void )
 {
-  printf("Hello!\n");
+    gi.cprintf("Hello, engine\n"); 
 }
 
 void Game_Shutdown( void )
@@ -17,16 +36,3 @@ void Game_Update( void* state, float dt )
 }
 
 
-static const engine_api_t* gi;
-static const game_api_t game_api = {.version = GAME_API_VERSION, .game_init = Game_Init, .game_shutdown = Game_Shutdown, .game_update = Game_Update };
-
-
-
-typedef struct game_state_t { int ticks; } game_state_t;
-
-
-GAME_EXPORT void GetGameAPI( const engine_api_t* engine, game_api_t* out )
-{
-  gi = engine;
-  *out = game_api;
-}

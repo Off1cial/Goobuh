@@ -10,9 +10,12 @@
 typedef struct syswindow_t
 {
     int width, height;
+    float centre[2];
 
     SDL_Window* window;
     SDL_GLContext glContext;
+
+    int should_close;
 } syswindow_t;
 
 extern syswindow_t* gSys_window;
@@ -23,6 +26,8 @@ typedef struct sysarena_t sysarena_t;
 
 // Provide a pointer to the engine arena, allocates the window
 bool Sys_WindowCreate( sysarena_t* engine_arena );
+void Sys_WindowResize( void );
+
 
 void Sys_WindowDestroy( void );
 

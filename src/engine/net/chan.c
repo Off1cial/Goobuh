@@ -34,6 +34,9 @@ void Netchan_GetPacket( netchan_t *chan, netsock_t sock, packet_t *out )
         out->length = 0;
         out->data = NULL;
         out->type = PKT_UNKNOWN;
+        // What to do with unknown packet?
+        // The client or server shouldn't really get here..
+        return;
     }
     memcpy(out->data, buff + PACKET_HEADER, res - PACKET_HEADER);
     out->type = buff[0];
