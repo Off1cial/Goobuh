@@ -13,7 +13,7 @@ typedef struct winding_t
     int numpoints;
 } winding_t;
 
-static FORCEINLINE bool WINDING_VALID( winding_t win )
+FORCEINLINE bool WINDING_VALID( winding_t win )
 {
     return win.numpoints >= 3;
 }

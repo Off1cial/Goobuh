@@ -1,8 +1,3 @@
-#ifndef NETCHAN_H
-#define NETCHAN_H
-
-
-
 #include "engine/net/protocol.h"
 #include "engine/net/net.h"
 #include "common/common.h"
@@ -42,12 +37,5 @@ void Netchan_GetPacket( netchan_t *chan, netsock_t sock, packet_t *out )
     out->type = buff[0];
     out->length = res - PACKET_HEADER;
 }
-
-
-
-
-#endif
-
-
 
 

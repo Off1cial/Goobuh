@@ -4,6 +4,11 @@
 #include <stdbool.h>
 
 #ifdef _WIN32
+    /* FIX: Define WIN32_LEAN_AND_MEAN to exclude unneeded Windows headers (like Fibers) */
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+
     #include <winsock2.h>
     #include <ws2tcpip.h>
 #else
@@ -37,8 +42,8 @@ extern netsock_t net_sock;
 // Host byte order
 typedef struct netaddr_t
 {
-    unsigned int   ip;      /* was int: IPs above 127.255.255.255 went negative */
-    unsigned short port;    /* was short: ports above 32767 went negative */
+    unsigned int   ip;     
+    unsigned short port;    
 } netaddr_t;
 
 typedef struct netchan_t

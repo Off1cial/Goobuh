@@ -9,6 +9,9 @@ static float axial_bonus = 1.2f;
 #define AXIAL_EPS 1e-6f
 #define SPLIT_EPS 0.01f
 
+bspnode_t dnodes[MAX_BSP_NODES];
+int numnodes = 0;
+
 enum
 {
     SPLIT_NONE = 0,
@@ -33,14 +36,14 @@ bool is_axial( plane_t plane )
     return PlaneAxis( plane ) != -1;
 }
 
-int plane_exists( plane_t  p )
+int FindPlane( plane_t p )
 {
-    int i;
-    for (i = 0; i < numplanes; i++)
+    for (int i = 0; i < numplanes; i++)
     {
-        if (PlaneEqual(p, dplanes[i])) return i;
+        if (PlaneEqual( dplanes[i], p )) return i;
     }
-    return -1;
+    dplanes[numplanes] = p;
+    return numplanes++;
 }
 
 static int ClassifyBrush( const brush_t *b, plane_t plane )
@@ -89,6 +92,142 @@ int choose_plane( const brush_t *list )
 }
 
 
+
+
+
+static int BuildTree_r( brush_t* list )
+{
+    if (!list)
+    {
+        // Make a leaf
+        return CONTENTS_EMPTY; // ?
+    }
+    int planenum = choose_plane( list );
+
+    if (planenum == -1 )
+    {
+        return CONTENTS_SOLID;
+    }
+
+    bspnode_t *node = &dnodes[numnodes];
+    node->planenum = planenum;
+
+    brush_t *b; 
+
+    brush_t* left = NULL, *right = NULL;
+
+    for (b = list; b ; b = b->next )
+    {
+        int split = ClassifyBrush( b, dplanes[planenum] );
+        switch(split)
+        {
+            case SPLIT_FRONT | SPLIT_BACK:
+            {
+                brush_t* fsplit, *bsplit;
+                fsplit = AllocBrush( b->numfaces );
+                bsplit = AllocBrush( b->numfaces );
+                CSG_SplitBrush( b, dplanes[planenum], bsplit, fsplit );
+                if (!left)
+                {
+                    left = fsplit;
+                }
+                else
+                {
+                    fsplit->next = left;
+                    left->prev = fsplit;
+                }
+
+                if (!right)
+                {
+                    right = bsplit;
+                }
+                else
+                {
+                    bsplit->next = right;
+                    right->prev = bsplit;
+                }
+
+                break;
+            }
+
+            case SPLIT_FRONT: 
+            {
+                if (!left)
+                {
+                    left = b;
+                }
+                else
+                {
+                    b->next = left;
+                    left->prev = b;
+                }
+                break;
+            }
+            case SPLIT_BACK:
+            {
+                if (!right)
+                {
+                    right = b;
+                }
+                else
+                {
+                    b->next = right;
+                    right->prev = b;
+                }
+                break;
+            }
+            case SPLIT_NONE:
+            {
+                break;
+            }
+            default: break;
+        }
+    }
+
+
+    node->children[0] = BuildTree_r( left );
+    node->children[1] = BuildTree_r( right );
+    // If this node is a leaf, I need to collect all the faces?
+    // I then free the brushes
+
+    if ((node->children[0] < 0) && (node->children[1] < 0 ))
+    {
+        // Collect faces
+        brush_t* b;
+        node->firstface = numfaces;
+        node->numfaces = 0;
+        for (b = list; b ; b= b->next )
+        {
+            int fnum;
+            for (fnum = 0; fnum < b->numfaces; fnum++)
+            {
+                dfaces[numfaces++] = b->faces[fnum];
+                node->numfaces++;
+            }
+        }
+    }
+
+    while( left )
+    {
+        brush_t *next = left->next;
+        FreeBrush(left);
+        left = next;
+    }
+
+    while ( right )
+    {
+        brush_t* next = right->next;
+        FreeBrush( right );
+        right = next;
+    }
+
+
+    return numnodes;
+}
+
+
+
+
 static void BSP_Subtract( void )
 {
     brush_t *big, *clip;
@@ -104,6 +243,9 @@ static void BSP_Subtract( void )
     }
 }
 
+
+
+
 void BSP_Run( FILE *bsp_file )
 {
     if (!bsp_file) return; 
@@ -111,6 +253,10 @@ void BSP_Run( FILE *bsp_file )
     BSP_Subtract();
 
 }
+
+
+
+
 
 
 

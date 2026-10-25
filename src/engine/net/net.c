@@ -128,7 +128,7 @@ int NET_ReceiveData( byte *out, int len, netsock_t sock, netaddr_t *from )
     sockaddr_t sockaddr = netaddr_sockaddr(*from);
     socklen_t socklen = sizeof(sockaddr);
 
-    int res = recvfrom( sock.handle, out, len,  0, &sockaddr, &socklen );
+    int res = recvfrom( sock.handle, out, len,  0, ADRCST(sockaddr), &socklen );
     if (res > 0 )
     {
        *from = sockaddr_netaddr( sockaddr ); 

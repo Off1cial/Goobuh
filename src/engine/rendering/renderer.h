@@ -18,8 +18,8 @@ typedef struct shader_t
     
     int model_loc;
 
-    char vpath[MAX_PATH];
-    char fpath[MAX_PATH];
+    char vpath[MAX_QPATH];
+    char fpath[MAX_QPATH];
 
 } shader_t; 
 

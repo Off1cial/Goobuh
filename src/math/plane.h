@@ -28,5 +28,28 @@ FORCEINLINE bool PlaneEqual( plane_t a, plane_t b )
     return !q;
 }
 
+FORCEINLINE void PlaneNormalise( plane_t* p )
+{
+   
+    int dominant_axis = 0;
+    vec3_t norm = 
+    {
+        fabsf(p->normal[0]),
+        fabsf(p->normal[1]),
+        fabsf(p->normal[2])
+    };
+    if ( (norm[0] >= norm[1] ) && ( norm[0] >= norm[2] ) )
+        dominant_axis = 0;
+    else if ( (norm[1] >= norm[0]) && ( norm[1] >= norm[2] ) )
+        dominant_axis = 1;
+    else 
+        dominant_axis = 2;
+
+    if (p->normal[dominant_axis] < 0 )
+    {
+        VectorScale(p->normal, -1, p->normal );
+        p->d = -p->d;
+    }
+}
 
 #endif

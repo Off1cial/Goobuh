@@ -4,7 +4,7 @@
 #define MAX_BRUSH_FACES 64
 #define MAX_BRUSHES 4096
 
-#define MAX_BSP_NODES (2^16)
+#define MAX_BSP_NODES (1u << 16)
 
 #include <stdio.h>
 #include "math/plane.h"
@@ -32,7 +32,7 @@ void FreeBrush( brush_t *b );
 void FreeAllBrushes( void );
 
 void BrushCopy( brush_t* dst, brush_t *src);
-
+void BuildBrush( brush_t *brush );
 
 bool BrushAddFace( brush_t *b, brushface_t face );
 
@@ -52,12 +52,14 @@ typedef struct bspnode_t
 } bspnode_t;
 
 
+extern bspnode_t dnodes[MAX_BSP_NODES];
+extern int numnodes;
+
 
 extern plane_t dplanes[MAX_BRUSHES * MAX_BRUSH_FACES];
 extern int numplanes;
 
-// -1 = no, anything else is the index
-int plane_exists( plane_t p );
+int FindPlane( plane_t p );
 
 extern brush_t* dbrushes;
 
@@ -65,6 +67,8 @@ extern brushface_t dfaces[ MAX_BRUSH_FACES * MAX_BRUSHES ];
 extern int numfaces;
 
 extern sysarena_t compile_arena;
+
+
 
 void BSP_Run( FILE *bsp_file );
 

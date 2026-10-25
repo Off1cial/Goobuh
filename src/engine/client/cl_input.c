@@ -18,7 +18,7 @@ void KeyEvent( int code, int down, int repeat )
 {
     in_keydown[code] = down;
     in_keyrepeat[code] = (repeat) ? in_keyrepeat[code] + repeat : 0;
-    Con_printf("[key] code=%d, down=%d, repeat=%d\n", code, down, repeat );
+    Con_printf("[key] code=%d, down=%d, repeat=%d\n", code, down, in_keyrepeat[code] );
 }
 
 

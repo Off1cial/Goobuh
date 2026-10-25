@@ -1,7 +1,7 @@
 #include "engine/poly.h"
 #include "math/vector.h"
 
-#define ON_EPSILON 1e-6f
+#define ON_EPSILON 0.01
 
 void PlaneWinding( plane_t plane, winding_t* out )
 {
@@ -42,10 +42,10 @@ void PlaneWinding( plane_t plane, winding_t* out )
     VectorSub( out->p[1], b_add, out->p[1]);
     
     VectorSub( centre, t_add, out->p[2] );
-    VectorSub( centre, b_add, out->p[2] );
+    VectorSub( out->p[2], b_add, out->p[2] );
 
     VectorSub( centre, t_add, out->p[3] );
-    VectorAdd( centre, b_add, out->p[3] );
+    VectorAdd( out->p[3], b_add, out->p[3] );
     out->numpoints = 4;
 }
 
@@ -81,7 +81,8 @@ void ClipWinding( winding_t* in, plane_t p, winding_t* out )
             float t = dp / (dp - dpn );
             vec3_t delta, intersection;
             VectorSub( in->p[nextpoint], in->p[point], delta );
-            VectorMA( in->p[point], t, delta, win.p[win.numpoints++]);
+            VectorMA( in->p[point], t, delta, win.p[win.numpoints]);
+            win.numpoints++;
         }
 
     }

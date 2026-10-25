@@ -62,12 +62,12 @@ static GLuint compile_source( GLenum type, const char* src, const char *path )
 bool ShaderLoad( shader_t *shader, const char *vert_path, const char *frag_path )
 {   
 
-    char vert_resolved[MAX_PATH] = ASSET_DIR;
-    char frag_resolved[MAX_PATH] = ASSET_DIR;
+    char vert_resolved[MAX_QPATH] = ASSET_DIR;
+    char frag_resolved[MAX_QPATH] = ASSET_DIR;
     long assetdirsize = strlen(ASSET_DIR);
     
-    strncat( vert_resolved, vert_path, MAX_PATH - assetdirsize );
-    strncat( frag_resolved, frag_path, MAX_PATH - assetdirsize );
+    strncat( vert_resolved, vert_path, MAX_QPATH - assetdirsize );
+    strncat( frag_resolved, frag_path, MAX_QPATH - assetdirsize );
 
     // Returns a malloc'd buffer
     char *vert_src = read_file( vert_resolved );
@@ -120,8 +120,8 @@ bool ShaderLoad( shader_t *shader, const char *vert_path, const char *frag_path 
 
     memcpy( shader->vpath, vert_path, vertlen );
     memcpy( shader->fpath, frag_path, fraglen );
-    shader->fpath[MAX_PATH - 1] = '\0';
-    shader->vpath[MAX_PATH - 1] = '\0';
+    shader->fpath[MAX_QPATH - 1] = '\0';
+    shader->vpath[MAX_QPATH - 1] = '\0';
     return true;
 }
 

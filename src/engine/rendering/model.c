@@ -68,8 +68,8 @@ model_t *MDL_FetchByName( const char *name )
 
 model_t* MDL_Load( char *path )
 {
-    char resolved[MAX_PATH];
-    snprintf( resolved, MAX_PATH, "%s%s", ASSET_DIR, path );
+    char resolved[MAX_QPATH];
+    snprintf( resolved, MAX_QPATH, "%s%s", ASSET_DIR, path );
     
     model_load_t load = load_file( resolved );
     if (!load.vertices || (load.numvertices <= 0 )){

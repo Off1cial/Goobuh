@@ -37,7 +37,7 @@ int main( void )
 
     NET_Init();
     
-    bool compiled = MAP_Compile( "maps/first.map", "maps/first.bsp" );
+    bool compiled = MAP_Compile( "maps/level.map", "maps/first.bsp" );
     if (!compiled)
     {
         Con_printf("Failed to compile map\n ");

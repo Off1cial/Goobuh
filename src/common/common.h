@@ -3,6 +3,18 @@
 
 #include <string.h>
 #include <stdint.h>
+#include <stdbool.h>
+
+// Load Windows headers FIRST so winnt.h uses its own FORCEINLINE.
+// Ours is defined afterwards and replaces it.
+#ifdef _WIN32
+    #ifndef WIN32_LEAN_AND_MEAN
+    #define WIN32_LEAN_AND_MEAN
+    #endif
+    #include <winsock2.h>
+    #include <ws2tcpip.h>
+    #include <windows.h>
+#endif
 
 typedef uint64_t u64;
 typedef uint32_t u32;
@@ -20,29 +32,14 @@ typedef i32 qhandle_t;
 #define QHANDLE_NONE -1
 
 // Cross-platform
-#ifdef _MSC_VER
-
-    #ifdef FORCEINLINE
-        #undef FORCEINLINE
-    #endif
-
-    #define FORCEINLINE __forceinline
-
+// Defined AFTER the Windows headers so winnt.h never sees our version.
+#undef FORCEINLINE
+#if defined(_MSC_VER)
+    #define FORCEINLINE static __forceinline
 #elif defined(__GNUC__) || defined(__clang__)
-    #ifdef FORCEINLINE
-        #undef FORCEINLINE
-    #endif
-
-    #define FORCEINLINE inline __attribute__((always_inline))
-
+    #define FORCEINLINE static inline __attribute__((always_inline))
 #else
-
-    #ifdef FORCEINLINE
-        #undef FORCEINLINE
-    #endif
-
-    #define FORCEINLINE inline
-
+    #define FORCEINLINE static inline
 #endif
 
 #define PARANOID
@@ -78,7 +75,7 @@ typedef i32 qhandle_t;
 
 #define DECLARE( original, new ) typedef original new;
 
-#define MAX_PATH 512
+#define MAX_QPATH 512
 #define ASSET_LEN sizeof ASSET_DIR
 
 // Null-terminating strncpy from Quake III
@@ -204,17 +201,5 @@ void Con_printf( char* fmt, ... );
 
 
 void Sys_Assert( bool condition, char *fmt, ... );
-
-
-
-
-
-
-
-
-
-
-
-
 
 #endif // CORE_COMMON_H

@@ -5,61 +5,46 @@
 void CSG_SplitBrush( brush_t* in, plane_t plane, brush_t* out_back, brush_t* out_front )
 {
     if (!in) return;
+    if (!out_back || out_front ) return;
 
-    if (!out_front || !out_back) return;
+    out_back->numfaces = 0;
+    out_front->numfaces = 0;
 
-    plane_t reverse_plane;
-    PlaneReverse( plane, &reverse_plane );
-    
-    memset(out_back, 0, sizeof(*out_back));
-    memset(out_front, 0, sizeof(*out_front));
+    int splitnum = FindPlane( plane );
+    plane_t reversed_plane;
+    PlaneReverse( plane, &reversed_plane );
 
-    int face;
-
-    for (face = 0; face < in->numfaces; face++)
+    int bface;
+    for (bface = 0; bface < in->numfaces; bface++)
     {
-        // Unholy stack usage?
-        winding_t front;
-        winding_t back;
-        ClipWinding( &in->faces[face].win, plane, &back );
-        ClipWinding( &in->faces[face].win, reverse_plane, &front );
+        winding_t front = {0}, back = {0};
+        brushface_t *face = &in->faces[bface];
+        ClipWinding( &face->win, plane, &back );
+        ClipWinding( &face->win, reversed_plane, &front );
 
-        if (WINDING_VALID( front ))
+        if (front.numpoints > 3 )
         {
             brushface_t front_face = {0};
-            memcpy( front_face.texname, in->faces[face].texname, 64 );
+            front_face.planenum = face->planenum;
             front_face.win = front;
-            int planenum = plane_exists(reverse_plane); 
-            if (planenum < 0)
-            {
-                front_face.planenum = numplanes;
-                // Bounds checking??
-                dplanes[numplanes++] = reverse_plane;
-            }
-            else
-            {
-                front_face.planenum = planenum;
-            }  
             BrushAddFace( out_front, front_face );
         }
-        if (WINDING_VALID( back ))
+        if (back.numpoints > 3 )
         {
             brushface_t back_face = {0};
-            memcpy( back_face.texname, in->faces[face].texname, 64 );
+            back_face.planenum = face->planenum;
             back_face.win = back;
-            int planenum = plane_exists( plane );
-            if (planenum < 0)
-            {
-                back_face.planenum = numplanes;
-                dplanes[numplanes++] = plane;
-            }
-            else
-            {
-                back_face.planenum = planenum;
-            }
-            BrushAddFace( out_back, back_face );
+            BrushAddFace( in, back_face );
         }
     }
+    // Seal the cut
+    brushface_t seal_front = {0}, seal_back = {0};
+    seal_front.planenum = FindPlane( reversed_plane );
+    seal_back.planenum = splitnum;
+    BrushAddFace( out_front, seal_front );
+    BrushAddFace( out_back, seal_back );
+    BuildBrush( out_back );
+    BuildBrush( out_front );
 }
 
 

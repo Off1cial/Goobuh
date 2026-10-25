@@ -2,7 +2,7 @@
 
 project(CEngine
     VERSION 0.1
-    LANGUAGES C ASM_NASM
+	LANGUAGES C ASM_NASM
 )
 
 if(WIN32)
@@ -11,7 +11,7 @@ else()
     set(CMAKE_ASM_NASM_OBJECT_FORMAT elf64)
 endif()
 
-set(CMAKE_C_STANDARD 23)
+set(CMAKE_C_STANDARD 17)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS ON)
 
@@ -39,6 +39,7 @@ target_compile_options(build_flags INTERFACE
     $<$<COMPILE_LANGUAGE:C>:-Wall;-Wextra>
 )
 
+
 if(WIN32)
     target_compile_definitions(build_flags INTERFACE WINDOWS)
 elseif(UNIX AND NOT APPLE)
@@ -49,9 +50,12 @@ elseif(UNIX AND NOT APPLE)
     )
 endif()
 
+
+
+
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_options(build_flags INTERFACE
-        $<$<COMPILE_LANGUAGE:C>:-g;-O0;-fno-omit-frame-pointer;-Wno-unused-variable>
+        $<$<COMPILE_LANGUAGE:C>:-g;-O3;-fno-omit-frame-pointer;-Wno-unused-variable>
     )
     if(NOT WIN32)
         target_compile_options(build_flags INTERFACE
