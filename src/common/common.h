@@ -133,19 +133,8 @@ int Q_stricmp(const char* s1, const char* s2);
 extern bool is_client;
 extern bool is_server;
 
-typedef struct sizebuf_t
-{ 
-    byte    *data;
-    int maxsize;
-    int cursize;
-} sizebuf_t;
 
 
-void SZ_Alloc( sizebuf_t *buf, int startsize );
-void SZ_Free( sizebuf_t *buf );
-void SZ_Clear( sizebuf_t *buf );
-// Return a pointer to a region of a buffer that has space for 'bytes' bytes
-byte *SZ_GetSpace( sizebuf_t *buf, int bytes );
 
 typedef enum memtag_t
 {
@@ -154,6 +143,7 @@ typedef enum memtag_t
     MEMTAG_SERVER, // Exists for the lifespan of the networking server
     MEMTAG_LEVEL, // Exists for the lifespan of the current level, wiped of level change
     MEMTAG_CUSTOM, // Custom allocation and destruction
+    MEMTAG_HEAP, // no
 } memtag_t;  
 
 
@@ -201,5 +191,41 @@ void Con_printf( char* fmt, ... );
 
 
 void Sys_Assert( bool condition, char *fmt, ... );
+
+
+
+typedef enum endianness_t
+{
+  END_LITTLE = 0,
+  END_BIG = 1,
+} endianness_t; // Endian + 1 % 2
+
+typedef struct sizebuf_t
+{ 
+    const endianness_t endian_write;
+    int maxsize;
+    int cursize;
+    byte    *data;
+} sizebuf_t;
+extern sysarena_t sv_arena;
+extern sysarena_t cl_arena;
+
+#define SZ_NEW( name, w_endian ) sizebuf_t name = {.cursize = 0, .maxsize = 0, .endian_write = w_endian, .data = NULL}
+
+extern sizebuf_t cl_sizebuff;
+extern sizebuf_t sv_sizebuff;
+
+sizebuf_t SZ_New( endianness_t endian_write );
+bool SZ_Alloc( sizebuf_t *buf, int startsize, memtag_t tag );
+void SZ_Free( sizebuf_t *buf );
+void SZ_Clear( sizebuf_t *buf );
+// Return a pointer to a region of a buffer that has space for 'bytes' bytes
+byte *SZ_GetSpace( sizebuf_t *buf, int bytes );
+bool SZ_WriteInt( sizebuf_t *buf, int i );
+bool SZ_WriteFloat( sizebuf_t *buf, float f );
+
+bool SZ_ReadInt( sizebuf_t *buf, u32 at, int* out );
+float SZ_ReadFloat( sizebuf_t* buf, u32 at, float *out );
+
 
 #endif // CORE_COMMON_H

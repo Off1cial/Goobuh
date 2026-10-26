@@ -12,12 +12,9 @@
 
 char* map_file = NULL;
 
-plane_t dplanes[MAX_BRUSH_FACES * MAX_BRUSHES];
-int numplanes = 0;
 
 
 
-brush_t* dbrushes = NULL;
 
 sysarena_t compile_arena;
 
@@ -234,13 +231,12 @@ bool MAP_Compile( const char *map, const char *bsp_out )
     if (!open_file( map_path ))
         return false;
 
-    FILE *bspfile = fopen(bsp_path, "w");
+    FILE *bspfile = fopen(bsp_path, "wb");
     if (!bspfile)
     {
         Con_printf("Failed to open bsp file\n");
         return false;
     }
-    fprintf(bspfile, "i love onion rings");
     // Dont have to close the arena, manually, the engine does it for us
     Sys_ArenaInit(&compile_arena, sizeof(brush_t) * MAX_BRUSHES, "MapCompileArena", MEMTAG_CUSTOM);
     dbrushes = NULL;
@@ -270,9 +266,12 @@ bool MAP_Compile( const char *map, const char *bsp_out )
 
 
     BSP_Run( bspfile );
+    
+    fclose(bspfile);
 
+    // Write the faces and nodes to the file
     FreeAllBrushes();
-
+        
 
     return true;
 }
@@ -337,4 +336,5 @@ void BuildBrush( brush_t *brush )
             }
         }
     }
+    Con_printf("Built brush of %d faces\n", brush->numfaces);
 }

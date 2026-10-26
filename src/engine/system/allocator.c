@@ -105,6 +105,7 @@ void Sys_FreeTag( memtag_t tag )
 
 static void* Sys_ArenaAllocAligned( sysarena_t* arena, size_t size, size_t alignment )
 {
+    if (!arena) return NULL;
     uintptr_t current = (uintptr_t)arena->offset + (uintptr_t)arena->base;
     uintptr_t aligned = ( current + (alignment - 1 ) ) & ~(alignment - 1);
 

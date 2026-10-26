@@ -4,12 +4,11 @@
 
 #include "math/vector.h"
 
-void CL_Init( void );
+#define CL_ARENA_SIZE 1024 * 1024
+
+bool CL_Init( void );
 void CL_Shutdown( void );
-
 void CL_Frame( void );
-
-
 void CL_Think( void );
 
 typedef struct clientstate_t

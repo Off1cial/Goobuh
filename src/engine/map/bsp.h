@@ -55,6 +55,9 @@ typedef struct bspnode_t
 extern bspnode_t dnodes[MAX_BSP_NODES];
 extern int numnodes;
 
+extern int dleafs[MAX_BSP_NODES];
+extern int numleaves;
+
 
 extern plane_t dplanes[MAX_BRUSHES * MAX_BRUSH_FACES];
 extern int numplanes;

@@ -128,3 +128,8 @@ void R_DrawModel( model_t *mdl, mat4 model )
 }
 
 
+void R_DrawNode( int node )
+{
+
+}
+

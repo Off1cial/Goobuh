@@ -1,7 +1,7 @@
 #include "engine/poly.h"
 #include "math/vector.h"
 
-#define ON_EPSILON 0.01
+#define ON_EPSILON 0.1
 
 void PlaneWinding( plane_t plane, winding_t* out )
 {

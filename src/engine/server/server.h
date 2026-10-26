@@ -51,7 +51,6 @@ typedef struct server_t
 } server_t;
 
 extern server_t sv;
-extern sysarena_t sv_arena;
 // sv_main.c
 bool SV_Init( char name[64], int maxplayers );
 void SV_Shutdown( void );
