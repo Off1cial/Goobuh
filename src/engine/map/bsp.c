@@ -324,7 +324,7 @@ static void WriteBSPFile( FILE* bsp_out )
 
     u32 head = 0;
     
-    char nodebuff[numnodes * NODESIZE];
+    char nodebuff[MAX_BSP_NODES * NODESIZE];
     for (int i = 0; i < numnodes; i++)
     {
         write_node(&dnodes[i], nodebuff + (i * NODESIZE), NODESIZE);
@@ -342,8 +342,8 @@ void BSP_Run( FILE *bsp_file )
     dbrushes = NULL;
 
     ComputeNodeBounds();
-    SZ_Alloc();
-    WriteBSPFile( bsp_file );
+    //SZ_Alloc( &sz_bspwrite, 1024, MEMTAG_LIFE);
+    //WriteBSPFile( bsp_file );
 
     BSP_DumpDot( "bsp.dot");
     Con_printf("BSP Finished: %d nodes, %d leaves\n", numnodes, numleaves );
