@@ -14,7 +14,7 @@ void Netchan_Transmit(
 
 
 
-void Netchan_GetPacket( netchan_t *chan, netsock_t sock, packet_t *out )
+int Netchan_GetPacket( netchan_t *chan, netsock_t sock, packet_t *out )
 {
     byte buff[MAX_NETMSG + PACKET_HEADER];
     netaddr_t from;
@@ -24,18 +24,15 @@ void Netchan_GetPacket( netchan_t *chan, netsock_t sock, packet_t *out )
                 sock,
                 &from 
             );
-    if (!NET_CompareAddreses(from, chan->remote)){
+    if (res <= 0 ) return 0;
+    if (!NET_CompareAddresses(from, chan->remote)){
         Con_printf("Netchan: inbound packet (%d) from non-remote address: %s\n", res, NET_AddrToString(from)); 
-        out->length = 0;
-        out->data = NULL;
-        out->type = PKT_UNKNOWN;
-        // What to do with unknown packet?
-        // The client or server shouldn't really get here..
-        return;
+        return 0;
     }
     memcpy(out->data, buff + PACKET_HEADER, res - PACKET_HEADER);
     out->type = buff[0];
     out->length = res - PACKET_HEADER;
+    return res;
 }
 
 

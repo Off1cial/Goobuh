@@ -53,6 +53,11 @@ typedef struct netchan_t
 #endif
     netaddr_t remote;
     unsigned short qport;
+
+
+    unsigned long t_lastrecv;
+    unsigned long t_lastsend;
+
 } netchan_t;
 
 typedef struct packet_t
@@ -62,6 +67,11 @@ typedef struct packet_t
     byte *data;
 } packet_t;
 
+typedef struct challenge_t
+{
+    int challenge;
+    float duration;
+} challenge_t;
 
 #define ADRCST(sockadr) ((struct sockaddr*)&(sockadr))
 
@@ -72,7 +82,7 @@ void  NET_GetLocalAddress( void );
 char* NET_AddrToString( netaddr_t addr );
 bool  NET_StringToAddr( const char *s, unsigned short port, netaddr_t *a );
 
-FORCEINLINE bool NET_CompareAddreses( const netaddr_t a, const netaddr_t b )
+FORCEINLINE bool NET_CompareAddresses( const netaddr_t a, const netaddr_t b )
 {
     return (a.ip == b.ip) && (a.port == b.port);
 }
@@ -82,7 +92,7 @@ int NET_ReceiveData( byte *out, int len, netsock_t sock, netaddr_t *from );
 
 void Netchan_Transmit( netchan_t *chan, netsock_t sock, int len, const byte *data );
 
-void Netchan_GetPacket( netchan_t *chan, netsock_t sock, packet_t *out );
+int Netchan_GetPacket( netchan_t *chan, netsock_t sock, packet_t *out );
 
 bool netsock_open( netsock_t* sock, unsigned short port );
 void netsock_close( netsock_t* sock );

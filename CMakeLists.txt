@@ -11,11 +11,17 @@ else()
     set(CMAKE_ASM_NASM_OBJECT_FORMAT elf64)
 endif()
 
-set(CMAKE_C_STANDARD 17)
+set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS ON)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+# Unix-only definitions
+if(UNIX AND NOT APPLE)
+    add_compile_definitions(_POSIX_C_SOURCE=200809L)
+    add_compile_definitions(_GNU_SOURCE)
+endif()
 
 # The exe and the game module land in the same folder, so the engine can
 # find the module next to itself at runtime.

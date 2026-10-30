@@ -133,6 +133,14 @@ int Q_stricmp(const char* s1, const char* s2);
 extern bool is_client;
 extern bool is_server;
 
+typedef struct usercmd_t
+{
+    float angles[3];
+    float forward;
+    float side;
+    float up;
+} usercmd_t;
+
 
 
 
@@ -170,6 +178,10 @@ void *Sys_ArenaAlloc( sysarena_t* arena, size_t size );
 void Sys_ArenaMark( sysarena_t *arena );
 void Sys_ArenaFreeToMark( sysarena_t *arena );
 
+static inline void Sys_ArenaReset( sysarena_t* arena )
+{
+    if (arena) arena->offset = 0;
+}
 
 bool Sys_ArenaInit( sysarena_t* arena, size_t size, const char* name, memtag_t tag );
 void Sys_ArenaDestroy( sysarena_t* arena );
@@ -192,6 +204,8 @@ void Con_printf( char* fmt, ... );
 
 void Sys_Assert( bool condition, char *fmt, ... );
 
+
+unsigned long Sys_TimeMillis( void );
 
 
 typedef enum endianness_t
@@ -225,7 +239,98 @@ bool SZ_WriteInt( sizebuf_t *buf, int i );
 bool SZ_WriteFloat( sizebuf_t *buf, float f );
 
 bool SZ_ReadInt( sizebuf_t *buf, u32 at, int* out );
-float SZ_ReadFloat( sizebuf_t* buf, u32 at, float *out );
+bool SZ_ReadFloat( sizebuf_t* buf, u32 at, float *out );
+
+
+// Integer serialisation
+
+static inline bool WriteU32LE(byte *buff, int len, uint32_t value)
+{
+    if (!buff || len < 4)
+        return false;
+
+    buff[0] = (byte)value;
+    buff[1] = (byte)(value >> 8);
+    buff[2] = (byte)(value >> 16);
+    buff[3] = (byte)(value >> 24);
+    return true;
+}
+
+static inline bool WriteU32BE(byte *buff, int len, uint32_t value)
+{
+    if (!buff || len < 4)
+        return false;
+
+    buff[0] = (byte)(value >> 24);
+    buff[1] = (byte)(value >> 16);
+    buff[2] = (byte)(value >> 8);
+    buff[3] = (byte)value;
+    return true;
+}
+
+static inline bool ReadU32LE(const byte *buff, int len, uint32_t *out)
+{
+    if (!buff || !out || len < 4)
+        return false;
+
+    *out = (uint32_t)buff[0]
+         | ((uint32_t)buff[1] << 8)
+         | ((uint32_t)buff[2] << 16)
+         | ((uint32_t)buff[3] << 24);
+    return true;
+}
+
+static inline bool ReadU32BE(const byte *buff, int len, uint32_t *out)
+{
+    if (!buff || !out || len < 4)
+        return false;
+
+    *out = ((uint32_t)buff[0] << 24)
+         | ((uint32_t)buff[1] << 16)
+         | ((uint32_t)buff[2] << 8)
+         | (uint32_t)buff[3];
+    return true;
+}
+
+// Float serialisation
+
+static inline bool WriteF32LE(byte *buff, int len, float value)
+{
+    uint32_t bits;
+    memcpy(&bits, &value, sizeof(bits));
+    return WriteU32LE(buff, len, bits);
+}
+
+static inline bool WriteF32BE(byte *buff, int len, float value)
+{
+    uint32_t bits;
+    memcpy(&bits, &value, sizeof(bits));
+    return WriteU32BE(buff, len, bits);
+}
+
+static inline bool ReadF32LE(const byte *buff, int len, float *out)
+{
+    uint32_t bits;
+
+    if (!out || !ReadU32LE(buff, len, &bits))
+        return false;
+
+    memcpy(out, &bits, sizeof(bits));
+    return true;
+}
+
+static inline bool ReadF32BE(const byte *buff, int len, float *out)
+{
+    uint32_t bits;
+
+    if (!out || !ReadU32BE(buff, len, &bits))
+        return false;
+
+    memcpy(out, &bits, sizeof(bits));
+    return true;
+}
+
+
 
 
 #endif // CORE_COMMON_H
