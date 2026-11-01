@@ -83,6 +83,14 @@ bool ReadBrush( brush_t* out )
 
 #include <math.h>
 
+static inline void Map_ToEngine( vec3_t v )
+{
+    float x = v[0], y = v[1], z = v[2];
+    v[0] = x;
+    v[1] = z;    // map up becomes engine up
+    v[2] = -y;
+}
+
 static void skip_ws_comments( void )
 {
     for (;;)
@@ -110,6 +118,11 @@ static bool read_point( double p[3] )
     skip_ws_comments();
     if (gParse.c[0] != ')') return false;
     gParse.c++;
+    float x = p[0], y = p[1], z = p[2];
+    p[0] = x;
+    p[1] = z;
+    p[2] = -y;
+
     return true;
 }
 
@@ -179,7 +192,7 @@ bool ReadBrush( brush_t* out )
         if (!BrushAddFace( out, face )) return false;
     }
 
-    Con_printf( "Read brush of %d faces\n", out->numfaces );
+    //Con_printf( "Read brush of %d faces\n", out->numfaces );
     return true;
 }
 
@@ -213,7 +226,7 @@ static bool open_file( char *file )
     return true;
 }
 
-static void CloseFile( void )
+static void CloseMapFile( void )
 {
     if (map_file) free(map_file);
     gParse.c = NULL;
@@ -242,8 +255,10 @@ bool MAP_Compile( const char *map, const char *bsp_out )
     dbrushes = NULL;
     brush_t *tmp = AllocBrush( MAX_BRUSH_FACES );
 
+    int nbrushes = 0;
     while (ReadBrush( tmp ))
     {
+        nbrushes++;
         brush_t* newbrush = AllocBrush( tmp->numfaces );
         if (!newbrush) return false;
 
@@ -258,9 +273,9 @@ bool MAP_Compile( const char *map, const char *bsp_out )
             dbrushes->prev = newbrush;
         }
         dbrushes = newbrush;
-
     }
-    CloseFile();
+    Con_printf( "Parsed %d brushes, stopped at: %.40s\n", nbrushes, gParse.c );
+    CloseMapFile();
     BuildAllBrushes();
     FreeBrush(tmp);
 
@@ -336,5 +351,4 @@ void BuildBrush( brush_t *brush )
             }
         }
     }
-    Con_printf("Built brush of %d faces\n", brush->numfaces);
 }

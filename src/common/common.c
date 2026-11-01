@@ -1,6 +1,7 @@
 #include "common/common.h"
 
-
+bool is_client;
+bool is_server;
 
 int Q_stricmpn (const char *s1, const char *s2, int n) {
 	int		c1, c2;

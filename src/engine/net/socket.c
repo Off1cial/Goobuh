@@ -34,22 +34,30 @@ bool netsock_open( netsock_t* sock, unsigned short port )
         ADRCST( sockaddr ),
         sizeof( sockaddr )
     );
-    if ( res < 0 ){
+   
 #ifdef _WIN32
-        //printf("bind() failed: %d\n", WSAGetLastError());
-#else
-        //perror("bind");
-#endif
+    if (res == SOCKET_ERROR)
+    {
+        Con_printf("bind() failed: %d\n", WSAGetLastError());
         netsock_close( sock );
         return false;
     }
+#else
+    if (res < 0)
+    {
+        Con_printf("Socket bind failed\n");
+        netsock_close( sock );
+        return false;
+    }
+#endif
+
 
 #ifdef _WIN32
     // Make the socket non-blocking.
     u_long nonblocking = 1;
 
     if (ioctlsocket( sock->handle, FIONBIO, &nonblocking ) != 0) {
-        //printf("ioctlsocket() failed: %d\n", WSAGetLastError());
+        Con_printf("ioctlsocket() failed: %d\n", WSAGetLastError());
         netsock_close( sock );
         return false;
     }

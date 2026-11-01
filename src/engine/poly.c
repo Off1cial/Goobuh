@@ -6,7 +6,7 @@
 void PlaneWinding( plane_t plane, winding_t* out )
 {
     if (!out) return;
-    static const float size = 500.0f;
+    static const float size = 65536.0f;
     
     vec3_t centre;
     VectorScale( plane.normal, plane.d, centre );

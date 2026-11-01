@@ -5,7 +5,7 @@
 void CSG_SplitBrush( brush_t* in, plane_t plane, brush_t* out_back, brush_t* out_front )
 {
     if (!in) return;
-    if (!out_back || out_front ) return;
+    if (!out_back || !out_front ) return;
 
     out_back->numfaces = 0;
     out_front->numfaces = 0;
@@ -22,19 +22,19 @@ void CSG_SplitBrush( brush_t* in, plane_t plane, brush_t* out_back, brush_t* out
         ClipWinding( &face->win, plane, &back );
         ClipWinding( &face->win, reversed_plane, &front );
 
-        if (front.numpoints > 3 )
+        if (front.numpoints >= 3 )
         {
             brushface_t front_face = {0};
             front_face.planenum = face->planenum;
             front_face.win = front;
             BrushAddFace( out_front, front_face );
         }
-        if (back.numpoints > 3 )
+        if (back.numpoints >= 3 )
         {
             brushface_t back_face = {0};
             back_face.planenum = face->planenum;
             back_face.win = back;
-            BrushAddFace( in, back_face );
+            BrushAddFace( out_back, back_face );
         }
     }
     // Seal the cut

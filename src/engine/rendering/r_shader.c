@@ -1,4 +1,5 @@
 #include "engine/rendering/renderer.h"
+#include "engine/rendering/gl.h"
 #include "common/common.h"
 #include "engine/system/message.h"
 #include <stdio.h>
@@ -109,11 +110,12 @@ bool ShaderLoad( shader_t *shader, const char *vert_path, const char *frag_path 
     glDeleteShader( vert_sh );
     glDeleteShader( frag_sh );
 
-    // Set uniforms?
-    //
     shader->model_loc = glGetUniformLocation(shader->program, "uModel");
 
-    // not too sure on this, am i wasting too much memory
+    if (GL_GetUniform( shader, "uViewPos", GLUNIFORM_VEC3, &shader->set.uniforms[shader->set.numuniforms++]))
+    {
+        Con_printf("Found shader uniform: uViewPos\n");
+    }
     
     size_t vertlen = strlen( vert_path );
     size_t fraglen = strlen( frag_path );
@@ -157,5 +159,7 @@ void R_UploadModel( shader_t *shader, mat4 mat )
 {
     glUniformMatrix4fv( shader->model_loc, 1, GL_FALSE, (float*)mat);
 }
+
+
 
 

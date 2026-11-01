@@ -74,10 +74,15 @@ extern cvar_t sv_maxspeed;
 
 
 // sv_main.c
-bool SV_Init( char name[64], int maxplayers );
+bool SV_Init( int maxplayers );
 void SV_Shutdown( void );
 bool SV_InitGame( void );
 void SV_ShutdownGame( void );
+
+
+// The map name, as it exists in the map directory
+bool SV_ChangeMap( const char* map_name );
+
 
 void SV_HandleZombieClient( svclient_t* client, packet_t *latest );
 void SV_HandleConnectedClient( svclient_t* client, packet_t* latest );
@@ -86,7 +91,7 @@ void SV_HandleActiveClient( svclient_t* client, packet_t* latest );
 void SV_HandleUnconnected( void );
 
 
-void SV_DropClient( svclient_t* client );
+void SV_DropClient( svclient_t* client, FORMAT_STR );
 
 void* SV_Alloc( size_t size );
 void SV_Mark( void );

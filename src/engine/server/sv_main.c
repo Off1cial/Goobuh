@@ -7,12 +7,20 @@ server_t sv = {.state = SS_DEAD, .clients = NULL, .numclients = 0};
 svclient_t* svcl = NULL;
 sysarena_t sv_arena;
 
-bool SV_Init( char name[64], int maxplayers )
+bool SV_Init( int maxplayers )
 {
     
-    if (!netsock_open( &sv.udpsocket, SERVER_PORT )) return false;
+    if (!netsock_open( &sv.udpsocket, SERVER_PORT ))
+    {
+        Con_printf("[Server]: Failed to initialise, could not open socket\n");
+        return false;
+    }
 
-    if (!Sys_ArenaInit( &sv_arena, SV_ARENA_SIZE, "SvArena", MEMTAG_SERVER )) return false;
+    if (!Sys_ArenaInit( &sv_arena, SV_ARENA_SIZE, "SvArena", MEMTAG_SERVER ))
+    {
+        Con_printf("[Server]: Failed to initialise, could not create arena\n");
+        return false;
+    }
 
     sv.clients = SV_Alloc( sizeof(svclient_t) * maxplayers );
     if (!sv.clients) return false;
@@ -23,7 +31,7 @@ bool SV_Init( char name[64], int maxplayers )
 
     sv.state = SS_ACTIVE;
     
-    Q_strncpy( sv.name, name, 64 );
+    
 
     Con_printf("[Server]: Server initialised\n");
     return true;
@@ -66,7 +74,7 @@ void SV_Think( void )
 
         if (now - svcl->chan.t_lastrecv >= CHAN_TIMEOUT)
         {
-            SV_DropClient( svcl );
+            SV_DropClient( svcl, "Client timeout" );
             continue;
         }
 
@@ -83,10 +91,19 @@ void SV_Think( void )
 
 
 
-void SV_DropClient( svclient_t* client )
+void SV_DropClient( svclient_t* client, FORMAT_STR )
 {
     if (!client) return;
 
+    // Send disconnection packet
+
+
+    // Clear index
     memset(client, 0, sizeof(svclient_t));
     client->state = SSCL_DEAD;
+}
+
+bool SV_ChangeMap( const char* map_name )
+{
+
 }

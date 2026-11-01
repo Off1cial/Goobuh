@@ -1,4 +1,5 @@
 #include "engine/map/bsp.h"
+#include "engine/map/bspfile.h"
 #include "common/common.h"
 #include "engine/system/window.h"
 #include <float.h>
@@ -13,7 +14,7 @@ static float axial_bonus = 1.2f;
 bspnode_t dnodes[MAX_BSP_NODES];
 int numnodes = 0;
 
-int dleafs[MAX_BSP_NODES];
+bspnode_t dleafs[MAX_BSP_NODES];
 int numleaves = 0;
 
 
@@ -124,9 +125,9 @@ int choose_plane( const brush_t *list )
         {
             int pn = b->faces[f].planenum;
             plane_t splane = dplanes[pn];
-            Con_printf("Plane {%0.2f, %0.2f, %0.2f}, %0.2f\n", splane.normal[0], splane.normal[1], splane.normal[2], splane.d );
+            //Con_printf("Plane {%0.2f, %0.2f, %0.2f}, %0.2f\n", splane.normal[0], splane.normal[1], splane.normal[2], splane.d );
             float s = score_plane( dplanes[pn], list );
-            Con_printf("Plane score: %0.2f\n", s );
+            //Con_printf("Plane score: %0.2f\n", s );
             if (s < best) { best = s; best_plane = pn; }
         }
     return best_plane;       // -1 = nothing useful left, make a leaf
@@ -138,18 +139,37 @@ int choose_plane( const brush_t *list )
 
 static int BuildTree_r( brush_t* list )
 {
-  if (!list) return CONTENTS_EMPTY;
+  if (!list)
+  {
+      // Make an empty leaf
+      int leafnum = numleaves++;
+      bspnode_t *leaf = &dleafs[leafnum];
+      leaf->planenum = -1;
+      leaf->contents = CONTENTS_EMPTY;
+      leaf->numfaces = 0;
+      leaf->firstface = -1;
+      return -(leafnum + 1 );
+  }
   
   int planenum = choose_plane( list );
+
+  // Debug
+  int bcount = 0;
+  for (brush_t* b = list; b ; b = b->next )
+  {
+      bcount++;
+  }
+  
   
   if (planenum == -1 )
   {
+  /*
     // Make a leaf
-    int idx = numnodes++;
-    bspnode_t *leaf = &dnodes[idx];
-    leaf->planenum = planenum;
+    int leafnum = numleaves++;
+    bspnode_t* leaf = &dleafs[leafnum];
     leaf->firstface = numfaces;
-    leaf->numfaces = 0;
+    leaf->contents = CONTENTS_SOLID;
+
     // Collect brush faces
     for (brush_t *b = list; b ; b = b->next )
     {
@@ -161,18 +181,49 @@ static int BuildTree_r( brush_t* list )
     }
     FreeBrushList( list );
   
-    dleafs[numleaves++] = idx;
+    return -(leafnum + 1 );
+    */
 
-    return idx;
+        // Assumes one convex brush left. Overlapping brushes need CSG first.
+      int first = -1, prev = -1;
 
+      for (int f = 0; f < list->numfaces; f++)
+      {
+          int idx = numnodes++;
+          dnodes[idx].planenum = list->faces[f].planenum;
+          dnodes[idx].children[0] = BuildTree_r( NULL );   // air in front of the face
+
+          if (prev >= 0) dnodes[prev].children[1] = idx;
+          else           first = idx;
+          prev = idx;
+      }
+
+      // Behind every face = inside the brush
+      int leafnum = numleaves++;
+      bspnode_t* leaf = &dleafs[leafnum];
+      leaf->planenum = -1;
+      leaf->contents = CONTENTS_SOLID;
+      leaf->firstface = numfaces;
+      leaf->numfaces = 0;
+      for (int f = 0; f < list->numfaces; f++)
+      {
+          dfaces[numfaces++] = list->faces[f];
+          leaf->numfaces++;
+      }
+      dnodes[prev].children[1] = -(leafnum + 1);
+
+      FreeBrushList( list );
+      return first;
   }
+  
+
 
   int idx = numnodes++;
   dnodes[idx].planenum = planenum;
 
 
-  brush_t* left, *right = NULL;
-  brush_t* next;
+  brush_t* left = NULL, *right = NULL;
+  brush_t* next = NULL;
 
   for (brush_t *b = list; b ; b = next )
   {
@@ -182,14 +233,15 @@ static int BuildTree_r( brush_t* list )
 
     if ( class == (SPLIT_FRONT | SPLIT_BACK ))
     {
-      brush_t* fbrush = AllocBrush( b->numfaces );
-      brush_t* bbrush = AllocBrush( b->numfaces );
-      CSG_SplitBrush( b, dplanes[planenum], bbrush, fbrush );
-      if( BrushValid( fbrush ) ) PushBrush( &left, fbrush );
-      else FreeBrush( fbrush );
-      if( BrushValid( bbrush ) ) PushBrush( &right, bbrush );
-      else FreeBrush( bbrush );
-      FreeBrush(b);
+        
+        brush_t* fbrush = AllocBrush( b->numfaces );
+        brush_t* bbrush = AllocBrush( b->numfaces );
+        CSG_SplitBrush( b, dplanes[planenum], bbrush, fbrush );
+        if( BrushValid( fbrush ) ) PushBrush( &left, fbrush );
+        else FreeBrush( fbrush );
+        if( BrushValid( bbrush ) ) PushBrush( &right, bbrush );
+        else FreeBrush( bbrush );
+        FreeBrush(b);
     }
     else if (class & SPLIT_FRONT ){ 
       if (BrushValid( b ))
@@ -200,7 +252,10 @@ static int BuildTree_r( brush_t* list )
         FreeBrush(b);
       }
     }
-    else PushBrush( &right, b );
+    else{
+        if (BrushValid( b )) PushBrush( &right, b );
+        else FreeBrush(b);
+    }
   }
 
   int cl = BuildTree_r( left );
@@ -251,17 +306,17 @@ void BSP_DumpDot( const char *path )
 
         for (int c = 0; c < 2; c++)
         {
-            const char *side = c == 0 ? "front" : "back";
+            const char* side = c == 0 ? "front" : "back";
             int ch = n->children[c];
 
             if (ch >= 0)
                 fprintf( f, "  n%d -> n%d [label=\"%s\"];\n", i, ch, side );
             else
             {
-                // contents leaf (negative child): give each its own box
-                fprintf( f, "  c%d_%d [shape=ellipse, style=filled, fillcolor=%s, label=\"%s\"];\n",
-                         i, c, ch == CONTENTS_SOLID ? "salmon" : "lightblue",
-                         ch == CONTENTS_SOLID ? "SOLID" : "EMPTY" );
+                int leaf = -(ch + 1);
+                fprintf( f, "  c%d_%d [shape=ellipse, style=filled, fillcolor=lightgrey, "
+                         "label=\"leaf %d\\n%d faces\"];\n",
+                         i, c, leaf, dleafs[leaf].numfaces );
                 fprintf( f, "  n%d -> c%d_%d [label=\"%s\"];\n", i, i, c, side );
             }
         }
@@ -286,6 +341,43 @@ static void ComputeNodeBounds( void )
         {
             brushface_t* face = &dfaces[f + node->firstface];
             
+            for (int v = 0; v < face->win.numpoints; v++)
+            {
+                float x, y, z;
+                x = face->win.p[v][0];
+                y = face->win.p[v][1];
+                z = face->win.p[v][2];
+                mins[0] = (x < mins[0]) ? x : mins[0];
+                mins[1] = (y < mins[1]) ? y : mins[1];
+                mins[2] = (z < mins[2]) ? z : mins[2];
+
+                maxs[0] = (x > maxs[0]) ? x : maxs[0];
+                maxs[1] = (y > maxs[1]) ? y : maxs[1];
+                maxs[2] = (z > maxs[2]) ? z : maxs[2];
+            }
+        }
+        VectorCopy( mins, node->mins );
+        VectorCopy( maxs, node->maxs );
+    }
+}
+
+
+
+static void ComputeLeafBounds( void )
+{
+
+    for (int i = 0; i < numleaves; i++)
+    {
+        vec3_t mins, maxs;
+        VectorSet( mins, FLT_MAX, FLT_MAX, FLT_MAX );
+        VectorSet( maxs, -FLT_MAX, -FLT_MAX, -FLT_MAX );
+        bspnode_t* node = &dleafs[i];
+        if (node->numfaces <= 0) continue;
+
+        for (int f = 0; f < node->numfaces; f++)
+        {
+            brushface_t* face = &dfaces[f + node->firstface];
+
             for (int v = 0; v < face->win.numpoints; v++)
             {
                 float x, y, z;
@@ -336,14 +428,17 @@ static void WriteBSPFile( FILE* bsp_out )
 void BSP_Run( FILE *bsp_file )
 {
     if (!bsp_file) return; 
-
+    numleaves = 1;
+    dleafs[0].numfaces = 0;
+    dleafs[0].firstface = 0;
     //BSP_Subtract();
     int node = BuildTree_r( dbrushes );
     dbrushes = NULL;
 
-    ComputeNodeBounds();
+    //ComputeNodeBounds();
+    ComputeLeafBounds();
     //SZ_Alloc( &sz_bspwrite, 1024, MEMTAG_LIFE);
-    //WriteBSPFile( bsp_file );
+    BSP_Write( bsp_file );
 
     BSP_DumpDot( "bsp.dot");
     Con_printf("BSP Finished: %d nodes, %d leaves\n", numnodes, numleaves );
@@ -362,6 +457,8 @@ brush_t* AllocBrush( int numfaces )
     b->faces = calloc(1, sizeof(brushface_t) * numfaces);
     b->maxfaces = numfaces;
     b->numfaces = 0;
+    b->prev = NULL;
+    b->next = NULL;
     if (!b->faces) return NULL;
     return b;
 }
@@ -411,4 +508,18 @@ bool BrushAddFace( brush_t *b, brushface_t face )
     }
     b->faces[b->numfaces++] = face;
     return true;
+}
+
+
+int FindLeaf( vec3_t pos )
+{
+    int n = 0;
+    while (n >= 0)
+    {
+        const bspnode_t* node = &dnodes[n];
+        const plane_t* p = &dplanes[node->planenum];
+        float d = VectorDot( p->normal, pos ) - p->d;
+        n = node->children[d > 0 ? 0 : 1];
+    }
+    return -(n + 1);   // leaf index into dleafs[]
 }

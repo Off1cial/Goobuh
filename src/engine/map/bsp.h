@@ -36,8 +36,9 @@ void BuildBrush( brush_t *brush );
 
 bool BrushAddFace( brush_t *b, brushface_t face );
 
-#define CONTENTS_EMPTY -1
-#define CONTENTS_SOLID -2
+#define CONTENTS_EMPTY  1
+#define CONTENTS_SOLID  2
+#define CONTENTS_LIQUID 4
 
 typedef struct bspnode_t
 {
@@ -49,13 +50,15 @@ typedef struct bspnode_t
     int firstface;
     int planenum;
 
+    int contents;
+
 } bspnode_t;
 
 
 extern bspnode_t dnodes[MAX_BSP_NODES];
 extern int numnodes;
 
-extern int dleafs[MAX_BSP_NODES];
+extern bspnode_t dleafs[MAX_BSP_NODES];
 extern int numleaves;
 
 
@@ -75,6 +78,8 @@ extern sysarena_t compile_arena;
 
 void BSP_Run( FILE *bsp_file );
 
+
+int FindLeaf( vec3_t position );
 
 void CSG_SplitBrush( brush_t* in, plane_t plane, brush_t* out_back, brush_t* out_front );
 void CSG_ClipBrushes( brush_t* a, brush_t* b ); // Clips B with A so that A does not contain any of B

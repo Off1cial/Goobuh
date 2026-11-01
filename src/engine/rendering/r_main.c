@@ -44,7 +44,10 @@ void R_Init( void )
     VectorSet( r_pos, -1, 1, -2);
     Con_printf("Angles: [%0.2f, %0.2f, %0.2f]\n", r_viewangles[0], r_viewangles[1], r_viewangles[2]);
   
+    glFrontFace(GL_CCW);
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_FRONT);
     MatrixIdentity( r_mats[R_VIEW] );
     MatrixIdentity( r_mats[R_PROJ] );
     
@@ -74,7 +77,7 @@ void R_Init( void )
     GL_CreateBuffer( gUniformbuff, GLBUFF_UBO, UBO_SIZE, r_mats, GLUSAGE_DYNAMIC );
     GL_BindUniformBuffer( gUniformbuff, 0 );
 
-    r_shaderactive = R_CreateShader( "shaders/default.vs\0", "shaders/default.fs\0" );
+    r_shaderactive = R_CreateShader( "shaders/default.vs", "shaders/default.fs" );
     R_UseShader( r_shaderactive );
 }
 
@@ -104,6 +107,7 @@ void R_Start( vec3_t viewangles )
 {
     R_UpdateMatrices( viewangles );
     GL_UpdateBuffer( gUniformbuff, 0, UBO_SIZE, r_mats ); 
+    glUniform3fv( r_shaderactive->set.uniforms[0].location, 1, r_pos);
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 }
@@ -119,7 +123,7 @@ void R_Present( void )
 
 void R_DrawModel( model_t *mdl, mat4 model )
 {
-    R_UploadModel( r_shaderactive, model );
+    \
     glBindVertexArray( r_vao );
 
     glDrawElementsBaseVertex(GL_TRIANGLES, mdl->numindices, GL_UNSIGNED_INT,

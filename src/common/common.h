@@ -78,6 +78,9 @@ typedef i32 qhandle_t;
 #define MAX_QPATH 512
 #define ASSET_LEN sizeof ASSET_DIR
 
+#define FORMAT_STR const char* str, ...
+
+
 // Null-terminating strncpy from Quake III
 static inline void Q_strncpy(char* dst, const char* src, size_t dstsize)
 {
@@ -327,6 +330,14 @@ static inline bool ReadF32BE(const byte *buff, int len, float *out)
         return false;
 
     memcpy(out, &bits, sizeof(bits));
+    return true;
+}
+
+static inline bool PointInBounds( float p[3], float mins[3], float maxs[3] )
+{
+    if ( p[0] < mins[0] || p[0] > maxs[0] ) return false;
+    if ( p[1] < mins[1] || p[1] > maxs[1] ) return false;
+    if ( p[2] < mins[2] || p[2] > maxs[2] ) return false;
     return true;
 }
 

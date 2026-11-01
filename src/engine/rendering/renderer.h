@@ -4,6 +4,7 @@
 #include "math/matrix.h"
 #include "math/vector.h"
 
+
 typedef struct vertex_t
 {
     float   pos[3];
@@ -12,18 +13,18 @@ typedef struct vertex_t
     byte    col[4];
 }  vertex_t;
 
-typedef struct shader_t
+
+
+
+typedef struct leafdraw_t
 {
-    unsigned int program;
-    
-    int model_loc;
-
-    char vpath[MAX_QPATH];
-    char fpath[MAX_QPATH];
-
-} shader_t; 
+    int first_index;
+    int num_indices;
+} leafdraw_t;
 
 typedef struct model_t model_t;
+
+typedef struct shader_t shader_t;
 
 // r_shader.c
 shader_t *R_CreateShader( const char *vertex_path, const char *fragment_path ); 
@@ -32,8 +33,9 @@ void R_UseShader( shader_t *shader );
 
 void R_UploadModel( shader_t *shader, mat4 mat );
 
-
-
+void R_DrawLeaf( int leafnum );
+void R_DrawLeaves( void );
+void R_LoadLeafs( void );
 
 #define R_VIEW 0
 #define R_PROJ 1

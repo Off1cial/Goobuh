@@ -49,6 +49,62 @@ extern glbuff_t r_ebo;
 extern GLsizeiptr r_vbo_bytes;
 extern unsigned int r_ebo_offset;
 
+
+#define MAX_GL_UNIFORMS 16
+
+typedef enum gluniformtype_t
+{
+    GLUNIFORM_MAT4,
+    GLUNIFORM_VEC3,
+} gluniformtype_t;
+
+
+typedef struct
+{
+    char name[32];
+    int location;
+    short type;
+    
+    union
+    {
+        struct 
+        {
+            float xyz[3];
+        } Vector3;
+
+        struct 
+        {
+            float m[16];
+        } Mat4;
+    };
+
+} gluniform_t;
+
+
+typedef struct
+{
+    gluniform_t uniforms[MAX_GL_UNIFORMS];
+    int numuniforms;
+} gluniformset_t;
+
+typedef struct shader_t
+{
+    gluniformset_t set;
+    unsigned int program;
+
+    int model_loc;
+
+    char vpath[MAX_QPATH];
+    char fpath[MAX_QPATH];
+
+} shader_t; ;
+
+bool GL_AddUniform( gluniformset_t* set, gluniform_t uni );
+bool GL_GetUniform( shader_t* shader, const char* name32, gluniformtype_t utype, gluniform_t* out );
+
+
+
+
 void GL_SetTexture( image_t* image );
 void GL_BindTexture( image_t* image ); // Use bindless textures?
 

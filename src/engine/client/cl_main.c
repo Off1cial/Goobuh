@@ -2,6 +2,7 @@
 
 #include "engine/client/cl_input.h"
 #include "engine/rendering/renderer.h"
+#include "engine/net/net.h"
 
 clientstate_t cl = {0};
 sysarena_t cl_arena = {0};
@@ -13,6 +14,13 @@ bool CL_Init( void )
     SZ_Alloc( &cl_sizebuff, 512, MEMTAG_CLIENT );
     if (!Sys_ArenaInit( &cl_arena, CL_ARENA_SIZE, "ClientArena", MEMTAG_CLIENT )) return false;
 
+    if (!netsock_open(&cl.udpsocket, CLIENT_PORT))
+    {
+        Con_printf("Failed to initialise networked client, could not open socket\n");
+        return false;
+    }
+
+    Con_printf("[CLIENT]: Client initialised\n");
     return true;
 }
 

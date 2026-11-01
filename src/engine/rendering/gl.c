@@ -88,3 +88,26 @@ void GL_DestroyVAO( GLuint *vao )
     glDeleteVertexArrays(1, vao );
     *vao = 0;
 }
+
+
+bool GL_AddUniform( gluniformset_t* set, gluniform_t uni )
+{
+    if (!set || (set->numuniforms >= MAX_GL_UNIFORMS ) ) return false;
+    set->uniforms[set->numuniforms] = uni;
+    return true;
+}
+
+
+bool GL_GetUniform( shader_t* shader, const char* name32, gluniformtype_t utype, gluniform_t* out )
+{
+    if (!shader || !out || !name32) return false;
+    int loc = glGetUniformLocation( shader->program, name32 );
+    if (loc < 0) return false;
+
+    gluniform_t uni = {0};
+    Q_strncpy( out->name, name32, 32 );
+    uni.type = utype;
+    uni.location = loc;
+    *out = uni;
+    return true;
+}

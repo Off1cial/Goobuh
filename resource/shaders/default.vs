@@ -18,11 +18,16 @@ layout( std140 ) uniform uMatrices
 };
 
 uniform mat4 uModel;
+uniform vec3 uViewPos;
 
 void main( void )
 {
-    gl_Position = projection * view * uModel * vec4(aPos, 1.0 );
-    vCol = aCol;
+    vec4 worldPos = uModel * vec4(aPos, 1.0);
 
-    //gl_Position = vec4(aPos, 1.0);
+    gl_Position = projection * view * worldPos;
+
+    float view_dist = length(uViewPos - worldPos.xyz);
+
+    vNormal = normalize(mat3(uModel) * aNormal);
+    vCol    = 100 * vec4(abs(vNormal), 1.0) / view_dist;
 }
