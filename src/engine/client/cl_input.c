@@ -90,11 +90,11 @@ void CL_MoveCmd( usercmd_t *cmd )
 
     VectorCopy( cl.viewangles, cmd->angles );
     
-    cmd->forwardmove += in_keydown[SDL_SCANCODE_W];
-    cmd->forwardmove -= in_keydown[SDL_SCANCODE_S];
+    cmd->forwardmove += in_keydown[SDL_SCANCODE_W] * cl_maxspeed.value;
+    cmd->forwardmove -= in_keydown[SDL_SCANCODE_S] * cl_maxspeed.value;
 
-    cmd->sidemove -= in_keydown[SDL_SCANCODE_D];
-    cmd->sidemove += in_keydown[SDL_SCANCODE_A];
+    cmd->sidemove -= in_keydown[SDL_SCANCODE_D] * cl_maxspeed.value;
+    cmd->sidemove += in_keydown[SDL_SCANCODE_A] * cl_maxspeed.value;
 
     cmd->upmove += in_keydown[SDL_SCANCODE_SPACE];
     cmd->upmove -= in_keydown[SDL_SCANCODE_LCTRL];

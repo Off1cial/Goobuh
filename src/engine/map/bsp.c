@@ -523,3 +523,137 @@ int FindLeaf( vec3_t pos )
     }
     return -(n + 1);   // leaf index into dleafs[]
 }
+
+bool BoxCollide( int n, const vec3_t origin, const vec3_t halfs )
+{
+    // reached a leaf: collide if it's solid
+    if (n < 0)
+        return dleafs[-(n + 1)].contents == CONTENTS_SOLID;
+
+    const bspnode_t* node = &dnodes[n];
+    const plane_t*   p    = &dplanes[node->planenum];
+
+    float d = VectorDot( p->normal, origin ) - p->d;
+
+    // projected radius of the box onto the plane normal
+    float r = halfs[0] * fabsf( p->normal[0] )
+            + halfs[1] * fabsf( p->normal[1] )
+            + halfs[2] * fabsf( p->normal[2] );
+
+    if (d >  r) return BoxCollide( node->children[0], origin, halfs ); // fully front
+    if (d < -r) return BoxCollide( node->children[1], origin, halfs ); // fully back
+
+    // straddling: hit if either side collides
+    return BoxCollide( node->children[0], origin, halfs )
+        || BoxCollide( node->children[1], origin, halfs );
+}
+
+static void SweepBox_r( int node, const vec3_t halfs, const vec3_t start, const vec3_t end, float frac1, float frac2, const vec3_t enter_normal, trace_t* tr )
+{
+    if (tr->fraction < frac1) return;
+
+    if (node < 0 )
+    {
+        // Leaf node
+        if (dleafs[-(node + 1 )].contents != CONTENTS_SOLID) return;     
+        if (!enter_normal) 
+        {
+            // We didnt get anywhere
+            tr->fraction = 0;
+            tr->allsolid = 1;
+            return;
+        }
+        // We have hit a solid leaf
+        tr->fraction = frac1;
+        VectorCopy( enter_normal, tr->normal );
+        return;
+    }
+
+    // Still in a non-leaf
+    const bspnode_t *pNode = &dnodes[node];
+    const plane_t *p = &dplanes[pNode->planenum]; 
+
+    float r =   halfs[0] * fabsf(p->normal[0]) +
+                halfs[1] * fabsf(p->normal[1]) + 
+                halfs[2] * fabsf(p->normal[2]);
+
+    float start_dist = VectorDot( p->normal, start ) - p->d;
+    float end_dist = VectorDot( p->normal, end ) - p->d;
+
+    // For the box start to be in front of the plane:
+    // start_dist - r > 0, start_dist > r
+    if (start_dist > r && end_dist > r ) { SweepBox_r( pNode->children[0], halfs, start, end, frac1, frac2, enter_normal, tr); return; }
+    if (start_dist < -r && end_dist < -r ) { SweepBox_r( pNode->children[1], halfs, start, end, frac1, frac2, enter_normal, tr); return; }
+
+
+    // We cross the plane
+
+    // We need the fractions, start and end for each side of the plane (each node)
+    float frac1_local = 0.0f, frac2_local = 0.0f; // how much of the move are in each child
+    int start_child, other_child;
+
+    const float test_eps = 0.1f;
+    const float re = r + test_eps;
+
+    if (start_dist - end_dist == 0)
+    {
+        start_child = 0;
+        other_child = 1;
+        frac1_local = 1.0f;
+        frac2_local = 0.0f;
+    }
+    else if (start_dist > end_dist) {
+        start_child = 0;
+        other_child = 1;
+
+        frac1_local = (start_dist + re) / (start_dist - end_dist);
+        frac2_local = (start_dist - re) / (start_dist - end_dist);
+    }
+    else {
+        start_child = 1;
+        other_child = 0;
+
+        frac1_local = (start_dist - re) / (start_dist - end_dist);
+        frac2_local = (start_dist + re )  / (start_dist - end_dist);
+    }
+
+    bool crossed_plane = fabsf(start_dist) >= r;
+
+    frac1_local = MIN( MAX( frac1_local, 0.0f), 1.0f );
+    frac2_local = MIN( MAX( frac2_local, 0.0f), 1.0f );
+
+    vec3_t movdir;
+    VectorSub( end, start, movdir );
+    
+    vec3_t first_end;
+    VectorMA( start, frac1_local, movdir, first_end );
+
+    SweepBox_r( pNode->children[start_child], halfs, start, first_end, frac1, frac1 + (frac2 - frac1) * frac1_local, enter_normal, tr ); 
+
+    vec3_t second_start;
+    VectorMA( start, frac2_local, movdir, second_start );
+
+    vec3_t cross_normal;
+    const float *second_entry_normal = enter_normal;
+    if (crossed_plane)
+    {
+        int sign = ( start_child == 0) ? 1 : -1;
+        VectorScale( p->normal, sign, cross_normal );
+        second_entry_normal = cross_normal;
+    }
+  
+    SweepBox_r( pNode->children[other_child], halfs, second_start, end, frac1 + (frac2 - frac1) * frac2_local, frac2, second_entry_normal, tr ); 
+}
+
+void TraceBox( vec3_t start, vec3_t end, vec3_t halfs, trace_t* trace )
+{
+    memset( trace, 0, sizeof(*trace));
+    trace->fraction = 1.0f;
+
+    SweepBox_r( 0, halfs, start, end, 0.0f, 1.0f, NULL, trace );
+
+    vec3_t delta;
+    VectorSub( end, start, delta );
+    VectorMA( start, trace->fraction, delta, trace->end );
+
+}

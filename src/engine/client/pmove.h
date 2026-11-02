@@ -23,7 +23,7 @@ typedef struct
     float maxspeed;
     float friction;
 
-    float accelrate;
+    float accelerate;
     float airaccelerate;
 } movevars_t;
 
@@ -32,6 +32,7 @@ extern movevars_t   movevars;
 extern int onground;
 
 void PM_Move(void);
+
 void PM_Accelerate( vec3_t wishdir, float wishspeed, float accel );
 
 

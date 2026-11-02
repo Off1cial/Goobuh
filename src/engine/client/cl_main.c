@@ -10,6 +10,9 @@
 clientstate_t cl = {0};
 sysarena_t cl_arena = {0};
 
+
+cvar_t cl_maxspeed = {.name = "cl_maxspeed", .string = "40.0f", .value = 40.0f, .next = NULL};
+
 SZ_NEW( cl_sizebuff, END_LITTLE );
 
 bool CL_Init( void )
@@ -36,6 +39,7 @@ void CL_Frame( void )
 
     PM_Move();
     VectorCopy( pmove.origin, r_pos );
+    r_pos[1] += 36;
 
     R_Start( cl.viewangles );
 

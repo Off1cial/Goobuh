@@ -6,6 +6,8 @@
 #include "engine/net/net.h"
 #include "engine/net/protocol.h"
 
+#include "engine/shared/cvar.h"
+
 #define CL_ARENA_SIZE 1024 * 1024
 #define CLIENT_PORT 27005
 
@@ -27,6 +29,10 @@ typedef struct clientstate_t
 } clientstate_t;
 
 extern clientstate_t cl;
+
+
+
+extern cvar_t cl_maxspeed;
 
 
 // Communication

@@ -81,6 +81,11 @@ void BSP_Run( FILE *bsp_file );
 
 int FindLeaf( vec3_t position );
 
+bool BoxCollide( int n, const vec3_t origin, const vec3_t halfs );
+
+
+void TraceBox( vec3_t start, vec3_t end, vec3_t halfs, trace_t* trace );
+
 void CSG_SplitBrush( brush_t* in, plane_t plane, brush_t* out_back, brush_t* out_front );
 void CSG_ClipBrushes( brush_t* a, brush_t* b ); // Clips B with A so that A does not contain any of B
 

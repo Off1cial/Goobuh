@@ -42,13 +42,13 @@ int main( void )
     is_client = CL_Init();
     //model_t* test_mdl = MDL_Load("models/test.mdl");
 
-    /*
+    
     bool compiled = MAP_Compile( "maps/new.map", "maps/first.bsp" );
     if (!compiled)
     {
         Con_printf("Failed to compile map\n ");
     }
-    */
+    
     mapdata_t map_data;
     if (!MAP_Load( "first.bsp", &map_data )) Sys_Exit();
     
