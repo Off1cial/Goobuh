@@ -32,8 +32,8 @@ bool Sys_WindowCreate( sysarena_t* engine_arena )
     SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE );
 
 
-    gSys_window->width = 640;
-    gSys_window->height = 480;
+    gSys_window->width = 1280;
+    gSys_window->height = 720;
 
     gSys_window->centre[0] = gSys_window->width / 2.0f;
     gSys_window->centre[1] = gSys_window->height / 2.0f;

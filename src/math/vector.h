@@ -268,6 +268,11 @@ FORCEINLINE int VectorCompare(
            a[2] == b[2];
 }
 
+
+
+
+
+
 #ifdef __cplusplus
 }   
 #endif

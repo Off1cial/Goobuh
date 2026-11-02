@@ -49,7 +49,8 @@ int main( void )
         Con_printf("Failed to compile map\n ");
     }
     */
-    if (!MAP_Load( "first.bsp" )) exit(1);
+    mapdata_t map_data;
+    if (!MAP_Load( "first.bsp", &map_data )) Sys_Exit();
     
     R_LoadLeafs();
    
@@ -57,25 +58,7 @@ int main( void )
     engine->game_table.game_init();
     while(!gSys_window->should_close){
         
-
-
-        IN_Update();
-        if (in_keydown[SDL_SCANCODE_W])
-        {
-            VectorMA(r_pos, 0.8f, r_vfront, r_pos );
-        }
-
-        //Con_printf("In node: %d\n", FindLeaf( r_pos ));
-
-        int current_leaf = FindLeaf( r_pos );
-        printf("Leaf contents = %d\n", dleafs[current_leaf].contents );
-
-        R_Start( cl.viewangles );
-    
-        //R_DrawModel( test_mdl, MATRIX_IDENTITY);
-        R_DrawLeaves();
-
-        R_Present();
+        CL_Frame();
 
         engine->game_table.game_update( NULL, 2.0f );
     }

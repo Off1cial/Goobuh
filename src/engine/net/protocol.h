@@ -1,7 +1,6 @@
 #ifndef PROTOCOL_H
 #define PROTOCOL_H
 
-#define MAX_NETMSG 512
 
 #include "common/common.h"
 
@@ -11,15 +10,29 @@ enum
     PKT_CHALLENGE_REQUEST,
     PKT_CHALLENGE_SEND, 
     PKT_CHALLENGE_CONFIRM,
+    PKT_USERCMD,
 };
 
 
+typedef struct usercmd_t
+{
+    float angles[3];
+    float forwardmove;
+    float sidemove;
+    float upmove;
+    long msec;
+    int buttons;
+} usercmd_t;
+#define USERCMD_SIZE  (5 * sizeof(float) + sizeof(long) + sizeof(int))
 
 
-#define PACKET_HEADER ( sizeof(u32) + sizeof(u8) )
+
+
+#define PACKET_HEADER ( 2 * sizeof(long) + sizeof(u8) )
 typedef struct packethdr_t
 {
-    u32 size; // data size
+    long size; // data size
+    long seq;
     u8 type;
 } packethdr_t;  
 

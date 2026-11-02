@@ -95,6 +95,50 @@ bool SZ_WriteInt(sizebuf_t *buf, int i)
     }
 }
 
+bool SZ_WriteLong( sizebuf_t* buf, long l )
+{
+    if (!buf)
+        return false;
+
+    byte *dst = SZ_GetSpace(buf, 8);
+    if (!dst)
+        return false;
+
+    switch (buf->endian_write)
+    {
+        case END_LITTLE:
+            return WriteU64LE(dst, 8, (uint64_t)l);
+
+        case END_BIG:
+            return WriteU64BE(dst, 8, (uint64_t)l);
+
+        default:
+            buf->cursize -= 8;
+            return false;
+    }
+}
+
+
+bool SZ_ReadLong( sizebuf_t* buf, u32 at, long *out )
+{
+    if (!buf || !buf->data || !out ||
+        at > (u32)buf->cursize ||
+        buf->cursize - at < 8)
+        return false;
+
+    switch (buf->endian_write)
+    {
+        case END_LITTLE:
+            return ReadU64LE(buf->data + at, 8, (uint64_t*)out);
+
+        case END_BIG:
+            return ReadU64BE(buf->data + at, 8, (uint64_t*)out);
+
+        default:
+            return false;
+    }
+}
+
 bool SZ_WriteFloat(sizebuf_t *buf, float f)
 {
     if (!buf)
@@ -116,6 +160,21 @@ bool SZ_WriteFloat(sizebuf_t *buf, float f)
             buf->cursize -= 4;
             return false;
     }
+}
+
+bool SZ_WriteBytes( sizebuf_t *buf, const byte *data, int len )
+{
+    if (!buf || !data || len < 0)
+        return false;
+
+    byte *dst = SZ_GetSpace(buf, len);
+    if (!dst)
+        return false;
+
+    memcpy(dst, data, len);
+    buf->cursize += len;
+    return true;
+
 }
 
 // Buffer reads

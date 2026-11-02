@@ -81,3 +81,22 @@ void IN_Update( void )
     }
     IN_MouseEvent();
 }
+
+
+
+void CL_MoveCmd( usercmd_t *cmd )
+{
+    memset(cmd, 0, sizeof(*cmd));
+
+    VectorCopy( cl.viewangles, cmd->angles );
+    
+    cmd->forwardmove += in_keydown[SDL_SCANCODE_W];
+    cmd->forwardmove -= in_keydown[SDL_SCANCODE_S];
+
+    cmd->sidemove -= in_keydown[SDL_SCANCODE_D];
+    cmd->sidemove += in_keydown[SDL_SCANCODE_A];
+
+    cmd->upmove += in_keydown[SDL_SCANCODE_SPACE];
+    cmd->upmove -= in_keydown[SDL_SCANCODE_LCTRL];
+
+}

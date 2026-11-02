@@ -54,8 +54,24 @@ bool BSP_Read( FILE* f, mapdata_t* out )
     if (fread( dplanes, sizeof( plane_t ), h.numplanes, f ) != (size_t)h.numplanes) return false;
     if (fread( dfaces, sizeof( brushface_t ), h.numfaces, f ) != (size_t)h.numfaces)  return false;
 
+
+    // Need a way a to distinguish the server and client, the server doesnt need faces, the client does
+    // Client could get nodes, leaves and planes while joining and load faces itself
     numplanes = h.numplanes;  numnodes = h.numnodes;
     numleaves = h.numleaves;  numfaces = h.numfaces;
+    
+    if (out->planes) memcpy( out->planes, dplanes, sizeof(plane_t) * h.numplanes);
+    else out->numplanes = 0;
+
+
+    if (out->nodes)  memcpy( out->nodes, dnodes, sizeof(bspnode_t) * h.numnodes );
+    else out->numnodes = 0;
+    if (out->leaves) memcpy( out->leaves, dleafs, sizeof(bspnode_t) * h.numleaves );
+    else out->numleaves = 0;
+    if (out->faces)  memcpy( out->faces, dfaces, sizeof(bspnode_t) * h.numfaces );
+    else out->numfaces = 0;
+
+
 
     Con_printf( "Read BSP file with %d nodes, %d leaves\n", numnodes, numleaves );
     return true;

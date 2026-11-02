@@ -5,16 +5,15 @@
 #include <stdlib.h>
 
 sysarena_t map_arena;
-mapdata_t gCurrentMap;
 
 size_t maphunk_size = ( 2 * MAX_BSP_NODES * sizeof(bspnode_t) ) + 
                         ( sizeof(plane_t) * MAX_BRUSHES * MAX_BRUSH_FACES ) +
                         ( sizeof(brushface_t) * MAX_BRUSH_FACES * MAX_BRUSHES );
 
 
-bool MAP_Load( const char* name )
+bool MAP_Load( const char* name, mapdata_t* out )
 {
-    if (!name) return false;
+    if (!name || !out) return false;
 
     char mapdir[] = ASSET_DIR "maps/";
 
@@ -41,7 +40,7 @@ bool MAP_Load( const char* name )
     if (!ok) return false;
 
     Con_printf( "Read BSP file with %d nodes, %d leaves\n", numnodes, numleaves );
-    gCurrentMap = read;
+    *out = read;
     return true;
 }
 

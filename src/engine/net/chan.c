@@ -3,36 +3,35 @@
 #include "common/common.h"
 
 
-void Netchan_Transmit( 
-        netchan_t* chan,
-        netsock_t sock,
-        int len,
-        const byte *data)
+
+
+
+bool Netchan_Process( netchan_t *chan )
 {
-    NET_SendData(data, len, sock, chan->remote);
+    if (!NET_CompareAddresses(net_from, chan->remote))
+        return false;
+
+    // Sequencing....
+    long sequence, ack, len;
+
+
+    sequence = SZ_ReadLong( &net_message, 0, &sequence ) ? sequence : -1;
+    len = SZ_ReadLong( &net_message, sizeof(long) * 2, &len ) ? len : -1;
+    //ack = SZ_ReadLong( &net_message, sizeof(long)* 2, &ack ) ? ack : -1;
+    chan->incoming_sequence = sequence;
+    Con_printf("Netchan_Process: incoming_sequence = %ld, len = %ld\n", sequence, len);
+    // End
+    return true;
 }
 
 
 
-int Netchan_GetPacket( netchan_t *chan, netsock_t sock, packet_t *out )
+void Netchan_SendPacket( netchan_t *chan, netsock_t sock, int len, const byte *data )
 {
-    byte buff[MAX_NETMSG + PACKET_HEADER];
-    netaddr_t from;
-    int res = NET_ReceiveData(
-                buff, 
-                MAX_NETMSG + PACKET_HEADER,
-                sock,
-                &from 
-            );
-    if (res <= 0 ) return 0;
-    if (!NET_CompareAddresses(from, chan->remote)){
-        Con_printf("Netchan: inbound packet (%d) from non-remote address: %s\n", res, NET_AddrToString(from)); 
-        return 0;
-    }
-    memcpy(out->data, buff + PACKET_HEADER, res - PACKET_HEADER);
-    out->type = buff[0];
-    out->length = res - PACKET_HEADER;
-    return res;
+    SZ_WriteLong( &net_message, chan->outgoing_sequence++ );
+    SZ_WriteLong( &net_message, len );
+    SZ_WriteBytes( &net_message, data, len );
+
+    NET_SendData( net_message.data, net_message.cursize, sock, chan->remote );
+    SZ_Clear( &net_message );
 }
-
-

@@ -52,4 +52,15 @@ FORCEINLINE void PlaneNormalise( plane_t* p )
     }
 }
 
+
+typedef struct trace_t
+{
+    vec3_t start, end;
+    plane_t plane;
+    
+    float fraction;
+    int alllsolid;
+
+} trace_t;
+
 #endif

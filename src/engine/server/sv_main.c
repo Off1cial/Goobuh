@@ -62,30 +62,34 @@ void SV_FreeToMark( void )
 }
 
 
-void SV_Think( void )
+void SV_ReadPackets( void )
 {
-    int c;
-    for (c = 0; c < sv.maxclients; c++)
+    svcl = sv.clients;
+    while (NET_GetPacket() )
     {
-        svcl = &sv.clients[c];
-        if (svcl->state == SSCL_DEAD) continue;
-    
-        long now = Sys_TimeMillis();
-
-        if (now - svcl->chan.t_lastrecv >= CHAN_TIMEOUT)
+        for ( int i = 0; i < sv.maxclients; i++)
         {
-            SV_DropClient( svcl, "Client timeout" );
-            continue;
-        }
+            if (svcl->state = SSCL_DEAD) continue;
 
 
-        packet_t thispacket = {0};
-        while (Netchan_GetPacket( &svcl->chan, sv.udpsocket, &thispacket ) > 0)
-        {
-            // Apply 
-            sv.client_func[svcl->state]( svcl, &thispacket ); 
+            if (!NET_CompareAddresses( net_from, svcl->chan.remote ))
+                continue;
+            
+
+            if (svcl->state != SSCL_ZOMBIE)
+                SV_ExecuteClientMessage( svcl );
+
+
+            svcl++;
         }
     }
+
+}
+
+
+void SV_Think( void )
+{
+    SV_ReadPackets();
 }
 
 
@@ -103,7 +107,3 @@ void SV_DropClient( svclient_t* client, FORMAT_STR )
     client->state = SSCL_DEAD;
 }
 
-bool SV_ChangeMap( const char* map_name )
-{
-
-}

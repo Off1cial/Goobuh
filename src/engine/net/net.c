@@ -1,4 +1,6 @@
 #include "engine/net/net.h"
+#include "common/common.h"
+#include <asm-generic/errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
@@ -11,8 +13,6 @@
     #define NET_LASTERR() errno
 #endif
 
-netaddr_t net_localaddr;
-netsock_t net_sock;
 
 #ifdef _WIN32
 static bool InitWinsock( void )
@@ -31,6 +31,16 @@ static bool InitWinsock( void )
 }
 #endif
 
+
+
+netaddr_t net_localaddr;
+netsock_t net_sock;
+netsock_t net_send_sock;
+
+netaddr_t net_from;
+byte net_message_buffer[MAX_NETMSG];
+SZ_NEW( net_message, END_BIG );
+
 bool NET_Init( void )
 {
 #ifdef _WIN32
@@ -39,6 +49,10 @@ bool NET_Init( void )
 #endif
 
     NET_GetLocalAddress();
+
+    if (!SZ_Alloc( &net_message, MAX_NETMSG, MEMTAG_LIFE ))
+        return false;
+
     return true;
 }
 
@@ -113,20 +127,25 @@ void NET_GetLocalAddress( void )
 void NET_SendData( const byte *data, int len, netsock_t sock, netaddr_t to )
 {
     sockaddr_t sockaddr = netaddr_sockaddr(to);
-
+    net_socklen_t socklen = sizeof(sockaddr);
+    if (!data) return;
     int res = sendto( 
             sock.handle, 
             data, 
             len, 
             0, 
             ADRCST(sockaddr), 
-            sizeof(sockaddr) );
+            socklen );
+    if (res == - 1)
+    {
+        //Con_printf("NET_SendData: %s\n", strerror(errno));
+    }
 }
 
 int NET_ReceiveData( byte *out, int len, netsock_t sock, netaddr_t *from )
 {
-    sockaddr_t sockaddr = netaddr_sockaddr(*from);
-    socklen_t socklen = sizeof(sockaddr);
+    sockaddr_t sockaddr = {0};
+    net_socklen_t socklen = sizeof(sockaddr);
 
     int res = recvfrom( sock.handle, out, len,  0, ADRCST(sockaddr), &socklen );
     if (res > 0 )
@@ -135,3 +154,12 @@ int NET_ReceiveData( byte *out, int len, netsock_t sock, netaddr_t *from )
     }
     return res;
 }
+
+
+
+bool NET_GetPacket( void )
+{
+    return NET_ReceiveData( net_message_buffer, MAX_NETMSG, net_sock, &net_from ) > 0;
+}
+
+

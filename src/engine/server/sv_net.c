@@ -23,7 +23,7 @@ void SV_ClientSendChallenge( svclient_t* client )
         byte b[4];
     } buf;
     buf.c = htonl(sv.challenge.challenge);
-    Netchan_Transmit( &client->chan, sv.udpsocket, 4, buf.b );
+    Netchan_SendPacket( &client->chan, sv.udpsocket, 4, buf.b);
 }
 
 

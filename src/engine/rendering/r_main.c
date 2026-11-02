@@ -96,7 +96,7 @@ void R_UpdateMatrices( vec3_t view_angles )
     VectorNormalise(r_vright);
 
     aspect = r_width / (float)r_height;
-    MatrixPerspective_GL( r_fov, aspect, 0.1f, r_farz, r_mats[R_PROJ] );
+    MatrixPerspective_GL( r_fov, aspect, 1.0f, r_farz, r_mats[R_PROJ] );
 
     vec3_t centre;
     VectorAdd( r_pos, r_vfront, centre );

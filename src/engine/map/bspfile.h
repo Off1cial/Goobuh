@@ -1,5 +1,5 @@
 #ifndef BSPFILE_H
-#define BPSFILE_H
+#define BSPFILE_H
 
 #define BSP_MAGIC 0x02510 
 #define BSP_VERSION 1

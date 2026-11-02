@@ -24,10 +24,9 @@ typedef struct mapdata_t
     char name[64];
 } mapdata_t;
 
-extern mapdata_t gCurrentMap;
 
 // Map name as it exists in the map directory, e.g 'test.bsp'
-bool MAP_Load( const char* name );
+bool MAP_Load( const char* name, mapdata_t *out );
 extern sysarena_t map_arena;
 
 #endif

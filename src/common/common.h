@@ -132,17 +132,10 @@ int Q_stricmp(const char* s1, const char* s2);
 
 
 
+#define MAX_NETMSG 2048
 // Global control
 extern bool is_client;
 extern bool is_server;
-
-typedef struct usercmd_t
-{
-    float angles[3];
-    float forward;
-    float side;
-    float up;
-} usercmd_t;
 
 
 
@@ -239,9 +232,13 @@ void SZ_Clear( sizebuf_t *buf );
 // Return a pointer to a region of a buffer that has space for 'bytes' bytes
 byte *SZ_GetSpace( sizebuf_t *buf, int bytes );
 bool SZ_WriteInt( sizebuf_t *buf, int i );
+bool SZ_WriteLong( sizebuf_t *buf, long l );
 bool SZ_WriteFloat( sizebuf_t *buf, float f );
 
+bool SZ_WriteBytes( sizebuf_t *buf, const byte *data, int len );
+
 bool SZ_ReadInt( sizebuf_t *buf, u32 at, int* out );
+bool SZ_ReadLong( sizebuf_t *buf, u32 at, long *out );
 bool SZ_ReadFloat( sizebuf_t* buf, u32 at, float *out );
 
 
@@ -292,6 +289,71 @@ static inline bool ReadU32BE(const byte *buff, int len, uint32_t *out)
          | ((uint32_t)buff[1] << 16)
          | ((uint32_t)buff[2] << 8)
          | (uint32_t)buff[3];
+    return true;
+}
+
+
+static inline bool WriteU64LE( byte *buff, int len, uint64_t value)
+{
+    if (!buff || len < 8)
+        return false;
+
+    buff[0] = (byte)value;
+    buff[1] = (byte)(value >> 8);
+    buff[2] = (byte)(value >> 16);
+    buff[3] = (byte)(value >> 24);
+    buff[4] = (byte)(value >> 32);
+    buff[5] = (byte)(value >> 40);
+    buff[6] = (byte)(value >> 48);
+    buff[7] = (byte)(value >> 56);
+    return true;
+}
+
+static inline bool WriteU64BE(byte *buff, int len, uint64_t value)
+{
+    if (!buff || len < 8)
+        return false;
+
+    buff[0] = (byte)(value >> 56);
+    buff[1] = (byte)(value >> 48);
+    buff[2] = (byte)(value >> 40);
+    buff[3] = (byte)(value >> 32);
+    buff[4] = (byte)(value >> 24);
+    buff[5] = (byte)(value >> 16);
+    buff[6] = (byte)(value >> 8);
+    buff[7] = (byte)value;
+    return true;
+}
+
+static inline bool ReadU64LE(const byte *buff, int len, uint64_t *out)
+{
+    if (!buff || !out || len < 8)
+        return false;
+
+    *out = (uint64_t)buff[0]
+         | ((uint64_t)buff[1] << 8)
+         | ((uint64_t)buff[2] << 16)
+         | ((uint64_t)buff[3] << 24)
+         | ((uint64_t)buff[4] << 32)
+         | ((uint64_t)buff[5] << 40)
+         | ((uint64_t)buff[6] << 48)
+         | ((uint64_t)buff[7] << 56);
+    return true;
+}
+
+static inline bool ReadU64BE(const byte *buff, int len, uint64_t *out)
+{
+    if (!buff || !out || len < 8)
+        return false;
+
+    *out = ((uint64_t)buff[0] << 56)
+         | ((uint64_t)buff[1] << 48)
+         | ((uint64_t)buff[2] << 40)
+         | ((uint64_t)buff[3] << 32)
+         | ((uint64_t)buff[4] << 24)
+         | ((uint64_t)buff[5] << 16)
+         | ((uint64_t)buff[6] << 8)
+         | (uint64_t)buff[7];
     return true;
 }
 

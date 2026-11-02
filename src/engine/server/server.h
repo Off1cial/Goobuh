@@ -1,6 +1,7 @@
 #ifndef SERVER_H
 #define SERVER_H
 
+#include "common/common.h"
 #include "engine/net/net.h"
 #include "engine/shared/cvar.h"
 
@@ -11,6 +12,7 @@
 typedef enum
 {
   SS_DEAD,
+  SS_LOADING,
   SS_ACTIVE,
 } serverstate_t;
 
@@ -40,10 +42,13 @@ typedef struct svclient_t
     char name[ 64 ];
 } svclient_t; 
 
+typedef struct mapdata_t mapdata_t;
+
 typedef struct server_t
 {
     char name[64];
-    char mapname[64];
+    char mapname[MAX_QPATH];
+    mapdata_t  *mapdata;
 
     svclient_t *clients;
     void (*client_func[3])( svclient_t *client, packet_t* packet );
@@ -90,6 +95,8 @@ void SV_HandleActiveClient( svclient_t* client, packet_t* latest );
 
 void SV_HandleUnconnected( void );
 
+
+void SV_ExecuteClientMessage( svclient_t *client );
 
 void SV_DropClient( svclient_t* client, FORMAT_STR );
 
