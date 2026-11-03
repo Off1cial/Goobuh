@@ -18,11 +18,21 @@ vec3_t right, up, forward;
 float frametime = 1.0f / 60.0f;
 
 
-static void PM_ClipVelocity( const vec3_t in, const vec3_t normal, vec3_t out, float overbounce )
+static int PM_ClipVelocity( const vec3_t in, const vec3_t normal, vec3_t out, float overbounce )
 {
+
+    int blocked = 0;
+    if (normal[1] > 0)
+        blocked |= 1;
+    if (!normal[1])
+        blocked |= 2;
+    
     float backoff = VectorDot( in, normal ) * overbounce;
     for (int i = 0; i < 3; i++)
+    {
         out[i] = in[i] - normal[i] * backoff;
+    }
+    return blocked;
 }
 
 #define MAX_CLIP_PLANES 4
@@ -77,6 +87,7 @@ static void PM_SlideMove( void )
                 // Slide along the crease between the two planes
                 vec3_t dir;
                 VectorCross( planes[0], planes[1], dir );
+                VectorNormalise (dir);
                 VectorScale( dir, VectorDot( dir, pmove.velocity ), pmove.velocity );
             }
             else
@@ -121,7 +132,7 @@ void PM_Friction( void )
 
     vel = pmove.velocity;
 
-    speed = VectorLength (vel);
+    speed = sqrtf( vel[0] * vel[0] + vel[2] * vel[2] );
 
     if ( speed < 1 )
     {
@@ -157,7 +168,7 @@ void PM_Move( void )
     AngleBasis( pmove.viewangles, forward, right, up );
 
     wishdir[0] = forward[0] * pmove.cmd.forwardmove + right[0] * pmove.cmd.sidemove;
-    wishdir[1] = pmove.cmd.upmove;
+    wishdir[1] = 0;
     wishdir[2] = forward[2] * pmove.cmd.forwardmove + right[2] * pmove.cmd.sidemove;
     wishspeed = VectorNormalise( wishdir );
     if (wishspeed > movevars.maxspeed)

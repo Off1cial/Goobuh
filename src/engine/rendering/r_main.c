@@ -24,7 +24,7 @@ float r_width;
 float r_height;
 
 float r_fov = DEG2RAD(60.0f);
-float r_farz = 1000.0f;
+float r_farz = 4000.0f;
 
 
 shader_t *r_shaderactive = NULL;
