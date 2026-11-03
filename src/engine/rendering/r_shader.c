@@ -35,17 +35,20 @@ static char *read_file( const char* path )
 
     fread( buf, 1, size, fptr );
     buf[size] = 0;
-
+    /*
     printf("===== BEFORE PROCESSING ======\n\n");
     printf("%s\n\n", buf );
 
-    char* processed = PreShader_Run( fptr, buf, size + 1 ); 
-    free(buf); buf = NULL; 
+  
     
 
     printf("===== AFTER PROCESSING ======\n\n");
     printf("%s\n\n", processed);
+    */
     
+    char* processed = PreShader_Run( fptr, buf, size + 1 ); 
+    free(buf); buf = NULL; 
+
     fclose( fptr );
     return processed;
 }
@@ -127,9 +130,9 @@ bool ShaderLoad( shader_t *shader, const char *vert_path, const char *frag_path 
 
     shader->model_loc = glGetUniformLocation(shader->program, "uModel");
 
-    if (GL_GetUniform( shader, "uViewPos", GLUNIFORM_VEC3, &shader->set.uniforms[shader->set.numuniforms++]))
+    if (!GL_GetUniform( shader, "uViewPos", GLUNIFORM_VEC3, &shader->set.uniforms[shader->set.numuniforms++]))
     {
-        Con_printf("Found shader uniform: uViewPos\n");
+        printf("Failed to find shader uniform: uViewPos\n");
     }
     
     size_t vertlen = strlen( vert_path );

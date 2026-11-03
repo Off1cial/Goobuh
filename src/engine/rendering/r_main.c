@@ -11,6 +11,8 @@
 
 glbuff_t *gUniformbuff = NULL;
 
+int r_numdlights;
+light_gpu_t r_dlights[MAX_DLIGHTS] = {0};
 
 mat4 r_mats[2];
 
@@ -37,8 +39,29 @@ GLsizeiptr r_vbo_bytes = 0;
 glbuff_t r_ebo;
 unsigned int r_ebo_offset = 0;
 
+#define INTENSITY_SCALE 1000
+
+// TEMPORARY TEST
+light_t test_light = {  .type = light_spot, .intensity = 90.0f,
+                        .spot = {.cutoff = DEG2RAD(40)}
+                    };
+
+
+
 void R_Init( void )
 {
+    VectorSet(test_light.spot.position, 400, 0, 5);
+    VectorSet(test_light.spot.direction, 1, 0, -1);
+    test_light.col[0] = 255;
+    test_light.col[1] = 255;
+    test_light.col[2] = 255;
+    test_light.col[3] = 255;
+
+
+
+
+
+
     //vec3_t up;
     //AngleBasis( r_viewangles, r_vfront, r_vright, up );
     VectorSet( r_pos, -1, 1, -2);
@@ -77,6 +100,12 @@ void R_Init( void )
     GL_CreateBuffer( gUniformbuff, GLBUFF_UBO, UBO_SIZE, r_mats, GLUSAGE_DYNAMIC );
     GL_BindUniformBuffer( gUniformbuff, 0 );
 
+    for (int i = 0; i < MAX_DLIGHTS; i++)
+    {
+        r_dlights[i].type = -1;
+    }
+
+
     r_shaderactive = R_CreateShader( "shaders/default.vs", "shaders/default.fs" );
     R_UseShader( r_shaderactive );
 }
@@ -103,19 +132,47 @@ void R_UpdateMatrices( vec3_t view_angles )
     MatrixLookAt( r_pos, centre, AXIS_Y, r_mats[R_VIEW] );
 }
 
+static inline void reset_lights( void )
+{
+    // Hopefully the compiler unrolls this as the length is constant?
+    int i;
+    for ( i = 0; i < MAX_DLIGHTS; i++)
+    {
+        r_dlights[i].type = -1;
+    }
+    r_numdlights = 0;
+}
+
+void R_FlushLights( void )
+{
+    GL_UpdateBuffer( gUniformbuff, UBO_OFF_COUNT, sizeof(int), &r_numdlights );
+
+    if ( r_numdlights > 0 )
+        GL_UpdateBuffer( gUniformbuff, UBO_OFF_LIGHTS,
+                         sizeof(light_gpu_t) * r_numdlights, r_dlights );
+}
+
 void R_Start( vec3_t viewangles )
 {
+    reset_lights();
+    VectorCopy(r_vfront, test_light.spot.direction);
+    VectorCopy(r_pos, test_light.spot.position);
+    R_SubmitLight (&test_light);
     R_UpdateMatrices( viewangles );
-    GL_UpdateBuffer( gUniformbuff, 0, UBO_SIZE, r_mats ); 
-    glUniform3fv( r_shaderactive->set.uniforms[0].location, 1, r_pos);
+    GL_UpdateBuffer( gUniformbuff, 0, sizeof(float) * 32, r_mats ); 
+    R_FlushLights();
+    //glUniform3fv( r_shaderactive->set.uniforms[0].location, 1, r_pos);
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 }
 
 
+
+
+
 void R_Present( void )
 {
-
+    
     SDL_GL_SwapWindow( gSys_window->window );
 }
 
@@ -123,7 +180,7 @@ void R_Present( void )
 
 void R_DrawModel( model_t *mdl, mat4 model )
 {
-    \
+    glUniformMatrix4fv( r_shaderactive->model_loc, 1, GL_FALSE, (float*)model);
     glBindVertexArray( r_vao );
 
     glDrawElementsBaseVertex(GL_TRIANGLES, mdl->numindices, GL_UNSIGNED_INT,
@@ -137,3 +194,36 @@ void R_DrawNode( int node )
 
 }
 
+static void light_to_gpu(const light_t *src, light_gpu_t *dst)
+{
+    memset(dst, 0, sizeof(*dst));
+    dst->type = src->type;
+    memcpy(dst->col, src->col, 4);
+    dst->intensity = (src->type != light_env) ? src->intensity * INTENSITY_SCALE : src->intensity;
+
+    switch (src->type) {
+    case light_spot:
+        VectorCopy( src->spot.position, dst->position );
+        VectorCopy( src->spot.direction, dst->direction );
+        dst->cutoff =  cosf (src->spot.cutoff);
+        break;
+    case light_env:
+        VectorCopy( src->env.direction, dst->direction );
+        break;
+    case light_point:
+        VectorCopy( src->point.position, dst->position );
+        dst->radius = src->point.radius;
+        break;
+    }
+}
+
+
+
+bool R_SubmitLight( light_t *light )
+{
+    if ( r_numdlights >= MAX_DLIGHTS )
+        return false;
+
+    light_to_gpu( light, &r_dlights[r_numdlights++] );
+    return true;
+}

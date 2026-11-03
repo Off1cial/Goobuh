@@ -10,24 +10,26 @@ out vec3 vNormal;
 out vec2 vUV;
 out vec4 vCol;
 
+#include "shared/light.glsl"
 
-layout( std140 ) uniform uMatrices
+layout( std140 ) uniform uUniformBuff
 {
-    mat4 view;
-    mat4 projection;
+    mat4    view;                  // 0
+    mat4    projection;            // 64
+    int     lightCount;            // 128
+    light_t DLights[MAX_DLIGHTS];  // 144 (std140 pads the gap automatically)
 };
 
 uniform mat4 uModel;
-uniform vec3 uViewPos;
+
+
 
 void main( void )
 {
     vec4 worldPos = uModel * vec4(aPos, 1.0);
 
     gl_Position = projection * view * worldPos;
-
-    float view_dist = length(uViewPos - worldPos.xyz);
-
+    vPos = worldPos.xyz;
     vNormal = normalize(mat3(uModel) * aNormal);
-    vCol    = 100 * vec4(abs(vNormal), 1.0) / view_dist;
+    vCol = vec4( normalize(aNormal) * 0.5 + 0.1, 1.0 );
 }

@@ -1,6 +1,5 @@
 #include "engine/net/net.h"
 #include "common/common.h"
-#include <asm-generic/errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>

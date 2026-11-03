@@ -3,7 +3,7 @@
 #include "common/common.h"
 #include "math/matrix.h"
 #include "math/vector.h"
-
+#include "engine/rendering/r_light.h"
 
 typedef struct vertex_t
 {
@@ -37,10 +37,12 @@ void R_DrawLeaf( int leafnum );
 void R_DrawLeaves( void );
 void R_LoadLeafs( void );
 
+
 #define R_VIEW 0
 #define R_PROJ 1
 
 extern mat4 r_mats[2];
+
 
 extern vec3_t r_pos;
 extern vec3_t r_vfront;
@@ -70,4 +72,4 @@ void R_Present( void );
 
 void R_DrawModel( model_t *mdl, mat4 model );
 
-
+bool R_SubmitLight( light_t* light );

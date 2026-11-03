@@ -108,7 +108,7 @@ shadersegment_t* ParseSegmentIncludes_r( shadersegment_t* segment )
     
     if (!Parse_FindLiteral("#include")) 
     {
-        printf("[PRESHDR]: No #include directive found in this segment\n");
+        //printf("[PRESHDR]: No #include directive found in this segment\n");
         return segment;
     }
 
@@ -125,7 +125,7 @@ shadersegment_t* ParseSegmentIncludes_r( shadersegment_t* segment )
     }
     long include_end = (long)(gParse.c - segment->data);
     
-    printf("[PRESHDR]: Removing %c to %c\n", gParse.c[include_start], gParse.c[include_end]);
+    //printf("[PRESHDR]: Removing %c to %c\n", gParse.c[include_start], gParse.c[include_end]);
 
     make_whitespace( segment->data, include_start, include_end ); // Remove the #include "...."
     // Separate the segment
@@ -143,7 +143,7 @@ shadersegment_t* ParseSegmentIncludes_r( shadersegment_t* segment )
         char filepath[256];
         snprintf (filepath, 256, "%s%s", relative_dir, filename);
 
-        printf("INCLUDEDFILE = %s\n", filepath);
+        //printf("INCLUDEDFILE = %s\n", filepath);
 
         FILE *fptr = fopen (filepath, "rb");
         if (!fptr) return NULL;

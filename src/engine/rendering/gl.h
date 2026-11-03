@@ -6,6 +6,8 @@
 #include "common/common.h"
 // Various OpenGL wrappers
 
+#include "engine/rendering/r_light.h"
+
 typedef struct image_t image_t;
 
 
@@ -31,14 +33,28 @@ typedef struct
     GLuint       binding;
 } glbuff_t;
 
-typedef struct
+
+typedef struct ubo_block_t
 {
-    float view[16];
-    float proj[16];
-} uniformlayout_t;
+    float       view[16];                  // 0
+    float       projection[16];            // 64
+    int32_t     light_count;               // 128
+    int32_t     _pad[3];                   // 132..143
+    light_gpu_t lights[MAX_DLIGHTS];       // 144
+} ubo_block_t;
+
+_Static_assert(OFFSETOF(ubo_block_t, light_count) == 128, "light_count");
+_Static_assert(OFFSETOF(ubo_block_t, lights) == 144, "lights");
+
+#define UBO_OFF_MATS    0                    // view + projection (128 bytes)
+#define UBO_OFF_COUNT   128                  // int lightCount
+#define UBO_OFF_LIGHTS  144                  // light_gpu_t[MAX_DLIGHTS]
+#define UBO_MIN_SIZE    (UBO_OFF_LIGHTS + sizeof(light_gpu_t) * MAX_DLIGHTS)
+
+_Static_assert(UBO_MIN_SIZE >= UBO_MIN_SIZE, "UBO_SIZE too small");
 
 // Keep updated!
-#define UBO_SIZE (sizeof(float) * 32)
+#define UBO_SIZE UBO_MIN_SIZE
 #define STATIC_VBO_SIZE (16 * 1024 * 1024)
 #define STATIC_EBO_SIZE (16 * 1024 * 1024)
 extern glbuff_t *gUniformbuff;
@@ -56,6 +72,7 @@ typedef enum gluniformtype_t
 {
     GLUNIFORM_MAT4,
     GLUNIFORM_VEC3,
+    GLUNIFORM_ARRAY,
 } gluniformtype_t;
 
 
@@ -76,6 +93,12 @@ typedef struct
         {
             float m[16];
         } Mat4;
+
+        struct 
+        {
+            int len;
+            byte data[];
+        } Array;
     };
 
 } gluniform_t;

@@ -34,6 +34,7 @@ extern int onground;
 void PM_Move(void);
 
 void PM_Accelerate( vec3_t wishdir, float wishspeed, float accel );
+void PM_AirAccelerate( vec3_t wishdir, float wishspeed, float accel );
 
 
 #endif

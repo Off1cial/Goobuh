@@ -9,7 +9,7 @@ playermove_t pmove = {
 
 
 };
-movevars_t   movevars = {.accelerate = 20, .airaccelerate = 10, .friction = 10.0f, .stopspeed = 20.0f, .maxspeed = 40.0f, .gravity = 9.80f };
+movevars_t   movevars = {.accelerate = 10, .airaccelerate = 5, .friction = 10.0f, .stopspeed = 20.0f, .maxspeed = 40.0f, .gravity = 20.0f };
 static vec3_t phalfs = {12, 36, 12};
 int onground;
 
@@ -156,6 +156,34 @@ void PM_Friction( void )
     vel[2] *= newspeed;
 }
 
+static void PM_Jump(void)
+{
+    if (!onground) return;
+
+    // Add old buttons check, dont repeatedly jump when holding space
+
+    pmove.velocity[1] += 40.0f;
+    onground = false;
+}
+
+static void PM_GroundMove( void )
+{
+    vec3_t dst;
+    dst[0] = pmove.origin[0] + pmove.velocity[0] * frametime;
+    dst[1] = pmove.origin[1];
+    dst[2] = pmove.origin[2] + pmove.velocity[2] * frametime;
+
+    trace_t tr;
+    TraceBox( pmove.origin, dst, phalfs, &tr );
+
+    if (tr.fraction == 1.0f)
+    {
+        VectorCopy( dst, pmove.origin);
+        return;
+    }
+    PM_SlideMove();
+}
+
 
 void PM_Move( void )
 {
@@ -174,19 +202,26 @@ void PM_Move( void )
     if (wishspeed > movevars.maxspeed)
         wishspeed = movevars.maxspeed;
     PM_CategorisePos();
-    if (onground && pmove.velocity[1] < 0)
-        pmove.velocity[1] = 0;
+    if (pmove.cmd.upmove)
+        PM_Jump();
 
-    if (onground && pmove.cmd.upmove) pmove.velocity[1] += 40.0f; 
+    
+    if (onground)
+    {
+        PM_Friction();
+        PM_Accelerate( wishdir, wishspeed, movevars.accelerate );
+        PM_GroundMove();
 
-    PM_Friction();
-    PM_Accelerate( wishdir, wishspeed, movevars.accelerate );
-    if (!onground) pmove.velocity[1] -= movevars.gravity * frametime;
+    }
+    else
+    { 
+        PM_AirAccelerate( wishdir, wishspeed, movevars.airaccelerate );
+        pmove.velocity[1] -= movevars.gravity * frametime;
+        PM_SlideMove();
+    }
 
 
 
-
-    PM_SlideMove();
     //Con_printf(VectorString(pmove.origin));
     PM_CategorisePos();
 }
@@ -196,6 +231,30 @@ void PM_Accelerate( vec3_t wishdir, float wishspeed, float accel )
 {
     float current_speed = VectorDot( pmove.velocity, wishdir );
     float add_speed = wishspeed - current_speed;
+
+    if (add_speed <= 0)
+        return;
+
+    float accelspeed = accel * wishspeed * frametime;
+    if (accelspeed > add_speed)
+        accelspeed = add_speed;
+
+    pmove.velocity[0] += accelspeed * wishdir[0];
+    pmove.velocity[1] += accelspeed * wishdir[1];
+    pmove.velocity[2] += accelspeed * wishdir[2];
+
+}
+
+
+void PM_AirAccelerate( vec3_t wishdir, float wishspeed, float accel )
+{
+    float clipped = wishspeed;
+    if (clipped > 30)
+        clipped = 30;
+
+    float current_speed = VectorDot( pmove.velocity, wishdir );
+    float add_speed = clipped - current_speed;
+
 
 
     if (add_speed <= 0)
@@ -207,7 +266,7 @@ void PM_Accelerate( vec3_t wishdir, float wishspeed, float accel )
         accelspeed = add_speed;
 
     pmove.velocity[0] += accelspeed * wishdir[0];
-    //pmove.velocity[1] += accelspeed * wishdir[1];
+    pmove.velocity[1] += accelspeed * wishdir[1];
     pmove.velocity[2] += accelspeed * wishdir[2];
     //Con_printf(VectorString(pmove.origin));
 }
