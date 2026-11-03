@@ -1,4 +1,5 @@
 #include "engine/rendering/renderer.h"
+#include "engine/rendering/r_preshader.h"
 #include "engine/rendering/gl.h"
 #include "common/common.h"
 #include "engine/system/message.h"
@@ -33,10 +34,24 @@ static char *read_file( const char* path )
     buf = malloc( size + 1); 
 
     fread( buf, 1, size, fptr );
-    fclose( fptr );
     buf[size] = 0;
-    return buf;
+
+    printf("===== BEFORE PROCESSING ======\n\n");
+    printf("%s\n\n", buf );
+
+    char* processed = PreShader_Run( fptr, buf, size + 1 ); 
+    free(buf); buf = NULL; 
+    
+
+    printf("===== AFTER PROCESSING ======\n\n");
+    printf("%s\n\n", processed);
+    
+    fclose( fptr );
+    return processed;
 }
+
+
+
 
 static GLuint compile_source( GLenum type, const char* src, const char *path )
 {

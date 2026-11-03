@@ -59,6 +59,7 @@ int main( void )
     while(!gSys_window->should_close){
         
         CL_Frame();
+        SV_Frame(); 
 
         engine->game_table.game_update( NULL, 2.0f );
     }

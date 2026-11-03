@@ -9,7 +9,7 @@ parse_t gParse = {0};
 
 FORCEINLINE int at_end( void )
 {
-    return (!gParse.c) || *gParse.c == '\0';
+    return (!gParse.c) || (*gParse.c == '\0');
 }
 
 FORCEINLINE int is_c( char c )

@@ -83,6 +83,7 @@ bool SV_Init( int maxplayers );
 void SV_Shutdown( void );
 bool SV_InitGame( void );
 void SV_ShutdownGame( void );
+void SV_Frame( void );
 
 
 // The map name, as it exists in the map directory

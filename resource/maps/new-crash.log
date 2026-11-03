@@ -1,0 +1,18 @@
+Renderer info: AMD Radeon 880M Graphics (radeonsi, strix1, ACO, DRM 3.64, 7.2.14-arch1-1) version 4.6 (Compatibility Profile) Mesa 26.2.6-arch1.1 from AMD
+Depth buffer bits: 32
+Multisampling enabled
+Adding file system path "/opt/TrenchBroom/usr/bin/../share/TrenchBroom/defaults/assets"
+Loading document from /home/redw0od0/proj/CEngine/resource/maps/new.map
+Found 0 shaders
+Legacy model expressions are deprecated, replace with 'undefined' (at FileLocation{line: 666, column: 81})
+Legacy model expressions are deprecated, replace with 'undefined' (at FileLocation{line: 739, column: 72})
+Legacy model expressions are deprecated, replace with 'undefined' (at FileLocation{line: 1844, column: 70})
+Legacy model expressions are deprecated, replace with 'undefined' (at FileLocation{line: 1850, column: 86})
+Loaded entity definition file HalfLife.fgd
+Could not load wad file at '"D:/SteamLibrary/steamapps/common/Half-Life/valve/halflife.wad"': Failed to open : path does not denote a file
+Found 0 shaders
+Loaded "/home/redw0od0/proj/CEngine/resource/maps/new.map" in 56ms
+Failed to load entity model 'player.mdl': models/player.mdl not found
+Saved "/home/redw0od0/proj/CEngine/resource/maps/new.map" in 33ms
+Saved "/home/redw0od0/proj/CEngine/resource/maps/new.map" in 33ms
+Saved "/home/redw0od0/proj/CEngine/resource/maps/new.map" in 32ms

@@ -1,0 +1,254 @@
+#include "engine/map/bsp.h"
+#include "engine/rendering/renderer.h"
+#include "engine/rendering/r_preshader.h"
+
+#include "common/parse.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+
+
+
+FILE *fptr;
+char* shader_src;
+char fileline[512];
+
+char* relative_dir = ASSET_DIR "shaders/";
+long include_length = strlen("#include");
+
+typedef struct shadersegment_t
+{
+    char* data;
+    long size, capacity;
+
+    struct shadersegment_t *left;
+    struct shadersegment_t *right;
+} shadersegment_t;
+
+shadersegment_t* root = NULL;
+
+
+static shadersegment_t *AllocSegment( long size )
+{
+    shadersegment_t *segment = calloc(1, sizeof(shadersegment_t) );
+    if (!segment) return NULL;
+    segment->left = NULL;
+    segment->right = NULL;
+    printf("[PRESHDR]: Attempting to allocate %zu bytes for segment\n", size );
+    segment->capacity = size + 1;
+    segment->size = 0;
+    segment->data = calloc(1, segment->capacity);
+    if (!segment->data)
+    {
+        free(segment);
+        return NULL;
+    }
+    return segment;
+}
+
+
+
+
+
+
+static long file_length( FILE* fptr )
+{
+    if (!fptr) return 0;
+
+    fseek (fptr, 0, SEEK_END);
+    long len = ftell(fptr);
+    rewind(fptr);
+    return len;
+}
+
+static char* file_read( FILE *fptr, long* length_out )
+{
+    if (!fptr) return NULL;
+    long len = file_length (fptr);
+    char* src = calloc (1,  1 + len);
+    fread ( src, len, 1, fptr );
+    src[len] = 0;
+    *length_out = len;
+    return src;
+}
+
+// Use wisely
+static inline void make_whitespace( char* src, long from, long upto )
+{
+    for ( long i = from; i < upto; i++)
+    {
+        src[i] = ' ';
+    }
+}
+
+static inline bool append_contents( shadersegment_t* segment, char *src, long srclen )    
+{
+    if (segment->size + srclen + 1 >= segment->capacity)
+    {
+        while (segment->size + srclen > segment->capacity)
+            segment->capacity *= 2;
+
+        segment->data = realloc (segment->data, segment->capacity);
+        if (!segment->data) return false;
+    }
+    memcpy( segment->data + segment->size, src, srclen);
+    segment->size += srclen;
+    segment->data[segment->size] = 0;
+    return true;
+}
+
+static int numsegments = 0; 
+shadersegment_t* ParseSegmentIncludes_r( shadersegment_t* segment )
+{
+    if (!segment) return NULL; 
+    Parse_SetBuffer (segment->data);
+    // Split the segment into two, 
+    // the first half contains the include line at the end, 
+    // the second is without it
+    
+    if (!Parse_FindLiteral("#include")) 
+    {
+        printf("[PRESHDR]: No #include directive found in this segment\n");
+        return segment;
+    }
+
+    long rewind = (long)(gParse.c - segment->data);
+    long include_start =  rewind - include_length;
+    // Make sure there is a specified file in ""
+    char filename[256];
+    if (!Parse_ReadString(filename))
+    {
+        printf("[PRESHDR]: #include found, but no file specified\n");
+        // Intentionally cause an error in the owner file, it didnt give a file name
+        make_whitespace( segment->data, include_start, rewind );
+        return NULL;
+    }
+    long include_end = (long)(gParse.c - segment->data);
+    
+    printf("[PRESHDR]: Removing %c to %c\n", gParse.c[include_start], gParse.c[include_end]);
+
+    make_whitespace( segment->data, include_start, include_end ); // Remove the #include "...."
+    // Separate the segment
+    //long left_len = (long)(gParse.c - segment->data);
+    //long right_len = (long)(segment->size - left_len);
+    long left_len = include_start;
+    long right_start = include_end;
+    long right_len = segment->size - right_start;
+    
+    shadersegment_t *segleft = NULL, *segright = NULL;
+
+    if (left_len > 0)
+    {
+        // Open the include file
+        char filepath[256];
+        snprintf (filepath, 256, "%s%s", relative_dir, filename);
+
+        printf("INCLUDEDFILE = %s\n", filepath);
+
+        FILE *fptr = fopen (filepath, "rb");
+        if (!fptr) return NULL;
+
+        long filelen;
+        char *filesrc = file_read (fptr, &filelen);
+        fclose(fptr);
+
+        segleft = AllocSegment (left_len + filelen);
+        if (!segleft) return NULL;
+        memcpy( segleft->data, segment->data, left_len);
+        segleft->size = left_len;
+        // Append data 
+        append_contents(segleft, filesrc, filelen);
+        free(filesrc);
+
+        numsegments++;
+    }
+    if (right_len > 0)
+    {
+        segright = AllocSegment (right_len);
+        if (!segright) return NULL;
+        memcpy(segright->data, segment->data + right_start, right_len);
+        segright->size = right_len;
+        numsegments++;
+    }
+    // need to recurse...
+    segment->size = 0;
+    segment->data[0] = '\0';
+    segment->left = ParseSegmentIncludes_r(segleft);
+    segment->right = ParseSegmentIncludes_r(segright);
+    return segment;
+}
+
+
+void PreShader_Init( FILE* fptr, char* src )
+{
+    if (!fptr) return;
+    rewind (fptr);
+
+    Parse_SetBuffer( src );
+}
+
+bool PreShader_ParseInclude( void )
+{
+    root = ParseSegmentIncludes_r (root);
+    return root != NULL;
+}
+
+static void print_segments( shadersegment_t* segment )
+{
+    if (!segment) return;
+    
+    print_segments(segment->left);
+    
+    fwrite( segment->data, segment->size, 1, stdout );
+
+    print_segments(segment->right);
+    
+}
+
+void FreeSegment_r( shadersegment_t* segment )
+{
+    if (!segment) return;
+    FreeSegment_r( segment->left );
+    FreeSegment_r( segment->right );
+
+
+    free (segment->data);
+    segment->data = NULL;
+    free (segment);    
+}
+
+void PreShader_Cleanup( void )
+{
+    FreeSegment_r(root);
+}
+
+static void BuildSource( char* src_out, long len )
+{
+    
+}
+
+
+
+char* PreShader_Run( FILE* fptr, char *src, long srclen )
+{
+    PreShader_Init( fptr, src );
+
+    root = AllocSegment( srclen);
+    memcpy( root->data, src, srclen );
+    root->data[srclen] = 0;
+    root->size = srclen;
+    if (!PreShader_ParseInclude())
+    {
+        PreShader_Cleanup();
+        return NULL;
+    }
+    printf("Found %d segments\n", numsegments);
+
+    //print_segments(root);
+
+    PreShader_Cleanup();
+    root = NULL;
+}
+
+
+

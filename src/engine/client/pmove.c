@@ -25,7 +25,7 @@ static void PM_ClipVelocity( const vec3_t in, const vec3_t normal, vec3_t out, f
         out[i] = in[i] - normal[i] * backoff;
 }
 
-#define MAX_CLIP_PLANES 8
+#define MAX_CLIP_PLANES 4
 
 static void PM_SlideMove( void )
 {
@@ -96,18 +96,20 @@ void PM_CategorisePos( void )
     trace_t ground_trace;
 
     testpoint[0] = pmove.origin[0];
-    testpoint[1] = pmove.origin[1] - 5;
+    testpoint[1] = pmove.origin[1] - 1;
     testpoint[2] = pmove.origin[2];
 
     
 
     TraceBox( pmove.origin, testpoint, phalfs, &ground_trace );
     onground = ground_trace.normal[1] > 0.7f;
+    /*
     Con_printf("ground fraction: %g, normal: (%0.2f, %0.2f, %0.2f), onground: %d\n",
     ground_trace.fraction,
     ground_trace.normal[0], ground_trace.normal[1], ground_trace.normal[2]
     ,
     onground);
+    */
 }
 
 void PM_Friction( void )

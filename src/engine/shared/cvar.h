@@ -17,9 +17,13 @@ void Cvar_Register( cvar_t *cvar );
 float Cvar_ValueNumeric( char *name );
 char *Cvar_ValueString( char *name );
 cvar_t* Cvar_Find( char* name );
-
-
 void Cvar_Cleanup( void ); // Frees all cvars
+
+
+// Global cvars, used by client and server
+
+
+extern cvar_t cvar_map;
 
 
 #endif

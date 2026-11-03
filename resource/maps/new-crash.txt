@@ -1,0 +1,12 @@
+OS:	Arch Linux
+Qt:	6.7.0
+GL_VENDOR:	AMD
+GL_RENDERER:	AMD Radeon 880M Graphics (radeonsi, strix1, ACO, DRM 3.64, 7.2.14-arch1-1)
+GL_VERSION:	4.6 (Compatibility Profile) Mesa 26.2.6-arch1.1
+TrenchBroom Version:	2025.3
+TrenchBroom Build:	v2025.3 Release Linux
+Reason:	/home/runner/work/TrenchBroom/TrenchBroom/common/src/ui/InputEvent.cpp line 467: Condition 'm_activeGestures > 0' failed (a gesture is active)
+Stack trace:
+[0x7fffd2a89550]
+[0x7fffd2a89618]
+

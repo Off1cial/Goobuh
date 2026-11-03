@@ -69,26 +69,31 @@ void SV_ReadPackets( void )
     {
         for ( int i = 0; i < sv.maxclients; i++)
         {
-            if (svcl->state = SSCL_DEAD) continue;
-
+            if (svcl->state == SSCL_DEAD) 
+                continue;
 
             if (!NET_CompareAddresses( net_from, svcl->chan.remote ))
                 continue;
             
+            if (!Netchan_Process( &svcl->chan ))
+                continue;
 
             if (svcl->state != SSCL_ZOMBIE)
-                SV_ExecuteClientMessage( svcl );
-
+                SV_ExecuteClientMessage(svcl);
 
             svcl++;
         }
     }
-
 }
 
-
-void SV_Think( void )
+long lastrun = 0;
+void SV_Frame( void )
 {
+    long now = Sys_TimeMillis();
+    long dt = 1000 * (now - lastrun);
+    if (dt < (1.0f / 64.0f )) return;
+    lastrun = now;
+
     SV_ReadPackets();
 }
 

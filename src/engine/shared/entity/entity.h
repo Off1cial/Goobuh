@@ -30,9 +30,7 @@ typedef struct entdef_t
 {
     char name [MAX_ENTITY_NAME]; // e.g player_spawn, player_rocket
     vec3_t halfs;
-
     int simulated; // Does this entity have physics, or any updates?
-
 } entdef_t;
 
 

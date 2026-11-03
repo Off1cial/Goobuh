@@ -1,5 +1,8 @@
 #version 330 core
 
+
+#include "shared/light.glsl"
+
 in vec3 vPos;
 in vec3 vNormal;
 in vec2 vUV;
