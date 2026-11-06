@@ -42,7 +42,7 @@ unsigned int r_ebo_offset = 0;
 #define INTENSITY_SCALE 1000
 
 // TEMPORARY TEST
-light_t test_light = {  .type = light_point, .intensity = 900.0f,
+light_t test_light = {  .type = light_point, .intensity = 40.0f,
                         .point = {.radius = 20000}
                     };
 
@@ -53,7 +53,7 @@ void R_Init( void )
     VectorSet(test_light.point.position, 800, 80, 400);
     test_light.col[0] = 230;
     test_light.col[1] = 230;
-    test_light.col[2] = 200;
+    test_light.col[2] = 255;
     test_light.col[3] = 255;
 
 

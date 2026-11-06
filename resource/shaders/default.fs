@@ -44,7 +44,7 @@ vec3 calc_light_point( int i, vec3 N )
 
     // Inverse-square, windowed so it reaches zero at radius
     float r      = max( DLights[i].radius, 1e-4 );
-    float window = clamp( 1.0 - pow( dist / r, 4.0 ), 0.0, 1.0 );
+    float window = clamp( 1.0 - pow( dist / r, 2.0 ), 0.0, 1.0 );
     float atten  = window * window / ( dist * dist + 1.0 );
 
     float ndotl = max( dot( N, L ), 0.0 );

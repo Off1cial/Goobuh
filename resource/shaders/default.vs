@@ -31,6 +31,7 @@ void main( void )
     gl_Position = projection * view * worldPos;
     vPos = worldPos.xyz;
     vNormal = normalize(mat3(uModel) * aNormal);
-    vCol = vec4( normalize(aNormal) * 0.5 + 0.1, 1.0 );
+    //vCol = vec4( normalize(aNormal) * 0.5 + 0.1, 1.0 );
+    vCol = aCol;
     vUV = aUV;
 }
