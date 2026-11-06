@@ -42,19 +42,18 @@ unsigned int r_ebo_offset = 0;
 #define INTENSITY_SCALE 1000
 
 // TEMPORARY TEST
-light_t test_light = {  .type = light_spot, .intensity = 90.0f,
-                        .spot = {.cutoff = DEG2RAD(40)}
+light_t test_light = {  .type = light_point, .intensity = 900.0f,
+                        .point = {.radius = 20000}
                     };
 
 
 
 void R_Init( void )
 {
-    VectorSet(test_light.spot.position, 400, 0, 5);
-    VectorSet(test_light.spot.direction, 1, 0, -1);
-    test_light.col[0] = 255;
-    test_light.col[1] = 255;
-    test_light.col[2] = 255;
+    VectorSet(test_light.point.position, 800, 80, 400);
+    test_light.col[0] = 230;
+    test_light.col[1] = 230;
+    test_light.col[2] = 200;
     test_light.col[3] = 255;
 
 
@@ -70,6 +69,8 @@ void R_Init( void )
     glFrontFace(GL_CCW);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glCullFace(GL_FRONT);
     MatrixIdentity( r_mats[R_VIEW] );
     MatrixIdentity( r_mats[R_PROJ] );
@@ -97,7 +98,7 @@ void R_Init( void )
     glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, r_ebo.handle );
 
     gUniformbuff = Hunk_Alloc( sizeof(glbuff_t) );
-    GL_CreateBuffer( gUniformbuff, GLBUFF_UBO, UBO_SIZE, r_mats, GLUSAGE_DYNAMIC );
+    GL_CreateBuffer( gUniformbuff, GLBUFF_UBO, UBO_SIZE, NULL, GLUSAGE_DYNAMIC );
     GL_BindUniformBuffer( gUniformbuff, 0 );
 
     for (int i = 0; i < MAX_DLIGHTS; i++)
@@ -108,6 +109,12 @@ void R_Init( void )
 
     r_shaderactive = R_CreateShader( "shaders/default.vs", "shaders/default.fs" );
     R_UseShader( r_shaderactive );
+
+    gluniform_t test_sampler = {0};
+    GL_GetUniform(r_shaderactive, "uAlbedo", GLUNIFORM_SAMPLER, &test_sampler);
+
+    image_t* test_image = R_LoadDDS("devgrey.dds");
+    test_sampler.Sampler.handle = test_image->bindless;
 }
 
 void R_Destroy( void )
@@ -154,9 +161,8 @@ void R_FlushLights( void )
 
 void R_Start( vec3_t viewangles )
 {
+    R_UseShader(r_shaderactive);
     reset_lights();
-    VectorCopy(r_vfront, test_light.spot.direction);
-    VectorCopy(r_pos, test_light.spot.position);
     R_SubmitLight (&test_light);
     R_UpdateMatrices( viewangles );
     GL_UpdateBuffer( gUniformbuff, 0, sizeof(float) * 32, r_mats ); 
@@ -172,7 +178,6 @@ void R_Start( vec3_t viewangles )
 
 void R_Present( void )
 {
-    
     SDL_GL_SwapWindow( gSys_window->window );
 }
 

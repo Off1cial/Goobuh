@@ -158,7 +158,11 @@ int NET_ReceiveData( byte *out, int len, netsock_t sock, netaddr_t *from )
 
 bool NET_GetPacket( void )
 {
-    return NET_ReceiveData( net_message_buffer, MAX_NETMSG, net_sock, &net_from ) > 0;
+    int len = NET_ReceiveData( net_message_buffer, MAX_NETMSG, net_sock, &net_from );
+    if (len <= 0 ) 
+        return false;
+    
+    return SZ_WriteBytes( &net_message, net_message_buffer, len );
 }
 
 

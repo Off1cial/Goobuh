@@ -5,7 +5,7 @@
 
 
 playermove_t pmove = {
-    .origin = {400, 0, 5 }    
+    .origin = {1000, 250, 200 }    
 
 
 };
@@ -17,6 +17,13 @@ vec3_t right, up, forward;
 
 float frametime = 1.0f / 60.0f;
 
+
+static inline float HorizDistSq( const vec3_t a, const vec3_t b )
+{
+    float dx = a[0] - b[0];
+    float dz = a[2] - b[2];
+    return dx * dx + dz * dz;
+}
 
 static int PM_ClipVelocity( const vec3_t in, const vec3_t normal, vec3_t out, float overbounce )
 {
@@ -35,7 +42,12 @@ static int PM_ClipVelocity( const vec3_t in, const vec3_t normal, vec3_t out, fl
     return blocked;
 }
 
+
+
 #define MAX_CLIP_PLANES 4
+#define STEPSIZE 5.0F
+#define MIN_STEP_NORMAL 0.7F
+#define MIN_SPEED 0.1
 
 static void PM_SlideMove( void )
 {
@@ -92,11 +104,89 @@ static void PM_SlideMove( void )
             }
             else
             {
-                pmove.velocity[0] = pmove.velocity[1] = pmove.velocity[2] = 0;
+                //pmove.velocity[0] = pmove.velocity[1] = pmove.velocity[2] = 0;
                 return;
             }
         }
     }
+}
+
+
+// Traces and also gives you the end position without needing tr.endpos
+static void PM_TraceMove( const vec3_t start, const vec3_t end, trace_t *tr, vec3_t endpos )
+{
+    TraceBox( start, end, phalfs, tr );
+    for (int i = 0; i < 3; i++)
+        endpos[i] = start[i] + tr->fraction * (end[i] - start[i]);
+}
+
+static void PM_StepDown( void )
+{
+    vec3_t end, landed;
+    trace_t tr;
+
+    VectorCopy( pmove.origin, end );
+    end[1] -= STEPSIZE;
+    PM_TraceMove( pmove.origin, end, &tr, landed );
+
+    if (tr.allsolid || tr.fraction == 1.0f)
+        return;                         // nothing below, let gravity handle it
+    if (tr.normal[1] < MIN_STEP_NORMAL)
+        return;                         // too steep to stand on
+
+    VectorCopy( landed, pmove.origin );
+}
+
+
+static void PM_StepSlideMove( void )
+{
+    vec3_t start_o, start_v;
+    vec3_t down_o, down_v;
+    vec3_t up, end, landed;
+    trace_t tr;
+
+    VectorCopy( pmove.origin,   start_o );
+    VectorCopy( pmove.velocity, start_v );
+
+    PM_SlideMove();
+    VectorCopy( pmove.origin,   down_o );
+    VectorCopy( pmove.velocity, down_v );
+
+    VectorCopy( start_o, end );
+    end[1] += STEPSIZE;
+    PM_TraceMove( start_o, end, &tr, up );
+    if (tr.allsolid)
+        return;                         // keep the normal result
+
+    float rise = up[1] - start_o[1];
+    if (rise <= 0)
+        return;                         // no room to go up at all
+
+    VectorCopy( up,      pmove.origin );
+    VectorCopy( start_v, pmove.velocity );
+    PM_SlideMove();
+
+    VectorCopy( pmove.origin, end );
+    end[1] -= rise;
+    PM_TraceMove( pmove.origin, end, &tr, landed );
+
+    if (tr.allsolid)
+        goto use_down;
+
+    if (tr.fraction == 1.0f || tr.normal[1] < MIN_STEP_NORMAL)
+        goto use_down;
+
+    VectorCopy( landed, pmove.origin );
+
+    if (HorizDistSq( down_o, start_o ) >= HorizDistSq( pmove.origin, start_o ))
+        goto use_down;
+
+    pmove.velocity[1] = down_v[1];
+    return;
+
+use_down:
+    VectorCopy( down_o, pmove.origin );
+    VectorCopy( down_v, pmove.velocity );
 }
 
 
@@ -113,7 +203,7 @@ void PM_CategorisePos( void )
     
 
     TraceBox( pmove.origin, testpoint, phalfs, &ground_trace );
-    onground = ground_trace.normal[1] > 0.7f;
+    onground = ground_trace.fraction < 1.0f && ground_trace.normal[1] > 0.7f;
     /*
     Con_printf("ground fraction: %g, normal: (%0.2f, %0.2f, %0.2f), onground: %d\n",
     ground_trace.fraction,
@@ -169,19 +259,25 @@ static void PM_Jump(void)
 static void PM_GroundMove( void )
 {
     vec3_t dst;
+    trace_t tr;
+    pmove.velocity[1] = 0;
+
     dst[0] = pmove.origin[0] + pmove.velocity[0] * frametime;
     dst[1] = pmove.origin[1];
     dst[2] = pmove.origin[2] + pmove.velocity[2] * frametime;
 
-    trace_t tr;
     TraceBox( pmove.origin, dst, phalfs, &tr );
 
     if (tr.fraction == 1.0f)
     {
-        VectorCopy( dst, pmove.origin);
-        return;
+        VectorCopy (dst, pmove.origin);
     }
-    PM_SlideMove();
+    else
+    {
+        PM_StepSlideMove();
+        pmove.velocity[1] = 0;
+    }
+    PM_StepDown();
 }
 
 

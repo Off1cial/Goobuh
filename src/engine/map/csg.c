@@ -24,14 +24,14 @@ void CSG_SplitBrush( brush_t* in, plane_t plane, brush_t* out_back, brush_t* out
 
         if (front.numpoints >= 3 )
         {
-            brushface_t front_face = {0};
+            brushface_t front_face = *face;
             front_face.planenum = face->planenum;
             front_face.win = front;
             BrushAddFace( out_front, front_face );
         }
         if (back.numpoints >= 3 )
         {
-            brushface_t back_face = {0};
+            brushface_t back_face = *face;
             back_face.planenum = face->planenum;
             back_face.win = back;
             BrushAddFace( out_back, back_face );
@@ -39,6 +39,8 @@ void CSG_SplitBrush( brush_t* in, plane_t plane, brush_t* out_back, brush_t* out
     }
     // Seal the cut
     brushface_t seal_front = {0}, seal_back = {0};
+    seal_front = in->faces[0];
+    seal_back = in->faces[0];
     seal_front.planenum = FindPlane( reversed_plane );
     seal_back.planenum = splitnum;
     BrushAddFace( out_front, seal_front );

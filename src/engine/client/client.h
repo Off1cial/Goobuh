@@ -19,13 +19,23 @@ void CL_Think( void );
 void CL_MoveCmd( usercmd_t *cmd );
 void CL_SendCmd( void );
 
+
+void CL_Connect( const char* ip );
+void CL_Disconnect( void );
+
+enum { cl_free, cl_waiting, cl_connected, cl_active };
+
 typedef struct clientstate_t
 {
+    char name[64];
     netchan_t chan;
     netsock_t udpsocket;
     vec3_t viewangles;
 
+    challenge_t challenge;
+
     long servertime;
+    int state; 
 } clientstate_t;
 
 extern clientstate_t cl;

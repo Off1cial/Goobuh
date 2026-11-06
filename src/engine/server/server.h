@@ -7,7 +7,7 @@
 
 #define SERVER_PORT 27015
 
-#define CHAN_TIMEOUT 15.0F
+#define CHAN_TIMEOUT 15000.0F // ms
 
 typedef enum
 {
@@ -79,12 +79,14 @@ extern cvar_t sv_maxspeed;
 
 
 // sv_main.c
-bool SV_Init( int maxplayers );
+bool SV_Init( const char* name, int maxplayers );
 void SV_Shutdown( void );
 bool SV_InitGame( void );
 void SV_ShutdownGame( void );
 void SV_Frame( void );
+bool SV_InitMaps();
 
+void SV_PrintStatus( void );
 
 // The map name, as it exists in the map directory
 bool SV_ChangeMap( const char* map_name );
@@ -95,6 +97,8 @@ void SV_HandleConnectedClient( svclient_t* client, packet_t* latest );
 void SV_HandleActiveClient( svclient_t* client, packet_t* latest );
 
 void SV_HandleUnconnected( void );
+
+void SV_CheckTimeouts( void );
 
 
 void SV_ExecuteClientMessage( svclient_t *client );

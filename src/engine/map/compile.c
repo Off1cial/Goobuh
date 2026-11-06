@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "engine/system/allocator.h"
 #include "engine/map/compile.h"
@@ -126,6 +127,58 @@ static bool read_point( double p[3] )
     return true;
 }
 
+static bool read_texture_axis( vec3_t axis, float *offset )
+{
+    skip_ws_comments();
+    if (gParse.c[0] != '[')
+        return false;
+    
+    gParse.c++;
+
+    for (int i = 0; i < 3; i++)
+    {
+        char *end;
+        axis[i] = strtof(gParse.c, &end);
+        if (end == gParse.c)
+            return false;
+        gParse.c = end;
+    }
+
+    char *end;
+    *offset = strtof(gParse.c, &end);
+    if (end == gParse.c)
+        return false;
+
+    gParse.c = end;
+    skip_ws_comments();
+
+    if (*gParse.c != ']')
+        return false;
+
+    gParse.c++;
+    return true;
+}
+
+static bool read_texture_name( brushface_t *face )
+{
+    skip_ws_comments();
+
+    char *start = gParse.c;
+
+    while (*gParse.c && !isspace((unsigned char)*gParse.c))
+        gParse.c++;
+
+    size_t len = gParse.c - start;
+
+    if (len == 0 || len >= sizeof(face->texname))
+        return false;
+
+    memcpy(face->texname, start, len);
+    face->texname[len] = '\0';
+
+    return true;
+}
+
 static bool read_face( brushface_t* face )
 {
     if (numplanes >= MAX_BRUSHES * MAX_BRUSH_FACES) return false;
@@ -133,8 +186,58 @@ static bool read_face( brushface_t* face )
     double p1[3], p2[3], p3[3];
     if (!read_point( p1 ) || !read_point( p2 ) || !read_point( p3 )) return false;
 
+    if (!read_texture_name(face))
+    {
+        Con_printf("Compilation: Failed to read texture name\n");
+        return false;
+    }
+    else
+    {
+        //Con_printf("Read face texture: %s\n", face->texname);
+    }
+
+    skip_ws_comments();
+    Parse_SkipWhiteSpace();
+
+    if (!read_texture_axis(face->tex_s, &face->tex_offset[0]))
+    {
+        Con_printf("Compilation: Failed to read texture offset 0\n");
+        return false;
+    }
+
+    if (!read_texture_axis(face->tex_t, &face->tex_offset[1]))
+    {
+        Con_printf("Compilation: Failed to read texture offset 1\n");
+        return false;
+    }
+
+    float rotation;
+    if (!Parse_ReadFloat(&rotation))
+    {
+        Con_printf("Compilation: Failed to read rotation\n");
+        return false;
+
+    }
+
+    if (!Parse_ReadFloat(&face->tex_scale[0]))
+    {
+        Con_printf("Compilation: Failed to read texture scale 0\n");
+        return false;
+    }
+
+    if (!Parse_ReadFloat(&face->tex_scale[1]))
+    {
+        Con_printf("Compilation: Failed to read texture scale 1\n");
+        return false;
+    }
+
+    Map_ToEngine(face->tex_s);
+    Map_ToEngine(face->tex_t);
+
+    /*
     // skip texture name, offsets, scale etc. to end of line
     while (*gParse.c && *gParse.c != '\n') gParse.c++;
+    */
 
     // normal = cross(p1 - p2, p3 - p2)
     double a[3] = { p1[0] - p2[0], p1[1] - p2[1], p1[2] - p2[2] };
@@ -188,7 +291,11 @@ bool ReadBrush( brush_t* out )
         if (gParse.c[0] == '}') { gParse.c++; break; }
         brushface_t face = { 0 };
         face.win = (winding_t){ 0 };
-        if (!read_face( &face )) return false;
+        if (!read_face( &face )) 
+        {
+            Con_printf("Failed to read map face\n");
+            return false;
+        }
         if (!BrushAddFace( out, face )) return false;
     }
 

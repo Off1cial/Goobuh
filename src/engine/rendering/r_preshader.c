@@ -217,7 +217,7 @@ void FreeSegment_r( shadersegment_t* segment )
     free (segment);    
 }
 
-void PreShader_Cleanup( void )
+static inline void PreShader_Cleanup( void )
 {
     FreeSegment_r(root);
 }

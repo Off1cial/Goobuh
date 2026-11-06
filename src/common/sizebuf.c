@@ -72,6 +72,26 @@ bool SZ_Alloc(sizebuf_t *buf, int startsize, memtag_t tag)
 
 // Buffer writes
 
+bool SZ_WriteShort(sizebuf_t *buf, short s)
+{
+    if (!buf)
+        return false;
+    byte *dst = SZ_GetSpace( buf, 2 );
+    if (!dst) 
+        return false;
+
+    switch(buf->endian_write)
+    {
+        case END_LITTLE:
+            return WriteU16LE(dst, 2, (uint16_t)s);
+        case END_BIG:
+            return WriteU16BE(dst, 2, (uint16_t)s);
+        default:
+            buf->cursize -= 2;
+            return false;
+    }
+}
+
 bool SZ_WriteInt(sizebuf_t *buf, int i)
 {
     if (!buf)
@@ -119,25 +139,7 @@ bool SZ_WriteLong( sizebuf_t* buf, long l )
 }
 
 
-bool SZ_ReadLong( sizebuf_t* buf, u32 at, long *out )
-{
-    if (!buf || !buf->data || !out ||
-        at > (u32)buf->cursize ||
-        buf->cursize - at < 8)
-        return false;
 
-    switch (buf->endian_write)
-    {
-        case END_LITTLE:
-            return ReadU64LE(buf->data + at, 8, (uint64_t*)out);
-
-        case END_BIG:
-            return ReadU64BE(buf->data + at, 8, (uint64_t*)out);
-
-        default:
-            return false;
-    }
-}
 
 bool SZ_WriteFloat(sizebuf_t *buf, float f)
 {
@@ -210,6 +212,31 @@ bool SZ_ReadInt(sizebuf_t *buf, u32 at, int *out)
     return true;
 }
 
+bool SZ_ReadShort( sizebuf_t* buf, u32 at, short *out )
+{
+    if (!buf || buf->data || !out || at > (u32)buf->cursize || buf->cursize - at < 2)
+        return false;
+    
+    uint16_t bits;
+    switch(buf->endian_write)
+    {
+        case END_LITTLE:
+            if (!ReadU16LE(buf->data + at, 2, &bits))
+                return false;
+            break;
+        case END_BIG:
+            if (!ReadU16BE(buf->data + at, 2, &bits))
+                return false;
+            break;
+        default:
+            return false;
+    }
+    int16_t val;
+    memcpy(&val, &bits, sizeof(val));
+    *out = val;
+    return true;
+}
+
 bool SZ_ReadFloat(sizebuf_t *buf, u32 at, float *out)
 {
     if (!buf || !buf->data || !out ||
@@ -224,6 +251,26 @@ bool SZ_ReadFloat(sizebuf_t *buf, u32 at, float *out)
 
         case END_BIG:
             return ReadF32BE(buf->data + at, 4, out);
+
+        default:
+            return false;
+    }
+}
+
+bool SZ_ReadLong( sizebuf_t* buf, u32 at, long *out )
+{
+    if (!buf || !buf->data || !out ||
+        at > (u32)buf->cursize ||
+        buf->cursize - at < 8)
+        return false;
+
+    switch (buf->endian_write)
+    {
+        case END_LITTLE:
+            return ReadU64LE(buf->data + at, 8, (uint64_t*)out);
+
+        case END_BIG:
+            return ReadU64BE(buf->data + at, 8, (uint64_t*)out);
 
         default:
             return false;

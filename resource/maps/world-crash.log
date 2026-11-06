@@ -1,0 +1,69 @@
+Renderer info: AMD Radeon 880M Graphics (radeonsi, strix1, ACO, DRM 3.64, 7.2.14-arch1-1) version 4.6 (Compatibility Profile) Mesa 26.2.6-arch1.1 from AMD
+Depth buffer bits: 32
+Multisampling enabled
+Adding file system path "/opt/TrenchBroom/usr/bin/../share/TrenchBroom/defaults/assets"
+Loading document from /home/redw0od0/proj/CEngine/resource/maps/new.map
+Found 0 shaders
+Legacy model expressions are deprecated, replace with 'undefined' (at FileLocation{line: 666, column: 81})
+Legacy model expressions are deprecated, replace with 'undefined' (at FileLocation{line: 739, column: 72})
+Legacy model expressions are deprecated, replace with 'undefined' (at FileLocation{line: 1844, column: 70})
+Legacy model expressions are deprecated, replace with 'undefined' (at FileLocation{line: 1850, column: 86})
+Loaded entity definition file HalfLife.fgd
+Could not load wad file at '"D:/SteamLibrary/steamapps/common/Half-Life/valve/halflife.wad"': Failed to open : path does not denote a file
+Found 0 shaders
+Loaded "/home/redw0od0/proj/CEngine/resource/maps/new.map" in 66ms
+Failed to load entity model 'player.mdl': models/player.mdl not found
+Reloading material collections
+Could not load wad file at '"D:/SteamLibrary/steamapps/common/Half-Life/valve/halflife.wad"': Failed to open : path does not denote a file
+Found 0 shaders
+Adding file system path "/opt/TrenchBroom/usr/bin/../share/TrenchBroom/defaults/assets"
+Adding file system path "/home/redw0od0/proj/CEngine/resource/textures/valve"
+Could not load wad file at '"D:/SteamLibrary/steamapps/common/Half-Life/valve/halflife.wad"': Failed to open : path does not denote a file
+Found 0 shaders
+Failed to load entity model 'player.mdl': models/player.mdl not found
+Reloading material collections
+Could not load wad file at '"D:/SteamLibrary/steamapps/common/Half-Life/valve/halflife.wad"': Failed to open : path does not denote a file
+Found 0 shaders
+Renderer info: AMD Radeon 880M Graphics (radeonsi, strix1, ACO, DRM 3.64, 7.2.14-arch1-1) version 4.6 (Compatibility Profile) Mesa 26.2.6-arch1.1 from AMD
+Depth buffer bits: 32
+Multisampling enabled
+Adding file system path "/opt/TrenchBroom/usr/bin/../share/TrenchBroom/defaults/assets"
+Adding file system path "/home/redw0od0/proj/CEngine/resource/textures/"
+Creating new document
+Found 0 shaders
+Loaded entity definition file Generic.fgd
+Found 0 shaders
+Couldn't parse as Standard entities: At line 14, column 63: Expected decimal or integer, but got '[' (raw data: '[') (unknown location)
+Couldn't parse as Standard brushes: At line 3, column 1: Expected '(', but got string (raw data: 'mapversion') (unknown location)
+Parsed successfully as Valve entities (unknown location)
+Saved "/home/redw0od0/proj/CEngine/resource/maps/generic" in 11ms
+Reloading material collections
+Found 0 shaders
+Adding file system path "/opt/TrenchBroom/usr/bin/../share/TrenchBroom/defaults/assets"
+Adding file system path "/home/redw0od0/proj/CEngine/resource/"
+Found 0 shaders
+Saved "/home/redw0od0/proj/CEngine/resource/maps/generic" in 32ms
+Saved "/home/redw0od0/proj/CEngine/resource/maps/generic" in 9ms
+Saved "/home/redw0od0/proj/CEngine/resource/maps/generic.map" in 10ms
+Reloading material collections
+Found 0 shaders
+Created autosave backup at "/home/redw0od0/proj/CEngine/resource/maps/autosave/generic.1.map"
+Reloading material collections
+Found 0 shaders
+Saved "/home/redw0od0/proj/CEngine/resource/maps/generic.map" in 11ms
+Renderer info: AMD Radeon 880M Graphics (radeonsi, strix1, ACO, DRM 3.64, 7.2.14-arch1-1) version 4.6 (Compatibility Profile) Mesa 26.2.6-arch1.1 from AMD
+Depth buffer bits: 32
+Multisampling enabled
+Adding file system path "/opt/TrenchBroom/usr/bin/../share/TrenchBroom/defaults/assets"
+Adding file system path "/home/redw0od0/proj/CEngine/resource/"
+Creating new document
+Found 0 shaders
+Loaded entity definition file Generic.fgd
+Found 0 shaders
+Couldn't parse as Valve entities: At line 6, column 67: Expected '[', but got decimal (raw data: '0.04345703') (unknown location)
+Couldn't parse as Valve brushes: At line 3, column 1: Expected '(', but got string (raw data: 'classname') (unknown location)
+Parsed successfully as Standard entities (unknown location)
+Saved "/home/redw0od0/proj/CEngine/resource/maps/world.map" in 10ms
+Saved "/home/redw0od0/proj/CEngine/resource/maps/world.map" in 8ms
+Saved "/home/redw0od0/proj/CEngine/resource/maps/world.map" in 9ms
+Saved "/home/redw0od0/proj/CEngine/resource/maps/world.map" in 7ms

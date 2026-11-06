@@ -1,9 +1,16 @@
+#include "common/common.h"
 #include "engine/rendering/renderer.h"
 #include "engine/map/bsp.h"
 #include "engine/rendering/gl.h"
 
 static leafdraw_t ldraws[MAX_BSP_NODES];
 
+static void R_CalculateUV(
+    const brushface_t *face,
+    const vec3_t pos,
+    int texture_width,
+    int texture_height,
+    float uv[2] );
 
 void R_LoadLeafs( void )
 {
@@ -21,6 +28,15 @@ void R_LoadLeafs( void )
             const int numverts = win->numpoints;
             const unsigned base = r_vbo_bytes / sizeof(vertex_t);
             vertex_t verts[MAX_WINDING_POINTS] = {0};
+
+            
+            image_t* image = R_FindImage(face->texname);
+            if (!image)
+            {
+                printf("Failed to find image with name: %s\n", face->texname);
+                Sys_Exit();
+            }
+
             for (int v = 0; v < numverts; v++)
             {
              
@@ -32,6 +48,9 @@ void R_LoadLeafs( void )
                 vert->col[2] = 255;
                 vert->col[3] = 255;
                 // Normals, colours, uvs?
+                if(image)R_CalculateUV(
+                        face, win->p[v], image->width, image->height, vert->uv
+                        );
             }
 
             GL_UpdateBuffer( &r_vbo, r_vbo_bytes, sizeof(vertex_t) * numverts, verts );
@@ -71,4 +90,23 @@ void R_DrawLeaves( void )
         if (!draw->num_indices) continue;
         glDrawElements( GL_TRIANGLES, draw->num_indices, GL_UNSIGNED_INT, (void*)((size_t)draw->first_index * sizeof(unsigned)) );
     }
+}
+
+
+static void R_CalculateUV(
+    const brushface_t *face,
+    const vec3_t pos,
+    int texture_width,
+    int texture_height,
+    float uv[2] )
+{
+    uv[0] = (
+        DotProduct(pos, face->tex_s) / face->tex_scale[0]
+        + face->tex_offset[0]
+    ) / texture_width;
+
+    uv[1] = (
+        DotProduct(pos, face->tex_t) / face->tex_scale[1]
+        + face->tex_offset[1]
+    ) / texture_height;
 }

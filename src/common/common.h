@@ -233,6 +233,7 @@ void SZ_Clear( sizebuf_t *buf );
 byte *SZ_GetSpace( sizebuf_t *buf, int bytes );
 bool SZ_WriteInt( sizebuf_t *buf, int i );
 bool SZ_WriteLong( sizebuf_t *buf, long l );
+bool SZ_WriteShort(sizebuf_t *buf, short s);
 bool SZ_WriteFloat( sizebuf_t *buf, float f );
 
 bool SZ_WriteBytes( sizebuf_t *buf, const byte *data, int len );
@@ -240,9 +241,31 @@ bool SZ_WriteBytes( sizebuf_t *buf, const byte *data, int len );
 bool SZ_ReadInt( sizebuf_t *buf, u32 at, int* out );
 bool SZ_ReadLong( sizebuf_t *buf, u32 at, long *out );
 bool SZ_ReadFloat( sizebuf_t* buf, u32 at, float *out );
+bool SZ_ReadShort( sizebuf_t* buf, u32 at, short *out );
+
 
 
 // Integer serialisation
+
+static inline bool WriteU16LE(byte* buff, int len, uint16_t value)
+{
+    if (!buff || len < 2)
+        return false;
+
+    buff[0] = (byte)(value);
+    buff[1] = (byte)(value >> 8);
+    return true;
+}
+
+static inline bool WriteU16BE(byte* buff, int len, uint16_t value)
+{
+    if (!buff || len < 2)
+        return false;
+
+    buff[0] = (byte)(value >> 8);
+    buff[1] = (byte)(value);
+    return true;
+}
 
 static inline bool WriteU32LE(byte *buff, int len, uint32_t value)
 {
@@ -267,6 +290,22 @@ static inline bool WriteU32BE(byte *buff, int len, uint32_t value)
     buff[3] = (byte)value;
     return true;
 }
+
+static inline bool ReadU16LE(const byte *buff, int len, uint16_t *out)
+{
+    if (!buff || !out || len < 4)
+        return false;
+    *out = (uint16_t)buff[0] | ((uint16_t)buff[1] << 8);
+    return true;
+}
+static inline bool ReadU16BE(const byte *buff, int len, uint16_t *out)
+{
+    if (!buff || !out || len < 4)
+        return false;
+    *out = ((uint16_t)buff[0] << 8 ) | ((uint16_t)buff[1]);
+    return true;
+}
+
 
 static inline bool ReadU32LE(const byte *buff, int len, uint32_t *out)
 {

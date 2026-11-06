@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/common.h"
+#include "engine/system/window.h"
 #include "math/matrix.h"
 #include "math/vector.h"
 #include "engine/rendering/r_light.h"
@@ -14,7 +15,20 @@ typedef struct vertex_t
 }  vertex_t;
 
 
+#define MAX_IMAGES 512
+typedef struct image_t
+{
+    char name[64]; // Used for access, e.g render texture "MAP1_WALL0"
+    int width, height;
+    GLuint64 bindless;
+    struct image_t *next;
+    unsigned int glnum;
+} image_t;
 
+image_t* R_FindImage( const char* name );
+
+image_t *R_LoadDDS( const char* filename );
+void R_FreeImage (image_t *image );
 
 typedef struct leafdraw_t
 {

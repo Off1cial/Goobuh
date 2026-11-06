@@ -48,14 +48,14 @@ typedef struct netaddr_t
 
 typedef struct netchan_t
 {
-#ifndef SERVER_ONLY
-    netsock_t sock; // The client contains its socket in here
-#endif
     netaddr_t remote;
     unsigned short qport;
 
     unsigned long incoming_sequence;
+    unsigned long incoming_ack; // What we have last acknowledged
+
     unsigned long outgoing_sequence;
+    unsigned long outgoing_ack; // What our remote last acknowledged
 
     unsigned long t_lastrecv;
     unsigned long t_lastsend;
@@ -68,6 +68,8 @@ typedef struct packet_t
     i32 length;
     byte *data;
 } packet_t;
+
+// Packet format [qport][type][length][sequence][data]
 
 typedef struct challenge_t
 {
@@ -104,6 +106,8 @@ bool NET_GetPacket( void );
 
 void Netchan_SendPacket( netchan_t *chan, netsock_t sock, int len, const byte *data );
 bool Netchan_Process( netchan_t *chan );
+void Netchan_Setup( netchan_t *chan);
+void Netchan_ResetSequences( netchan_t *chan);
 
 
 bool netsock_open( netsock_t* sock, unsigned short port );

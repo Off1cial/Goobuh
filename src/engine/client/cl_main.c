@@ -3,6 +3,7 @@
 #include "engine/client/cl_input.h"
 #include "engine/client/pmove.h"
 #include "engine/rendering/renderer.h"
+#include "engine/gui/gui.h"
 #include "engine/net/net.h"
 #include "engine/net/msg.h"
 #include "engine/map/bsp.h"
@@ -26,6 +27,7 @@ bool CL_Init( void )
         return false;
     }
 
+    Netchan_Setup (&cl.chan);
     Con_printf("[CLIENT]: Client initialised\n");
     return true;
 }
@@ -35,15 +37,23 @@ void CL_Shutdown( void );
 void CL_Frame( void )
 {
     IN_Update();
+    R_Start( cl.viewangles );
+
     CL_SendCmd();
 
     PM_Move();
     VectorCopy( pmove.origin, r_pos );
     r_pos[1] += 36;
 
-    R_Start( cl.viewangles );
 
     R_DrawLeaves();
+
+    GUI_FrameStart();
+    
+    GUI_DrawRect(200, 40, 80, 200, 128, 255, 255, 100);
+
+    GUI_FrameEnd();
+
 
     R_Present();
 
@@ -57,13 +67,50 @@ void CL_SendCmd( void )
     CL_MoveCmd (&cmd);
     pmove.cmd = cmd;
     
-    MSG_WriteFloat (cmd.angles[0]);
-    MSG_WriteFloat (cmd.angles[2]);
-    MSG_WriteFloat (cmd.angles[1]);
+    union 
+    {
+        usercmd_t cmd;
+        byte b[];
+    } data;
+    data.cmd = cmd;
 
-    MSG_WriteFloat (cmd.forwardmove);
-    MSG_WriteFloat (cmd.sidemove);
-    MSG_WriteFloat (cmd.upmove);
+    Netchan_SendPacket( &cl.chan, cl.udpsocket, USERCMD_SIZE, data.b);
+}
 
-    Netchan_SendPacket( &cl.chan, cl.udpsocket, USERCMD_SIZE, net_message.data );
+
+void CL_Disconnect( void )
+{
+    cl.state = cl_free;
+    cl.servertime = 0;
+}
+
+void CL_RequestChallenge( void )
+{
+    MSG_WriteByte (PKT_CHALLENGE_REQUEST);
+    MSG_WriteShort(cl.chan.qport);
+    MSG_WriteLong (3);
+    Netchan_SendPacket( &cl.chan, cl.udpsocket, 3, net_message.data );
+    cl.state = cl_waiting;
+}
+
+void CL_BeginConnect( const char* server )
+{
+    CL_Disconnect();
+    CL_RequestChallenge();
+}
+
+void CL_ReadPackets( void )
+{
+    while (NET_GetPacket())
+    {
+        if (!Netchan_Process( &cl.chan ))
+            continue;
+
+        short qport;
+        MSG_ReadShort(0, &qport);
+        if (qport != cl.chan.qport)
+            continue;
+        
+
+    }
 }

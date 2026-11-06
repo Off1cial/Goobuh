@@ -11,6 +11,7 @@ enum
     PKT_CHALLENGE_SEND, 
     PKT_CHALLENGE_CONFIRM,
     PKT_USERCMD,
+    PKT_DISCONNECT,
 };
 
 
@@ -28,12 +29,17 @@ typedef struct usercmd_t
 
 
 
-#define PACKET_HEADER ( 2 * sizeof(long) + sizeof(u8) )
+#define PACKET_HEADER ( 2 * sizeof(long) + +sizeof(short) + sizeof(u8) )
 typedef struct packethdr_t
 {
     long size; // data size
     long seq;
+    short qport;
     u8 type;
 } packethdr_t;  
+
+
+
+
 
 #endif

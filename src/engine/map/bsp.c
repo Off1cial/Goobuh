@@ -163,28 +163,7 @@ static int BuildTree_r( brush_t* list )
   
   if (planenum == -1 )
   {
-  /*
-    // Make a leaf
-    int leafnum = numleaves++;
-    bspnode_t* leaf = &dleafs[leafnum];
-    leaf->firstface = numfaces;
-    leaf->contents = CONTENTS_SOLID;
-
-    // Collect brush faces
-    for (brush_t *b = list; b ; b = b->next )
-    {
-      for (int f = 0 ; f < b->numfaces; f++)
-      {
-        dfaces[numfaces++] = b->faces[f];
-        leaf->numfaces++;
-      }
-    }
-    FreeBrushList( list );
-  
-    return -(leafnum + 1 );
-    */
-
-        // Assumes one convex brush left. Overlapping brushes need CSG first.
+    // Assumes one convex brush left. Overlapping brushes need CSG first.
       int first = -1, prev = -1;
 
       for (int f = 0; f < list->numfaces; f++)
@@ -221,7 +200,7 @@ static int BuildTree_r( brush_t* list )
   int idx = numnodes++;
   dnodes[idx].planenum = planenum;
 
-
+  int leftnum = 0, rightnum = 0;
   brush_t* left = NULL, *right = NULL;
   brush_t* next = NULL;
 

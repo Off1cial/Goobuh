@@ -1,6 +1,8 @@
 #version 330 core
 
 
+#extension GL_ARB_bindless_texture : require
+
 #include "shared/light.glsl"
 
 in vec3 vPos;
@@ -9,6 +11,7 @@ in vec2 vUV;
 in vec4 vCol;
 
 out vec4 fragCol;
+uniform sampler2D uAlbedo;
 
 
 layout( std140 ) uniform uUniformBuff
@@ -89,7 +92,7 @@ vec3 CalculateLighting( void )
 void main( void )
 {
     vec3 lit = CalculateLighting() + 0.05f;
-    fragCol  = vec4( vCol.rgb * lit, vCol.a );
-
+    fragCol  = vec4( vCol.rgb * lit, vCol.a ) * texture(uAlbedo, vUV);
+   // fragCol = texture(uAlbedo, vUV);
 }
  

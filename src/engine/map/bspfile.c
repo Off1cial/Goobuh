@@ -23,6 +23,9 @@ bool BSP_Write( FILE* bsp_file )
     fwrite( dleafs, sizeof(bspnode_t), numleaves, bsp_file );
     fwrite( dplanes, sizeof(plane_t), numplanes, bsp_file );
     fwrite( dfaces, sizeof(brushface_t), numfaces, bsp_file );
+    
+    printf("BSPWrite: Face0 has texture: %s\n", dfaces[0].texname);
+
     return !ferror(bsp_file);
 }
 
@@ -68,7 +71,7 @@ bool BSP_Read( FILE* f, mapdata_t* out )
     else out->numnodes = 0;
     if (out->leaves) memcpy( out->leaves, dleafs, sizeof(bspnode_t) * h.numleaves );
     else out->numleaves = 0;
-    if (out->faces)  memcpy( out->faces, dfaces, sizeof(bspnode_t) * h.numfaces );
+    if (out->faces)  memcpy( out->faces, dfaces, sizeof(brushface_t) * h.numfaces );
     else out->numfaces = 0;
 
 

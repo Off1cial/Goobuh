@@ -111,3 +111,37 @@ bool GL_GetUniform( shader_t* shader, const char* name32, gluniformtype_t utype,
     *out = uni;
     return true;
 }
+
+bool GL_UploadUniform( shader_t* shader, gluniform_t* uniform )
+{
+    if (!uniform || !shader || (uniform->location == -1 )) return false;
+    switch(uniform->type)
+    {
+
+        case GLUNIFORM_MAT4:
+        {
+            glUniformMatrix4fv( uniform->location, 1, GL_FALSE, uniform->Mat4.m);
+            break;
+        }
+        case GLUNIFORM_SAMPLER:
+        {
+            glUniformHandleui64ARB( uniform->location, uniform->Sampler.handle );
+            break;
+        }
+        case GLUNIFORM_VEC2:
+        {
+            glUniform2fv (uniform->location, 1, uniform->Vector2.xy);
+            break;
+        }
+        case GLUNIFORM_VEC3:
+        {
+            glUniform3fv (uniform->location, 1, uniform->Vector3.xyz);
+            break;
+        }
+
+        default:
+            break;
+    }
+
+    return true;
+}

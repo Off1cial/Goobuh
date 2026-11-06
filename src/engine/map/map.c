@@ -13,7 +13,11 @@ size_t maphunk_size = ( 2 * MAX_BSP_NODES * sizeof(bspnode_t) ) +
 
 bool MAP_Load( const char* name, mapdata_t* out )
 {
-    if (!name || !out) return false;
+    if (!name || !out) 
+    {
+        Con_printf("MAP_Load: invalid parameters\n"); 
+        return false;
+    }
 
     char mapdir[] = ASSET_DIR "maps/";
 
@@ -37,8 +41,11 @@ bool MAP_Load( const char* name, mapdata_t* out )
 
     bool ok = BSP_Read( bsp_file, &read );
     fclose(bsp_file);
-    if (!ok) return false;
-
+    if (!ok)
+    {
+        Con_printf("BSP_Read: failed\n");
+        return false;
+    }
     Con_printf( "Read BSP file with %d nodes, %d leaves\n", numnodes, numleaves );
     *out = read;
     return true;

@@ -15,6 +15,13 @@ typedef struct brushface_t
     int planenum;
     char texname[ 64 ];
     winding_t win;
+
+    vec3_t tex_s;
+    vec3_t tex_t;
+    
+    float tex_offset[2];
+    float tex_scale[2];
+
 } brushface_t;
 
 typedef struct brush_t
@@ -49,6 +56,9 @@ typedef struct bspnode_t
     int numfaces;
     int firstface;
     int planenum;
+
+    int numbrushes;
+    brush_t* brushes;
 
     int contents;
 

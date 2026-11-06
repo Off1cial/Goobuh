@@ -18,5 +18,11 @@ bool SV_InitMaps( void )
 
 bool SV_ChangeMap( const char* map_name )
 {
-    return MAP_Load( map_name, sv.mapdata ); 
+    if (!MAP_Load( map_name, sv.mapdata ))
+        return false;
+
+    Con_printf("Server changed map\n");
+    strncpy( sv.mapname, map_name, 64 );
+    SV_PrintStatus();
+    return true;
 }

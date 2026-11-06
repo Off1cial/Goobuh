@@ -7,6 +7,6 @@ TrenchBroom Version:	2025.3
 TrenchBroom Build:	v2025.3 Release Linux
 Reason:	/home/runner/work/TrenchBroom/TrenchBroom/common/src/ui/InputEvent.cpp line 467: Condition 'm_activeGestures > 0' failed (a gesture is active)
 Stack trace:
-[0x7fffd2a89550]
-[0x7fffd2a89618]
+[0x7ffd5f7a5850]
+[0x7ffd5f7a5918]
 

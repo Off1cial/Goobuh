@@ -72,7 +72,9 @@ typedef enum gluniformtype_t
 {
     GLUNIFORM_MAT4,
     GLUNIFORM_VEC3,
+    GLUNIFORM_VEC2,
     GLUNIFORM_ARRAY,
+    GLUNIFORM_SAMPLER,
 } gluniformtype_t;
 
 
@@ -84,15 +86,12 @@ typedef struct
     
     union
     {
-        struct 
-        {
-            float xyz[3];
-        } Vector3;
+        struct { float xyz[3]; } Vector3;
+        struct { float xy[2]; } Vector2;
 
-        struct 
-        {
-            float m[16];
-        } Mat4;
+        struct { float m[16]; } Mat4;
+
+        struct { int handle; } Sampler;
 
         struct 
         {
@@ -125,6 +124,7 @@ typedef struct shader_t
 bool GL_AddUniform( gluniformset_t* set, gluniform_t uni );
 bool GL_GetUniform( shader_t* shader, const char* name32, gluniformtype_t utype, gluniform_t* out );
 
+bool GL_UploadUniform( shader_t* shader, gluniform_t* uniform );
 
 
 
