@@ -10,6 +10,7 @@
 #include "common/common.h"
 #include "common/parse.h"
 #include "engine/poly.h"
+#include "math/plane.h"
 
 char* map_file = NULL;
 
@@ -90,6 +91,21 @@ static inline void Map_ToEngine( vec3_t v )
     v[0] = x;
     v[1] = z;    // map up becomes engine up
     v[2] = -y;
+}
+
+static inline int PlaneExists( plane_t p )
+{
+    for (int i = 0; i < numplanes; i++)
+    {
+        plane_t normal = dplanes[i];
+        plane_t thisnormal = p;
+        if (PlaneEqual(thisnormal, normal))
+        {
+            Con_printf("Plane exists\n");
+            return i;
+        }
+    }
+    return -1;
 }
 
 static void skip_ws_comments( void )
@@ -258,8 +274,18 @@ static bool read_face( brushface_t* face )
         plane.normal[i] = (float)n[i];
     }
     plane.d = (float)(n[0] * p1[0] + n[1] * p1[1] + n[2] * p1[2]);
-    face->planenum = numplanes;
-    dplanes[numplanes++] = plane;
+
+    int exists = PlaneExists(plane);
+    if (exists != -1)
+    {
+        face->planenum = exists;
+    }
+    else
+    {
+        face->planenum = numplanes;
+        dplanes[numplanes++] = plane;
+
+    }
     return true;
 }
 
@@ -363,6 +389,18 @@ bool MAP_Compile( const char *map, const char *bsp_out )
     brush_t *tmp = AllocBrush( MAX_BRUSH_FACES );
 
     int nbrushes = 0;
+    
+    Con_printf("== .map read started == \n");
+
+    memset(dplanes, 0, sizeof(dplanes));
+    memset(dfaces, 0, sizeof(dfaces));
+    memset(dnodes, 0, sizeof(dnodes));
+    memset(dleafs, 0, sizeof(dleafs));
+    numplanes = 0;
+    numfaces = 0;
+    numleaves = 0;
+    numnodes = 0;
+
     while (ReadBrush( tmp ))
     {
         nbrushes++;

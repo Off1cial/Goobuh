@@ -15,6 +15,7 @@ FORCEINLINE void PlaneReverse( plane_t p, plane_t* out )
     VectorScale( p.normal, -1, out->normal );
 }
 
+/*
 FORCEINLINE bool PlaneEqual( plane_t a, plane_t b )
 {
 #ifndef EPSILON
@@ -26,6 +27,19 @@ FORCEINLINE bool PlaneEqual( plane_t a, plane_t b )
         (fabsf(a.normal[1] - b.normal[1]) > EPSILON) ||
         (fabsf(a.normal[2] - b.normal[2]) > EPSILON);
     return !q;
+}
+
+*/
+FORCEINLINE bool PlaneEqual( plane_t a, plane_t b )
+{
+    if (fabsf(a.d - b.d) > EPSILON)
+        return false;
+
+    for (int i = 0; i < 3; i++)
+        if (fabsf(a.normal[i] - b.normal[i]) > EPSILON)
+            return false;
+
+    return true;
 }
 
 FORCEINLINE void PlaneNormalise( plane_t* p )

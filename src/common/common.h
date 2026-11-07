@@ -65,6 +65,9 @@ typedef i32 qhandle_t;
 #endif
 
 
+#ifndef EPSILON
+#define EPSILON 1e-6f
+#endif
 
 #define DEG2RAD(theta) (theta * M_PI/180.0)
 #define RAG2DEG(theta) (theta * 180.0/M_PI)

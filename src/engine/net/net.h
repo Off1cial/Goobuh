@@ -69,7 +69,8 @@ typedef struct packet_t
     byte *data;
 } packet_t;
 
-// Packet format [qport][type][length][sequence][data]
+// Packet format [qport][length][sequence][type + data]
+#define MSG_START (sizeof(short) + sizeof(long) * 2)
 
 typedef struct challenge_t
 {

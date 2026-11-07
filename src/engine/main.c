@@ -45,7 +45,6 @@ int main( void )
 
     is_server = SV_Init( "GoobuhServer", 24 );
     is_client = CL_Init();
-    //model_t* test_mdl = MDL_Load("models/test.mdl");
 
     bool compiled = MAP_Compile( "maps/world.map", "maps/first.bsp" );
     if (!compiled)

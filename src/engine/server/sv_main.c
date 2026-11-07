@@ -10,6 +10,7 @@
 
 server_t sv = {.state = SS_DEAD, .clients = NULL, .numclients = 0};
 svclient_t* svcl = NULL;
+short clqport = -1;
 sysarena_t sv_arena;
 
 static long ticktime = 0;
@@ -88,12 +89,19 @@ void SV_FreeToMark( void )
 
 void SV_ReadPackets( void )
 {
-    short qport = -1;
     svcl = sv.clients;
+    byte *data = net_message.data + MSG_START;
     while (NET_GetPacket() )
     {
-        qport = -1;
-        MSG_ReadShort(0, &qport);
+        clqport = -1;
+        MSG_ReadShort(0, &clqport);
+    
+        // First byte is -1 for unconnected clients
+        if ( (*(int*)data) == -1 )
+        {
+            SV_HandleUnconnected();
+            continue;
+        }
 
         for ( int i = 0; i < sv.maxclients; i++, svcl++)
         {
@@ -101,7 +109,7 @@ void SV_ReadPackets( void )
                 continue;
             
             // Wrong client on network 
-            if (qport != svcl->chan.qport)
+            if (clqport != svcl->chan.qport)
                 continue;
             // Wrong formatting
             if (!Netchan_Process( &svcl->chan ))
@@ -165,11 +173,43 @@ void SV_DropClient( svclient_t* client, FORMAT_STR )
     va_end(args);
     
     // Send disconnection packet
-    Netchan_SendPacket( &client->chan, sv.udpsocket, len + 1, buf);
+    Netchan_SendPacket( &client->chan, sv.udpsocket, len + 1, (byte*)buf);
 
     SV_FreeToMark();
     // Clear index
     memset(client, 0, sizeof(svclient_t));
     client->state = SSCL_DEAD;
 }
+
+
+void SV_HandleUnconnected( void )
+{
+    Con_printf("Received unconnected message from: %s\n", NET_AddrToString(net_from));
+    byte type = net_message.data[MSG_START];
+    if (type != PKT_CHALLENGE_REQUEST)
+        return;
+    
+    
+    // Find client slot
+    svclient_t* slot = NULL;
+    int i;
+    for (i = 0; i < sv.maxclients; i++)
+    {
+        if (sv.clients[i].state == SSCL_DEAD)
+        {
+            slot = &sv.clients[i];
+            break;
+        }
+    }
+
+    if (!slot)
+    {
+        // Send unconnected packet back
+        return;
+    }
+    slot->chan.remote = net_from; 
+    slot->chan.qport = clqport;
+    SV_SendChallenge(slot);
+}
+
 

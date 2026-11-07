@@ -2,7 +2,7 @@
 #define BSPFILE_H
 
 #define BSP_MAGIC 0x02510 
-#define BSP_VERSION 1
+#define BSP_VERSION 2
 
 #include <stdio.h>
 #include <stdbool.h>

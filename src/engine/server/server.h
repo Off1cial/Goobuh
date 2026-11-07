@@ -103,6 +103,7 @@ void SV_CheckTimeouts( void );
 
 void SV_ExecuteClientMessage( svclient_t *client );
 
+void SV_SendChallenge( svclient_t* client );
 void SV_DropClient( svclient_t* client, FORMAT_STR );
 
 void* SV_Alloc( size_t size );
