@@ -1,0 +1,5 @@
+The goal is to move away from the brush system and towards the mesh system,
+like Source 2 has.
+
+However, I would like to maintain the capability of creating maps in Trenchbroom
+while I create my own editor
