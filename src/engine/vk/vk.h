@@ -6,9 +6,11 @@
 #include <SDL3/SDL.h>
 #include <vulkan/vulkan.hpp>
 #include <VkBootstrap.h>
+#include <vulkan/vulkan_core.h>
 
 #include "engine/vk/vk_buff.h"
-
+#include "core/util/utlvector.h"
+#include "vulkan/vulkan.hpp"
 
 class CVulkanSystem
 {
@@ -25,6 +27,30 @@ public:
     bool Init( const char *title, int w, int h );
 
     void Shutdown();
+
+private:
+
+    bool InitCommandPool();
+
+    
+
+    static constexpr vk::ImageSubresourceRange
+    CreateImageSubresourceRange(
+            const uint32 baseMipLevel = 0,
+            const vk::ImageAspectFlags aspectMask = vk::ImageAspectFlagBits::eColor,
+            const uint32 levelCount = 1
+            )
+    {
+        return vk::ImageSubresourceRange
+        {
+             aspectMask,
+             baseMipLevel,
+             levelCount,
+             0,
+             1,
+        };
+    }
+
 
 private:
     
@@ -71,11 +97,39 @@ private:
         uint32 cameraOffset = 0;
         // ...
     };
+
+    struct ImageState
+    {
+        vk::ImageLayout layout = vk::ImageLayout::eUndefined;
+        vk::PipelineStageFlags2 stageMask = vk::PipelineStageFlagBits2::eNone;
+        vk::AccessFlags2 accessMask = vk::AccessFlagBits2::eNone; 
+        vk::ImageAspectFlags aspectMask = vk::ImageAspectFlagBits::eColor;
+
+        bool operator==(const ImageState&) const = default; 
+    };
+
+    struct SwapchainImage
+    {
+        vk::Image image;
+        vk::UniqueImageView imageView;
+        vk::UniqueSemaphore renderFinsihedSemaphore;
+        ImageState state;
+
+    };  
+
     DescriptorHeapResources m_descriptorHeaps{};
+
+
+    CUtlVector<SwapchainImage> m_swapchainImages;
+    vk::Format m_swapchainFormat;
+    vk::Extent2D m_swapchainExtent;
 
     vk::SurfaceKHR m_surface;
     vk::Device m_logicalDevice;
 
+    // Queue families are the same for now
+    uint32 m_graphicsQueueFamily = 0;
+    uint32 m_presentQueueFamily = 0;
     vk::Queue m_graphicsQueue{};
     vk::Queue m_presentQueue{};
 
@@ -105,6 +159,14 @@ private:
     // Constant data
     static constexpr vk::Format c_textureFormat = vk::Format::eR8G8B8Unorm;
     static constexpr vk::Format c_depthFormat = vk::Format::eD32Sfloat;
+
+    static constexpr vk::ComponentMapping c_identityComponentMapping{
+        vk::ComponentSwizzle::eIdentity,
+        vk::ComponentSwizzle::eIdentity,
+        vk::ComponentSwizzle::eIdentity,
+        vk::ComponentSwizzle::eIdentity
+    };
+
     
 
 };

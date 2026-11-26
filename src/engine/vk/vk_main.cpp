@@ -11,6 +11,7 @@
 #include <vulkan/vulkan_core.h>
 
 #include "core/error.h"
+#include "vulkan/vulkan.hpp"
 
 VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 
@@ -91,7 +92,7 @@ bool CVulkanSystem::Init( const char *title, int w, int h)
         .add_required_extension_features(
                 VkPhysicalDeviceVulkan13Features
                 {
-                    .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
+.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
                     .synchronization2 = VK_TRUE,
                     .dynamicRendering = VK_TRUE,
                 })
@@ -263,10 +264,116 @@ bool CVulkanSystem::Init( const char *title, int w, int h)
             vkGetDeviceProcAddr
             );
 
+    
+    // Fetch the graphics queue
+    vkb::Result<VkQueue> graphQueueResult = m_vkbData.device.get_queue(vkb::QueueType::graphics);
+    if (!graphQueueResult)
+    {
+        Error( ERROR_VULKAN, "Failed to fetch graphics queue\n");
+        return false;
+    }
+    m_graphicsQueue = graphQueueResult.value();
+    
+    vkb::Result<uint32> graphQueueFamilyResult = m_vkbData.device.get_queue_index(vkb::QueueType::graphics);
+    if (!graphQueueFamilyResult)
+    {
+        Error( ERROR_VULKAN, "Failed to fetch graphics queue family\n");
+        return false;
+    }
+    m_graphicsQueueFamily = graphQueueFamilyResult.value();
+
+    // Fetch the presentation quueue
+    vkb::Result<VkQueue> presentQueueResult = m_vkbData.device.get_queue(vkb::QueueType::present);
+    if (!presentQueueResult)
+    {
+        Error( ERROR_VULKAN, "Failed to fetch presentation queue\n");
+        return false;
+    }
+    m_presentQueue = presentQueueResult.value();
+    
+    vkb::Result<uint32> presentQueueFamilyResult = m_vkbData.device.get_queue_index(vkb::QueueType::present);
+    if (!presentQueueFamilyResult)
+    {
+        Error( ERROR_VULKAN, "Failed to fetch presentation queue family\n");
+        return false;
+    }
+    
+
+    // For now, use the single queue family to avoid managing ownership transfers
+    if (m_graphicsQueueFamily != m_presentQueueFamily)
+    {   
+        Error( ERROR_VULKAN, "Graphics queue and present queue are not of the same family\n");
+        return false;
+    }
+    
+    // Find present modes
+    // Default to FIFO for now
+    const VkPresentModeKHR presentMode = VK_PRESENT_MODE_FIFO_KHR;
+    
+    vkb::SwapchainBuilder swapchainBuilder = vkb::SwapchainBuilder(m_vkbData.device)
+                                                    .set_desired_extent(w, h)
+                                                    .set_desired_present_mode(presentMode)
+                                                    .add_image_usage_flags(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
+    
+    vkb::Result<vkb::Swapchain> swapchainResult = swapchainBuilder.build();
+
+    if (!swapchainResult)
+    {
+        Error( ERROR_VULKAN "Failed to create swapchain\n");
+        return false;
+    }
+
+    m_vkbData.swapchain = swapchainResult.value();
+    m_swapchainFormat = static_cast<vk::Format>(m_vkbData.swapchain.image_format);
+    m_swapchainExtent = { 
+        .width = m_vkbData.swapchain.extent.width,
+        .height = m_vkbData.swapchain.extent.height
+    };
+
+    
+    
+    // Retrieve swapchain images
+    auto getImagesResult = m_vkbData.swapchain.get_images();
+    if (!getImagesResult)
+    {
+        Error( ERROR_VULKAN "Failed to fetch swapchain images\n");
+        return false;
+    }
+
+    const std::vector<VkImage> images = getImagesResult.value();
+    
+    m_swapchainImages.EnsureCapacity(images.size());
+
+    for ( VkImage image : images )
+    {
+        const vk::Image swapchainImage{image};
+
+
+        vk::ImageViewCreateInfo imageViewInfo{};
+        imageViewInfo.setImage(swapchainImage)
+             .setViewType(vk::ImageViewType::e2D)
+             .setFormat(m_swapchainFormat)
+             .setComponents(c_identityComponentMapping)
+             .setSubresourceRange(CreateImageSubresourceRange());
+
+        SwapchainImage swImage = {
+            .image = swapchainImage,
+            .imageView = m_logicalDevice.createImageViewUnique(imageViewInfo),
+            .state = ImageState{.aspectMask = vk::ImageAspectFlagBits::eColor}
+        };
+
+        m_swapchainImages.AddToHead(swImage);
+
+        
+    }
     return true;
 }
 
 
+bool CVulkanSystem::InitCommandPool()
+{
+//....
+}
 
 
 
